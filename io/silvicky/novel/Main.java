@@ -8,9 +8,10 @@ import java.util.*;
 public class Main
 {
     public static Set<Path> globalIgnore=new HashSet<>();
+    public static boolean title=false;
     public static void help()
     {
-        System.out.println("Usage: java -jar novelmaker.jar [-h] [-s] [-i <input_path>] [-o <output_path>] [-c <config_path>]");
+        System.out.println("Usage: java -jar novelmaker.jar [-h] [-s] [-t] [-i <input_path>] [-o <output_path>] [-c <config_path>]");
     }
     public static void parseString(String line, Writer writer) throws IOException
     {
@@ -36,6 +37,7 @@ public class Main
             cur= bufferedReader.readLine();
             if(cur==null)break;
             parseString(cur,writer);
+            if(title)return;
         }
         writer.append('\n');
     }
@@ -47,8 +49,14 @@ public class Main
         {
             Path path=i.toPath().toAbsolutePath();
             if(globalIgnore.contains(path)||order.before.contains(path)||order.after.contains(path)||order.ignore.contains(path))continue;
-            paths.add(path);
+            if(path.toFile().exists())paths.add(path);
         }
+        paths.sort((o1, o2) ->
+        {
+            if(o1.toFile().isFile()&&o2.toFile().isDirectory())return -1;
+            if(o1.toFile().isDirectory()&&o2.toFile().isFile())return 1;
+            return o1.getFileName().compareTo(o2.getFileName());
+        });
         for(Path i: order.before)parseGeneral(i,writer);
         for(Path i: paths)parseGeneral(i,writer);
         for(Path i: order.after)parseGeneral(i,writer);
@@ -82,6 +90,7 @@ public class Main
                 case "-c" -> configPath = Path.of(it.next());
                 case "-h" -> help = true;
                 case "-s" -> screenOutput = true;
+                case "-t" -> title = true;
                 default -> throw new RuntimeException("Unknown argument: "+s);
             }
         }
