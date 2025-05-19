@@ -34,9 +34,10 @@ public class Main
         while(true)
         {
             cur= bufferedReader.readLine();
-            if(cur==null)return;
+            if(cur==null)break;
             parseString(cur,writer);
         }
+        writer.append('\n');
     }
     public static void parseFolder(Path inputPath, Writer writer) throws IOException
     {
@@ -51,6 +52,7 @@ public class Main
         for(Path i: order.before)parseGeneral(i,writer);
         for(Path i: paths)parseGeneral(i,writer);
         for(Path i: order.after)parseGeneral(i,writer);
+        writer.append('\n');
     }
     public static void parseGeneral(Path path, Writer writer) throws IOException
     {
@@ -98,5 +100,6 @@ public class Main
         else outputStream=new FileOutputStream(outputPath.toString());
         Writer writer=new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8));
         parseFolder(inputPath,writer);
+        writer.flush();
     }
 }
