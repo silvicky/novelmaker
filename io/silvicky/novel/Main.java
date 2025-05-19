@@ -17,7 +17,7 @@ public class Main
         String cur=line;
         if(CfgLoader.replaceChars)
         {
-            for(Map.Entry<Integer,String> entry:CfgLoader.charMap.entrySet())
+            for(Map.Entry<String,String> entry:CfgLoader.charMap.entrySet())
             {
                 String placeholder=CfgLoader.left+entry.getKey()+CfgLoader.right;
                 cur=cur.replaceAll(placeholder, entry.getValue());

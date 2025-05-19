@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 class CharItem
 {
-    int id;
+    String id;
     String name;
 }
 class Cfg
@@ -25,7 +25,7 @@ public class CfgLoader
 {
     private static final Gson gson=new Gson();
     public static boolean replaceChars=true;
-    public static final Map<Integer,String> charMap=new HashMap<>();
+    public static final Map<String,String> charMap=new HashMap<>();
     public static String left="\\(",right="\\)";
     public static void load(Path path) throws FileNotFoundException
     {
