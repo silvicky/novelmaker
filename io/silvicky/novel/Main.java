@@ -12,6 +12,13 @@ public class Main
     public static void help()
     {
         System.out.println("Usage: java -jar novelmaker.jar [-h] [-s] [-t] [-i <input_path>] [-o <output_path>] [-c <config_path>]");
+        System.out.println("Options:");
+        System.out.println("-h: Open help");
+        System.out.println("-s: Output onto screen(System.out)");
+        System.out.println("-t: Output first line only(making a menu)");
+        System.out.println("-i: Specifying input path, a folder(default: .)");
+        System.out.println("-o: Specifying output path, a file(default: <input_path>/result.txt)");
+        System.out.println("-o: Specifying config path, a file(default: <input_path>/novelmaker.json)");
     }
     public static void parseString(String line, Writer writer) throws IOException
     {
@@ -102,8 +109,8 @@ public class Main
             help();
             return;
         }
-        Path path=configPath==null?inputPath.resolve("novelmaker.json"):configPath;
-        CfgLoader.load(path);
+        if(configPath==null)configPath=inputPath.resolve("novelmaker.json");
+        CfgLoader.load(configPath);
         OutputStream outputStream;
         if(screenOutput) outputStream=System.out;
         else outputStream=new FileOutputStream(outputPath.toString());
