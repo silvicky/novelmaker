@@ -3,44 +3,68 @@ package io.silvicky.novel;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 public class Main
 {
+    public static Set<Path> globalIgnore=new HashSet<>();
     public static void help()
     {
         System.out.println("Usage: java -jar novelmaker.jar [-h] [-s] [-i <input_path>] [-o <output_path>] [-c <config_path>]");
     }
-    public static String parseString(String line)
+    public static void parseString(String line, Writer writer) throws IOException
     {
-        if(!CfgLoader.replaceChars)return line;
         String cur=line;
-        for(Map.Entry<Integer,String> entry:CfgLoader.charMap.entrySet())
+        if(CfgLoader.replaceChars)
         {
-            String placeholder=CfgLoader.left+entry.getKey()+CfgLoader.right;
-            cur=cur.replaceAll(placeholder, entry.getValue());
+            for(Map.Entry<Integer,String> entry:CfgLoader.charMap.entrySet())
+            {
+                String placeholder=CfgLoader.left+entry.getKey()+CfgLoader.right;
+                cur=cur.replaceAll(placeholder, entry.getValue());
+            }
         }
-        return cur;
+        writer.write(cur);
+        writer.append('\n');
     }
     public static void parseFile(Path file, Writer writer) throws IOException
     {
+        if(!file.toString().endsWith(".txt"))return;
         BufferedReader bufferedReader=new BufferedReader(new FileReader(file.toFile()));
         String cur;
         while(true)
         {
             cur= bufferedReader.readLine();
             if(cur==null)return;
-            writer.write(parseString(cur));
-            writer.append('\n');
+            parseString(cur,writer);
         }
     }
-    public static void work(Path inputPath, Writer writer)
+    public static void parseFolder(Path inputPath, Writer writer) throws IOException
     {
-
+        List<Path> paths=new ArrayList<>();
+        Order order=new Order(inputPath);
+        for(File i: Objects.requireNonNull(inputPath.toFile().listFiles()))
+        {
+            Path path=i.toPath().toAbsolutePath();
+            if(globalIgnore.contains(path)||order.before.contains(path)||order.after.contains(path)||order.ignore.contains(path))continue;
+            paths.add(path);
+        }
+        for(Path i: order.before)parseGeneral(i,writer);
+        for(Path i: paths)parseGeneral(i,writer);
+        for(Path i: order.after)parseGeneral(i,writer);
     }
-    public static void main(String[] args)
+    public static void parseGeneral(Path path, Writer writer) throws IOException
+    {
+        if(!path.toFile().exists())return;
+        if (path.toFile().isFile())
+        {
+            parseFile(path, writer);
+        }
+        else
+        {
+            parseFolder(path, writer);
+        }
+    }
+    public static void main(String[] args) throws IOException
     {
         Iterator<String> it=Arrays.stream(args).iterator();
         Path inputPath=Path.of(""),outputPath=null,configPath=null;
@@ -60,31 +84,19 @@ public class Main
             }
         }
         if(outputPath==null)outputPath=inputPath.resolve("result.txt");
+        globalIgnore.add(outputPath.toAbsolutePath());
+        outputPath.toFile().delete();
         if(help)
         {
             help();
             return;
         }
-        try
-        {
-            Path path=configPath==null?inputPath.resolve("novelmaker.json"):configPath;
-            CfgLoader.load(path);
-        }
-        catch (FileNotFoundException e)
-        {
-            throw new RuntimeException(e);
-        }
+        Path path=configPath==null?inputPath.resolve("novelmaker.json"):configPath;
+        CfgLoader.load(path);
         OutputStream outputStream;
-        try
-        {
-            if(screenOutput) outputStream=System.out;
-            else outputStream=new FileOutputStream(outputPath.toString());
-        }
-        catch (FileNotFoundException e)
-        {
-            throw new RuntimeException(e);
-        }
+        if(screenOutput) outputStream=System.out;
+        else outputStream=new FileOutputStream(outputPath.toString());
         Writer writer=new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8));
-        work(inputPath,writer);
+        parseFolder(inputPath,writer);
     }
 }
