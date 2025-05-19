@@ -16,6 +16,7 @@
         </dependency>
     </dependencies>
     <build>
+        <directory>target</directory>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -24,8 +25,8 @@
                     <source>21</source>
                     <target>21</target>
                     <excludes>
-                        <exclude>target/**</exclude>
-                        <exclude>out/**</exclude>
+                        <exclude>**/target/**</exclude>
+                        <exclude>**/out/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>
