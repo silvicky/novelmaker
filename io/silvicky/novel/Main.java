@@ -84,7 +84,7 @@ public class Main
     public static void main(String[] args) throws IOException
     {
         Iterator<String> it=Arrays.stream(args).iterator();
-        Path inputPath=Path.of(""),outputPath=null,configPath=null;
+        Path inputPath=Path.of(".").toAbsolutePath(),outputPath=null,configPath=null;
         boolean help=false;
         boolean screenOutput=false;
         while(it.hasNext())

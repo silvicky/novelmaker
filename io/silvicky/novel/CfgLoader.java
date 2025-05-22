@@ -29,6 +29,7 @@ public class CfgLoader
     public static String left="\\(",right="\\)";
     public static void load(Path path) throws FileNotFoundException
     {
+        if(!path.toFile().isFile())return;
         Cfg cfg=gson.fromJson(new FileReader(path.toFile()),Cfg.class);
         replaceChars=cfg.replaceChars;
         if(cfg.chars!=null)for(CharItem i:cfg.chars)charMap.put(i.id,i.name);
