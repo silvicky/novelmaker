@@ -9,16 +9,18 @@ public class Main
 {
     public static Set<Path> globalIgnore=new HashSet<>();
     public static boolean title=false;
+    public static boolean optional=false;
     public static void help()
     {
-        System.out.println("Usage: java -jar novelmaker.jar [-h] [-s] [-t] [-i <input_path>] [-o <output_path>] [-c <config_path>]");
+        System.out.println("Usage: java -jar novelmaker.jar [-h] [-s] [-t] [-O] [-i <input_path>] [-o <output_path>] [-c <config_path>]");
         System.out.println("Options:");
         System.out.println("-h: Open help");
         System.out.println("-s: Output onto screen(System.out)");
         System.out.println("-t: Output first line only(making a menu)");
+        System.out.println("-O: Print also optional parts");
         System.out.println("-i: Specifying input path, a folder(default: .)");
         System.out.println("-o: Specifying output path, a file(default: <input_path>/result.txt)");
-        System.out.println("-o: Specifying config path, a file(default: <input_path>/novelmaker.json)");
+        System.out.println("-c: Specifying config path, a file(default: <input_path>/novelmaker.json)");
     }
     public static void parseString(String line, Writer writer) throws IOException
     {
@@ -64,9 +66,9 @@ public class Main
             if(o1.toFile().isDirectory()&&o2.toFile().isFile())return 1;
             return o1.getFileName().compareTo(o2.getFileName());
         });
-        for(Path i: order.before)parseGeneral(i,writer);
-        for(Path i: paths)parseGeneral(i,writer);
-        for(Path i: order.after)parseGeneral(i,writer);
+        for(Path i: order.before)if(optional||!order.optional.contains(i))parseGeneral(i,writer);
+        for(Path i: paths)if(optional||!order.optional.contains(i))parseGeneral(i,writer);
+        for(Path i: order.after)if(optional||!order.optional.contains(i))parseGeneral(i,writer);
         writer.append('\n');
     }
     public static void parseGeneral(Path path, Writer writer) throws IOException
@@ -98,6 +100,7 @@ public class Main
                 case "-h" -> help = true;
                 case "-s" -> screenOutput = true;
                 case "-t" -> title = true;
+                case "-O" -> optional = true;
                 default -> throw new RuntimeException("Unknown argument: "+s);
             }
         }

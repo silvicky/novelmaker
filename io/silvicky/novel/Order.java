@@ -16,12 +16,15 @@ class RawOrder
     List<String> before=new ArrayList<>();
     List<String> after=new ArrayList<>();
     List<String> ignore=new ArrayList<>();
+
+    List<String> optional=new ArrayList<>();
 }
 public class Order
 {
     public List<Path> before=new ArrayList<>();
     public List<Path> after=new ArrayList<>();
     public Set<Path> ignore=new HashSet<>();
+    public Set<Path> optional=new HashSet<>();
     public Order(Path root) throws FileNotFoundException
     {
         Gson gson=new Gson();
@@ -32,5 +35,6 @@ public class Order
         for(String i: rawOrder.before)before.add(root.resolve(i).toAbsolutePath());
         for(String i: rawOrder.after)after.add(root.resolve(i).toAbsolutePath());
         for(String i: rawOrder.ignore)ignore.add(root.resolve(i).toAbsolutePath());
+        for(String i: rawOrder.optional)optional.add(root.resolve(i).toAbsolutePath());
     }
 }
