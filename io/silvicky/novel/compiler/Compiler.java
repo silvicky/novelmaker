@@ -1,13 +1,16 @@
 package io.silvicky.novel.compiler;
 
-import io.silvicky.novel.compiler.tokens.InvalidTokenException;
-import io.silvicky.novel.compiler.tokens.OperatorType;
-import io.silvicky.novel.compiler.tokens.Token;
-import io.silvicky.novel.compiler.tokens.TokenBuilder;
+import io.silvicky.novel.compiler.parser.NonTerminal;
+import io.silvicky.novel.compiler.parser.Program;
+import io.silvicky.novel.compiler.tokens.*;
+import io.silvicky.novel.compiler.code.Code;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
+
+import static io.silvicky.novel.util.Util.addNonNull;
 
 public class Compiler
 {
@@ -21,21 +24,28 @@ public class Compiler
             {
                 if(!tokenBuilder.append(c))
                 {
-                    Token token= tokenBuilder.build();
-                    if(token!=null)ret.add(token);
+                    addNonNull(ret, tokenBuilder.build());
                     tokenBuilder=new TokenBuilder();
                     tokenBuilder.append(c);
                 }
             }
             else
             {
-                Token token= tokenBuilder.build();
-                if(token!=null)ret.add(token);
+                addNonNull(ret, tokenBuilder.build());
                 tokenBuilder=new TokenBuilder();
             }
         }
-        Token token= tokenBuilder.build();
-        if(token!=null)ret.add(token);
+        addNonNull(ret, tokenBuilder.build());
+        ret.add(new EofToken());
+        ret.add(new EofToken());
+        return ret;
+    }
+    public static List<Code> parser(List<Token> tokens)
+    {
+        List<Code> ret=new ArrayList<>();
+        Stack<Token> stack=new Stack<>();
+        stack.push(new EofToken());
+        stack.push(new Program());
         return ret;
     }
     public static void main(String[] args) throws IOException, InvalidTokenException

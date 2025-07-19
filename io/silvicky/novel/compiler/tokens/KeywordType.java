@@ -6,7 +6,15 @@ public enum KeywordType
     WHILE("while"),
     DO("do"),
     IF("if"),
-    ELSE("else");
+    ELSE("else"),
+    RETURN("return"),
+    TRUE("true"),
+    FALSE("false"),
+    INT("int"),
+    VOID("void"),
+    GOTO("goto"),
+    BREAK("break"),
+    CONTINUE("continue");
     public final String symbol;
     KeywordType(String symbol)
     {

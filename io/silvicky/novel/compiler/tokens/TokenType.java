@@ -4,7 +4,8 @@ public enum TokenType
 {
     IDENTIFIER(IdentifierToken.class),
     NUMBER(NumberToken.class),
-    OPERATOR(OperatorToken.class);
+    OPERATOR(OperatorToken.class),
+    KEYWORD(KeywordToken.class);
     public final Class<?> cls;
     TokenType(Class<?> cls)
     {
