@@ -1,5 +1,6 @@
 package io.silvicky.novel.compiler.parser;
 
+import io.silvicky.novel.compiler.parser.operation.AppendCodeSeqOperation;
 import io.silvicky.novel.compiler.tokens.EofToken;
 import io.silvicky.novel.compiler.tokens.OperatorToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
@@ -16,8 +17,12 @@ public class Block extends NonTerminal
         List<Token> ret=new ArrayList<>();
         if(next instanceof OperatorToken&&((OperatorToken) next).type()== OperatorType.R_BRACE)return ret;
         if(next instanceof EofToken)return ret;
-        ret.add(new Block());
-        ret.add(new Line());
+        Block residue=new Block();
+        Line current=new Line();
+        ret.add(new AppendCodeSeqOperation(this,residue));
+        ret.add(residue);
+        ret.add(new AppendCodeSeqOperation(this,current));
+        ret.add(current);
         return ret;
     }
 }

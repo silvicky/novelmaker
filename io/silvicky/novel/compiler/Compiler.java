@@ -4,22 +4,34 @@ import io.silvicky.novel.compiler.parser.Block;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.NonTerminal;
 import io.silvicky.novel.compiler.parser.Program;
+import io.silvicky.novel.compiler.parser.operation.Operation;
 import io.silvicky.novel.compiler.tokens.*;
 import io.silvicky.novel.compiler.code.Code;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 import static io.silvicky.novel.util.Util.addNonNull;
 
 public class Compiler
 {
-    private static long label=0,variable=0;
-    public static long newLabel(){return label++;}
-    public static long newVariable(){return variable++;}
+    private static long labelCnt=0,variableCnt=0;
+    private static final Map<String,Long> labelMap=new HashMap<>();
+    private static final Map<String,Long> variableMap=new HashMap<>();
+    private static final int maxLabel=30,maxVariable=30;
+    public static final long[] variableMem= new long[maxVariable];
+    public static long registerVariable(String s)
+    {
+        if(variableMap.containsKey(s))throw new DeclarationException("Repeated:"+s);
+        variableMap.put(s,variableCnt);
+        return variableCnt++;
+    }
+    public static long lookupVariable(String s)
+    {
+        if(!variableMap.containsKey(s))throw new DeclarationException("Undefined:"+s);
+        return variableMap.get(s);
+    }
+    public static long requestInternalVariable(){return variableCnt++;}
     public static List<Token> lexer(String input) throws InvalidTokenException
     {
         List<Token> ret=new ArrayList<>();
@@ -49,15 +61,18 @@ public class Compiler
     public static List<Code> parser(List<Token> tokens) throws GrammarException
     {
         int rul=0;
-        List<Code> ret=new ArrayList<>();
         Stack<Token> stack=new Stack<>();
         //stack.push(new Program());
-        stack.push(new Block());
+        Block root=new Block();
+        stack.push(root);
         while(!stack.empty())
         {
-            System.out.println(stack);
-            System.out.println(rul);
             Token top=stack.pop();
+            if(top instanceof Operation)
+            {
+                ((Operation) top).execute();
+                continue;
+            }
             Token next=tokens.get(rul);
             Token second=tokens.get(rul+1);
             if(!(top instanceof NonTerminal))
@@ -69,7 +84,7 @@ public class Compiler
             List<Token> list=((NonTerminal) top).lookup(next,second);
             for(Token token:list)stack.push(token);
         }
-        return ret;
+        return root.codes;
     }
     public static void main(String[] args) throws IOException, InvalidTokenException, GrammarException
     {
@@ -83,7 +98,7 @@ public class Compiler
             stringBuilder.append(cur);
         }
         List<Token> tokenList=lexer(stringBuilder.toString());
-        //for(Token token:tokenList)System.out.println(token);
-        parser(tokenList);
+        List<Code> codeList=parser(tokenList);
+        System.out.println(codeList);
     }
 }

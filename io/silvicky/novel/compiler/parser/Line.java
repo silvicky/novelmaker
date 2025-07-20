@@ -1,5 +1,6 @@
 package io.silvicky.novel.compiler.parser;
 
+import io.silvicky.novel.compiler.parser.operation.AppendCodeSeqOperation;
 import io.silvicky.novel.compiler.tokens.*;
 
 import java.util.ArrayList;
@@ -13,7 +14,7 @@ public class Line extends NonTerminal
     {
         List<Token> ret=new ArrayList<>();
         if(next instanceof KeywordToken)
-        {
+        {//TODO
             KeywordType type=((KeywordToken) next).type();
             if(type==KeywordType.FOR)
             {
@@ -78,7 +79,9 @@ public class Line extends NonTerminal
         else
         {
             ret.add(new OperatorToken(OperatorType.SEMICOLON));
-            ret.add(new Expression());
+            Expression e=new Expression();
+            ret.add(new AppendCodeSeqOperation(this,e));
+            ret.add(e);
             return ret;
         }
     }

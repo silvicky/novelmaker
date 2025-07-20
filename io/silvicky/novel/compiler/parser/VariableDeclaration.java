@@ -8,6 +8,8 @@ import io.silvicky.novel.compiler.tokens.Token;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.silvicky.novel.compiler.Compiler.registerVariable;
+
 public class VariableDeclaration extends NonTerminal
 {
     @Override
@@ -27,13 +29,17 @@ public class VariableDeclaration extends NonTerminal
 
             ret.add(new VariableDeclaration());
             ret.add(new OperatorToken(OperatorType.COMMA));
-            ret.add(new IdentifierToken(((IdentifierToken) next).id()));
+            String id=((IdentifierToken) next).id();
+            registerVariable(id);
+            ret.add(new IdentifierToken(id));
             return ret;
         }
         if(((OperatorToken) second).type() == OperatorType.SEMICOLON)
         {
             ret.add(new OperatorToken(OperatorType.SEMICOLON));
-            ret.add(new IdentifierToken(((IdentifierToken) next).id()));
+            String id=((IdentifierToken) next).id();
+            registerVariable(id);
+            ret.add(new IdentifierToken(id));
             return ret;
         }
         throw new GrammarException(this.getClass().getSimpleName()+next+second);

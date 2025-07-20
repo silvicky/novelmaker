@@ -46,6 +46,7 @@ public enum OperatorType
     AND_AND_EQUAL("&&=",OperatorArgsProperties.BINARY,(a,b,c)->((a!=0)&&(b!=0))?1:0),
     XOR("^",OperatorArgsProperties.BINARY,(a,b,c)->a^b),
     XOR_EQUAL("^=",OperatorArgsProperties.BINARY,(a,b,c)->a^b),
+    NOP("",OperatorArgsProperties.UNARY_R,(a,b,c)->a)
     ;
     public static enum OperatorArgsProperties
     {
