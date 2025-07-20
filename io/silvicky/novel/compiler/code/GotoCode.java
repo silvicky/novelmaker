@@ -5,7 +5,7 @@ import io.silvicky.novel.compiler.tokens.OperatorType;
 import static io.silvicky.novel.compiler.Compiler.lookupLabelName;
 import static io.silvicky.novel.compiler.Compiler.lookupVariableName;
 
-public record GotoCode(long left, long right, OperatorType op, long id) implements Code
+public record GotoCode(int left, int right, OperatorType op, int id) implements Code
 {
     @Override
     public String toString()

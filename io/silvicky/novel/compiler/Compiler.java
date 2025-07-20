@@ -1,12 +1,12 @@
 package io.silvicky.novel.compiler;
 
+import io.silvicky.novel.compiler.code.*;
 import io.silvicky.novel.compiler.parser.Block;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.NonTerminal;
 import io.silvicky.novel.compiler.parser.Program;
 import io.silvicky.novel.compiler.parser.operation.Operation;
 import io.silvicky.novel.compiler.tokens.*;
-import io.silvicky.novel.compiler.code.Code;
 
 import java.io.*;
 import java.util.*;
@@ -15,50 +15,47 @@ import static io.silvicky.novel.util.Util.addNonNull;
 
 public class Compiler
 {
-    private static long labelCnt=0,variableCnt=0;
-    private static final Map<String,Long> labelMap=new HashMap<>();
-    private static final Map<Long,String> labelBackMap=new HashMap<>();
-    private static final Map<String,Long> variableMap=new HashMap<>();
-    private static final Map<Long,String> variableBackMap=new HashMap<>();
-    private static final int maxLabel=30,maxVariable=30;
-    public static final long[] variableMem= new long[maxVariable];
-    public static final long[] labelMem= new long[maxLabel];
-    public static long registerVariable(String s)
+    private static int labelCnt=0,variableCnt=0;
+    private static final Map<String,Integer> labelMap=new HashMap<>();
+    private static final Map<Integer,String> labelBackMap=new HashMap<>();
+    private static final Map<String,Integer> variableMap=new HashMap<>();
+    private static final Map<Integer,String> variableBackMap=new HashMap<>();
+    public static int registerVariable(String s)
     {
         if(variableMap.containsKey(s))throw new DeclarationException("Repeated:"+s);
         variableMap.put(s,variableCnt);
         variableBackMap.put(variableCnt,s);
         return variableCnt++;
     }
-    public static long lookupVariable(String s)
+    public static int lookupVariable(String s)
     {
         if(!variableMap.containsKey(s))throw new DeclarationException("Undefined:"+s);
         return variableMap.get(s);
     }
-    public static String lookupVariableName(long l)
+    public static String lookupVariableName(int l)
     {
         if(!variableBackMap.containsKey(l))return "V"+l;
         return variableBackMap.get(l);
     }
-    public static long requestInternalVariable(){return variableCnt++;}
-    public static long registerLabel(String s)
+    public static int requestInternalVariable(){return variableCnt++;}
+    public static int registerLabel(String s)
     {
         if(labelMap.containsKey(s))throw new DeclarationException("Repeated:"+s);
         labelMap.put(s,labelCnt);
         labelBackMap.put(labelCnt,s);
         return labelCnt++;
     }
-    public static long lookupLabel(String s)
+    public static int lookupLabel(String s)
     {
         if(!labelMap.containsKey(s))throw new DeclarationException("Undefined:"+s);
         return labelMap.get(s);
     }
-    public static String lookupLabelName(long l)
+    public static String lookupLabelName(int l)
     {
         if(!labelBackMap.containsKey(l))return "L"+l;
         return labelBackMap.get(l);
     }
-    public static long requestInternalLabel(){return labelCnt++;}
+    public static int requestInternalLabel(){return labelCnt++;}
     public static List<Token> lexer(String input)
     {
         List<Token> ret=new ArrayList<>();
@@ -113,6 +110,45 @@ public class Compiler
         }
         return root.codes;
     }
+    public static void emulateTAC(List<Code> codes)
+    {
+        Map<Integer,Integer> labelPos=new HashMap<>();
+        long[] mem=new long[1048576];
+        for(int i=0;i<codes.size();i++)if(codes.get(i) instanceof LabelCode)labelPos.put(((LabelCode) codes.get(i)).id(),i);
+        int ip=0;
+        while(ip<codes.size())
+        {
+            Code code=codes.get(ip++);
+            if(code instanceof LabelCode)continue;
+            if(code instanceof UnconditionalGotoCode)
+            {
+                ip=labelPos.get(((UnconditionalGotoCode) code).id());
+                continue;
+            }
+            if(code instanceof GotoCode)
+            {
+                GotoCode gotoCode=(GotoCode) code;
+                if(gotoCode.op().operation.cal(mem[gotoCode.left()],mem[gotoCode.right()],0)!=0)ip=labelPos.get(gotoCode.id());
+                continue;
+            }
+            if(code instanceof AssignNumberCode)
+            {
+                mem[((AssignNumberCode) code).target()]=((AssignNumberCode) code).left();
+                continue;
+            }
+            if(code instanceof AssignCode)
+            {
+                AssignCode assignCode=(AssignCode)code;
+                mem[assignCode.target()]=assignCode.op().operation.cal(mem[assignCode.left()],mem[assignCode.right()],0);
+                continue;
+            }
+            System.out.println("Unknown TAC");
+        }
+        for(Map.Entry<String,Integer> entry:variableMap.entrySet())
+        {
+            System.out.println(entry.getKey()+"="+mem[Math.toIntExact(entry.getValue())]);
+        }
+    }
     public static void main(String[] args) throws IOException
     {
         BufferedReader bufferedReader=new BufferedReader(new FileReader(args[0]));
@@ -126,6 +162,6 @@ public class Compiler
         }
         List<Token> tokenList=lexer(stringBuilder.toString());
         List<Code> codeList=parser(tokenList);
-        for(Code c:codeList)System.out.println(c);
+        emulateTAC(codeList);
     }
 }

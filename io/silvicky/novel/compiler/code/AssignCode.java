@@ -4,7 +4,7 @@ import io.silvicky.novel.compiler.tokens.OperatorType;
 
 import static io.silvicky.novel.compiler.Compiler.lookupVariableName;
 
-public record AssignCode(long target, long left, long right, OperatorType op) implements Code
+public record AssignCode(int target, int left, int right, OperatorType op) implements Code
 {
     public String toString()
     {

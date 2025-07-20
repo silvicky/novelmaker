@@ -5,7 +5,7 @@ import io.silvicky.novel.compiler.parser.Expression;
 import io.silvicky.novel.compiler.parser.NonTerminal;
 import io.silvicky.novel.compiler.tokens.OperatorType;
 
-public record AppendExpressionGotoCodeOperation(NonTerminal target, Expression condition, long gotoTarget,OperatorType op) implements Operation
+public record AppendExpressionGotoCodeOperation(NonTerminal target, Expression condition, int gotoTarget,OperatorType op) implements Operation
 {
     @Override
     public void execute()

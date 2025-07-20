@@ -34,6 +34,8 @@ public enum OperatorType
     MINUS_MINUS("--",OperatorArgsProperties.UNARY,(a,b,c)->a-c),
     DIVIDE("/",OperatorArgsProperties.BINARY,(a,b,c)->a/b),
     DIVIDE_EQUAL("/=",OperatorArgsProperties.BINARY,(a,b,c)->a/b),
+    MOD("%",OperatorArgsProperties.BINARY,(a,b,c)->a%b),
+    MOD_EQUAL("%=",OperatorArgsProperties.BINARY,(a,b,c)->a%b),
     BACKSLASH("\\",OperatorArgsProperties.INVALID,null),
     REVERSE("~",OperatorArgsProperties.UNARY_R,(a,b,c)->~a),
     OR("|",OperatorArgsProperties.BINARY,(a,b,c)->a|b),

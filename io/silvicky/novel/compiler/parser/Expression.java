@@ -15,7 +15,7 @@ import static io.silvicky.novel.compiler.Compiler.requestInternalVariable;
 
 public class Expression extends NonTerminal
 {
-    public final long resultId;
+    public final int resultId;
     public Expression(){this.resultId=requestInternalVariable();}
     @Override
     public List<Token> lookup(Token next, Token second)
