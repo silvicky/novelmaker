@@ -131,6 +131,7 @@ public class Line extends NonTerminal
             }
             if(type==KeywordType.BREAK)
             {
+                if(breakLabel==-1)throw new GrammarException("break not in a loop");
                 ret.add(new AppendCodeOperation(this,new UnconditionalGotoCode(breakLabel)));
                 ret.add(new OperatorToken(OperatorType.SEMICOLON));
                 ret.add(new KeywordToken(KeywordType.BREAK));
@@ -138,6 +139,7 @@ public class Line extends NonTerminal
             }
             if(type==KeywordType.CONTINUE)
             {
+                if(breakLabel==-1)throw new GrammarException("continue not in a loop");
                 ret.add(new AppendCodeOperation(this,new UnconditionalGotoCode(continueLabel)));
                 ret.add(new OperatorToken(OperatorType.SEMICOLON));
                 ret.add(new KeywordToken(KeywordType.CONTINUE));
