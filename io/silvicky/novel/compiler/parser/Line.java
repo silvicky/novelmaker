@@ -12,14 +12,16 @@ import java.util.List;
 
 public class Line extends NonTerminal
 {
-
+    public final int breakLabel,continueLabel;
+    public Line(int breakLabel,int continueLabel){this.breakLabel=breakLabel;this.continueLabel=continueLabel;}
+    public Line(){this(-1,-1);}
     @Override
     public List<Token> lookup(Token next, Token second)
     {
         List<Token> ret=new ArrayList<>();
         if(next instanceof OperatorToken operatorToken&&operatorToken.type()==OperatorType.L_BRACE)
         {
-            Block block=new Block();
+            Block block=new Block(breakLabel,continueLabel);
             ret.add(new AppendCodeSeqOperation(this,block));
             ret.add(new OperatorToken(OperatorType.R_BRACE));
             ret.add(block);
@@ -27,19 +29,21 @@ public class Line extends NonTerminal
             return ret;
         }
         if(next instanceof KeywordToken)
-        {//TODO Loop controlling lines
+        {
             KeywordType type=((KeywordToken) next).type();
             if(type==KeywordType.FOR)
             {
                 LabelCode head=new LabelCode();
+                LabelCode cont=new LabelCode();
                 LabelCode end=new LabelCode();
-                Line line=new Line();
+                Line line=new Line(end.id(),cont.id());
                 Expression first=new Expression();
                 Expression expression=new Expression();
                 Expression third=new Expression();
                 ret.add(new AppendCodeOperation(this,end));
                 ret.add(new AppendCodeOperation(this,new UnconditionalGotoCode(head.id())));
                 ret.add(new AppendCodeSeqOperation(this,third));
+                ret.add(new AppendCodeOperation(this,cont));
                 ret.add(new AppendCodeSeqOperation(this,line));
                 ret.add(new AppendExpressionGotoCodeOperation(this,expression,end.id(),OperatorType.NOT));
                 ret.add(new AppendCodeSeqOperation(this,expression));
@@ -60,7 +64,7 @@ public class Line extends NonTerminal
             {
                 LabelCode head=new LabelCode();
                 LabelCode end=new LabelCode();
-                Line line=new Line();
+                Line line=new Line(end.id(),head.id());
                 Expression expression=new Expression();
                 ret.add(new AppendCodeOperation(this,end));
                 ret.add(new AppendCodeOperation(this,new UnconditionalGotoCode(head.id())));
@@ -79,11 +83,13 @@ public class Line extends NonTerminal
             {
                 LabelCode head=new LabelCode();
                 LabelCode end=new LabelCode();
-                Line line=new Line();
+                LabelCode cont=new LabelCode();
+                Line line=new Line(end.id(),cont.id());
                 Expression expression=new Expression();
                 ret.add(new AppendCodeOperation(this,end));
                 ret.add(new AppendExpressionGotoCodeOperation(this,expression,head.id(),OperatorType.NOP));
                 ret.add(new AppendCodeSeqOperation(this,expression));
+                ret.add(new AppendCodeOperation(this,cont));
                 ret.add(new AppendCodeSeqOperation(this,line));
                 ret.add(new AppendCodeOperation(this,head));
                 ret.add(new OperatorToken(OperatorType.SEMICOLON));
@@ -104,9 +110,9 @@ public class Line extends NonTerminal
             if(type==KeywordType.IF)
             {
                 LabelCode end=new LabelCode();
-                Line line=new Line();
+                Line line=new Line(breakLabel,continueLabel);
                 Expression expression=new Expression();
-                Else els=new Else();
+                Else els=new Else(breakLabel,continueLabel);
                 LabelCode elseLabel=new LabelCode();
                 ret.add(new AppendCodeOperation(this,end));
                 ret.add(new AppendCodeSeqOperation(this,els));
@@ -121,6 +127,20 @@ public class Line extends NonTerminal
                 ret.add(expression);
                 ret.add(new OperatorToken(OperatorType.L_PARENTHESES));
                 ret.add(new KeywordToken(KeywordType.IF));
+                return ret;
+            }
+            if(type==KeywordType.BREAK)
+            {
+                ret.add(new AppendCodeOperation(this,new UnconditionalGotoCode(breakLabel)));
+                ret.add(new OperatorToken(OperatorType.SEMICOLON));
+                ret.add(new KeywordToken(KeywordType.BREAK));
+                return ret;
+            }
+            if(type==KeywordType.CONTINUE)
+            {
+                ret.add(new AppendCodeOperation(this,new UnconditionalGotoCode(continueLabel)));
+                ret.add(new OperatorToken(OperatorType.SEMICOLON));
+                ret.add(new KeywordToken(KeywordType.CONTINUE));
                 return ret;
             }
             //TODO idk
