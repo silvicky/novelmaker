@@ -15,11 +15,9 @@ public class Else extends NonTerminal
         if(next instanceof KeywordToken keywordToken&&keywordToken.type()== KeywordType.ELSE)
         {
             //TODO else if
-            Block block=new Block();
-            ret.add(new AppendCodeSeqOperation(this,block));
-            ret.add(new OperatorToken(OperatorType.R_BRACE));
-            ret.add(block);
-            ret.add(new OperatorToken(OperatorType.L_BRACE));
+            Line line=new Line();
+            ret.add(new AppendCodeSeqOperation(this,line));
+            ret.add(line);
             ret.add(new KeywordToken(KeywordType.ELSE));
             return ret;
         }

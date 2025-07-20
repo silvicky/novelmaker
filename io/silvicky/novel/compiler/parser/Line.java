@@ -17,6 +17,15 @@ public class Line extends NonTerminal
     public List<Token> lookup(Token next, Token second)
     {
         List<Token> ret=new ArrayList<>();
+        if(next instanceof OperatorToken operatorToken&&operatorToken.type()==OperatorType.L_BRACE)
+        {
+            Block block=new Block();
+            ret.add(new AppendCodeSeqOperation(this,block));
+            ret.add(new OperatorToken(OperatorType.R_BRACE));
+            ret.add(block);
+            ret.add(new OperatorToken(OperatorType.L_BRACE));
+            return ret;
+        }
         if(next instanceof KeywordToken)
         {//TODO Loop controlling lines
             KeywordType type=((KeywordToken) next).type();
@@ -24,21 +33,19 @@ public class Line extends NonTerminal
             {
                 LabelCode head=new LabelCode();
                 LabelCode end=new LabelCode();
-                Block block=new Block();
+                Line line=new Line();
                 Expression first=new Expression();
                 Expression expression=new Expression();
                 Expression third=new Expression();
                 ret.add(new AppendCodeOperation(this,end));
                 ret.add(new AppendCodeOperation(this,new UnconditionalGotoCode(head.id())));
                 ret.add(new AppendCodeSeqOperation(this,third));
-                ret.add(new AppendCodeSeqOperation(this,block));
+                ret.add(new AppendCodeSeqOperation(this,line));
                 ret.add(new AppendExpressionGotoCodeOperation(this,expression,end.id(),OperatorType.NOT));
                 ret.add(new AppendCodeSeqOperation(this,expression));
                 ret.add(new AppendCodeOperation(this,head));
                 ret.add(new AppendCodeSeqOperation(this,first));
-                ret.add(new OperatorToken(OperatorType.R_BRACE));
-                ret.add(block);
-                ret.add(new OperatorToken(OperatorType.L_BRACE));
+                ret.add(line);
                 ret.add(new OperatorToken(OperatorType.R_PARENTHESES));
                 ret.add(third);
                 ret.add(new OperatorToken(OperatorType.SEMICOLON));
@@ -53,17 +60,15 @@ public class Line extends NonTerminal
             {
                 LabelCode head=new LabelCode();
                 LabelCode end=new LabelCode();
-                Block block=new Block();
+                Line line=new Line();
                 Expression expression=new Expression();
                 ret.add(new AppendCodeOperation(this,end));
                 ret.add(new AppendCodeOperation(this,new UnconditionalGotoCode(head.id())));
-                ret.add(new AppendCodeSeqOperation(this,block));
+                ret.add(new AppendCodeSeqOperation(this,line));
                 ret.add(new AppendExpressionGotoCodeOperation(this,expression,end.id(),OperatorType.NOT));
                 ret.add(new AppendCodeSeqOperation(this,expression));
                 ret.add(new AppendCodeOperation(this,head));
-                ret.add(new OperatorToken(OperatorType.R_BRACE));
-                ret.add(block);
-                ret.add(new OperatorToken(OperatorType.L_BRACE));
+                ret.add(line);
                 ret.add(new OperatorToken(OperatorType.R_PARENTHESES));
                 ret.add(expression);
                 ret.add(new OperatorToken(OperatorType.L_PARENTHESES));
@@ -74,21 +79,19 @@ public class Line extends NonTerminal
             {
                 LabelCode head=new LabelCode();
                 LabelCode end=new LabelCode();
-                Block block=new Block();
+                Line line=new Line();
                 Expression expression=new Expression();
                 ret.add(new AppendCodeOperation(this,end));
                 ret.add(new AppendExpressionGotoCodeOperation(this,expression,head.id(),OperatorType.NOP));
                 ret.add(new AppendCodeSeqOperation(this,expression));
-                ret.add(new AppendCodeSeqOperation(this,block));
+                ret.add(new AppendCodeSeqOperation(this,line));
                 ret.add(new AppendCodeOperation(this,head));
                 ret.add(new OperatorToken(OperatorType.SEMICOLON));
                 ret.add(new OperatorToken(OperatorType.R_PARENTHESES));
                 ret.add(expression);
                 ret.add(new OperatorToken(OperatorType.L_PARENTHESES));
                 ret.add(new KeywordToken(KeywordType.WHILE));
-                ret.add(new OperatorToken(OperatorType.R_BRACE));
-                ret.add(block);
-                ret.add(new OperatorToken(OperatorType.L_BRACE));
+                ret.add(line);
                 ret.add(new KeywordToken(KeywordType.DO));
                 return ret;
             }
@@ -100,9 +103,8 @@ public class Line extends NonTerminal
             }
             if(type==KeywordType.IF)
             {
-                //TODO allow single line
                 LabelCode end=new LabelCode();
-                Block block=new Block();
+                Line line=new Line();
                 Expression expression=new Expression();
                 Else els=new Else();
                 LabelCode elseLabel=new LabelCode();
@@ -110,13 +112,11 @@ public class Line extends NonTerminal
                 ret.add(new AppendCodeSeqOperation(this,els));
                 ret.add(new AppendCodeOperation(this,elseLabel));
                 ret.add(new AppendCodeOperation(this,new UnconditionalGotoCode(end.id())));
-                ret.add(new AppendCodeSeqOperation(this,block));
+                ret.add(new AppendCodeSeqOperation(this,line));
                 ret.add(new AppendExpressionGotoCodeOperation(this,expression,elseLabel.id(),OperatorType.NOT));
                 ret.add(new AppendCodeSeqOperation(this,expression));
                 ret.add(els);
-                ret.add(new OperatorToken(OperatorType.R_BRACE));
-                ret.add(block);
-                ret.add(new OperatorToken(OperatorType.L_BRACE));
+                ret.add(line);
                 ret.add(new OperatorToken(OperatorType.R_PARENTHESES));
                 ret.add(expression);
                 ret.add(new OperatorToken(OperatorType.L_PARENTHESES));
