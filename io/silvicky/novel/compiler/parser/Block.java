@@ -12,7 +12,7 @@ import java.util.List;
 public class Block extends NonTerminal
 {
     @Override
-    public List<Token> lookup(Token next, Token second) throws GrammarException
+    public List<Token> lookup(Token next, Token second)
     {
         List<Token> ret=new ArrayList<>();
         if(next instanceof OperatorToken&&((OperatorToken) next).type()== OperatorType.R_BRACE)return ret;

@@ -7,7 +7,7 @@ import java.util.List;
 public class Arguments extends NonTerminal
 {
     @Override
-    public List<Token> lookup(Token next, Token second) throws GrammarException
+    public List<Token> lookup(Token next, Token second)
     {
         //TODO
         return null;

@@ -1,11 +1,9 @@
 package io.silvicky.novel.compiler.tokens;
 
-import java.util.Set;
-
 public class TokenBuilder
 {
     TokenBuilder tokenBuilder=null;
-    public boolean append(char c) throws InvalidTokenException
+    public boolean append(char c)
     {
         if(tokenBuilder!=null)return tokenBuilder.append(c);
         if(Character.isDigit(c))

@@ -32,7 +32,7 @@ public class Compiler
         return variableMap.get(s);
     }
     public static long requestInternalVariable(){return variableCnt++;}
-    public static List<Token> lexer(String input) throws InvalidTokenException
+    public static List<Token> lexer(String input)
     {
         List<Token> ret=new ArrayList<>();
         TokenBuilder tokenBuilder=new TokenBuilder();
@@ -58,7 +58,7 @@ public class Compiler
         ret.add(new EofToken());
         return ret;
     }
-    public static List<Code> parser(List<Token> tokens) throws GrammarException
+    public static List<Code> parser(List<Token> tokens)
     {
         int rul=0;
         Stack<Token> stack=new Stack<>();
@@ -86,7 +86,7 @@ public class Compiler
         }
         return root.codes;
     }
-    public static void main(String[] args) throws IOException, InvalidTokenException, GrammarException
+    public static void main(String[] args) throws IOException
     {
         BufferedReader bufferedReader=new BufferedReader(new FileReader(args[0]));
         StringBuilder stringBuilder=new StringBuilder();

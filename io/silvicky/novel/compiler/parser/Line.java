@@ -10,7 +10,7 @@ public class Line extends NonTerminal
 {
 
     @Override
-    public List<Token> lookup(Token next, Token second) throws GrammarException
+    public List<Token> lookup(Token next, Token second)
     {
         List<Token> ret=new ArrayList<>();
         if(next instanceof KeywordToken)
@@ -57,7 +57,7 @@ public class Line extends NonTerminal
             }
             if(type == KeywordType.INT)
             {
-                ret.add(new Declaration());
+                ret.add(new VariableDeclaration());
                 ret.add(new KeywordToken(KeywordType.INT));
                 return ret;
             }

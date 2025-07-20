@@ -18,7 +18,7 @@ public class Expression extends NonTerminal
     public final long resultId;
     public Expression(){this.resultId=requestInternalVariable();}
     @Override
-    public List<Token> lookup(Token next, Token second) throws GrammarException
+    public List<Token> lookup(Token next, Token second)
     {
         //TODO
         List<Token> ret=new ArrayList<>();

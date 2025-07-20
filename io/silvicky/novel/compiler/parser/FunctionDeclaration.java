@@ -11,7 +11,7 @@ import java.util.List;
 public class FunctionDeclaration extends NonTerminal
 {
     @Override
-    public List<Token> lookup(Token next, Token second) throws GrammarException
+    public List<Token> lookup(Token next, Token second)
     {
         if(!(next instanceof IdentifierToken))throw new GrammarException(this.getClass().getSimpleName()+next+second);
         List<Token> ret=new ArrayList<>();

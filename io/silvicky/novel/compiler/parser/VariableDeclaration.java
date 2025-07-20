@@ -13,7 +13,7 @@ import static io.silvicky.novel.compiler.Compiler.registerVariable;
 public class VariableDeclaration extends NonTerminal
 {
     @Override
-    public List<Token> lookup(Token next, Token second) throws GrammarException
+    public List<Token> lookup(Token next, Token second)
     {
         List<Token> ret=new ArrayList<>();
         if(!(next instanceof IdentifierToken))

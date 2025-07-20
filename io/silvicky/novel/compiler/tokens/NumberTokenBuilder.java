@@ -7,13 +7,13 @@ public class NumberTokenBuilder extends TokenBuilder
         UNKNOWN(1),
         POSITIVE(1),
         NEGATIVE(-1);
-        public int value;
+        public final int value;
         Sign(int value){this.value=value;}
     }
     long abs=0;
     Sign sign=Sign.UNKNOWN;
     @Override
-    public boolean append(char c) throws InvalidTokenException
+    public boolean append(char c)
     {
         if(sign==Sign.UNKNOWN)
         {

@@ -1,7 +1,6 @@
 package io.silvicky.novel.compiler.parser;
 
-public class GrammarException extends Exception
+public class GrammarException extends RuntimeException
 {
-    public GrammarException(){super();}
     public GrammarException(String message){super(message);}
 }
