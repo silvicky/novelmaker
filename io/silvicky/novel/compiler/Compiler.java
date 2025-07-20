@@ -114,39 +114,37 @@ public class Compiler
     {
         Map<Integer,Integer> labelPos=new HashMap<>();
         long[] mem=new long[1048576];
-        for(int i=0;i<codes.size();i++)if(codes.get(i) instanceof LabelCode)labelPos.put(((LabelCode) codes.get(i)).id(),i);
+        for(int i=0;i<codes.size();i++)if(codes.get(i) instanceof LabelCode labelCode)labelPos.put(labelCode.id(),i);
         int ip=0;
         while(ip<codes.size())
         {
             Code code=codes.get(ip++);
             if(code instanceof LabelCode)continue;
-            if(code instanceof UnconditionalGotoCode)
+            if(code instanceof UnconditionalGotoCode unconditionalGotoCode)
             {
-                ip=labelPos.get(((UnconditionalGotoCode) code).id());
+                ip=labelPos.get(unconditionalGotoCode.id());
                 continue;
             }
-            if(code instanceof GotoCode)
+            if(code instanceof GotoCode gotoCode)
             {
-                GotoCode gotoCode=(GotoCode) code;
                 if(gotoCode.op().operation.cal(mem[gotoCode.left()],mem[gotoCode.right()],0)!=0)ip=labelPos.get(gotoCode.id());
                 continue;
             }
-            if(code instanceof AssignNumberCode)
+            if(code instanceof AssignNumberCode assignNumberCode)
             {
-                mem[((AssignNumberCode) code).target()]=((AssignNumberCode) code).left();
+                mem[assignNumberCode.target()]=assignNumberCode.left();
                 continue;
             }
-            if(code instanceof AssignCode)
+            if(code instanceof AssignCode assignCode)
             {
-                AssignCode assignCode=(AssignCode)code;
                 mem[assignCode.target()]=assignCode.op().operation.cal(mem[assignCode.left()],mem[assignCode.right()],0);
                 continue;
             }
-            System.out.println("Unknown TAC");
+            System.out.println("Unknown TAC: "+code.toString());
         }
         for(Map.Entry<String,Integer> entry:variableMap.entrySet())
         {
-            System.out.println(entry.getKey()+"="+mem[Math.toIntExact(entry.getValue())]);
+            System.out.println(entry.getKey()+"="+mem[entry.getValue()]);
         }
     }
     public static void main(String[] args) throws IOException

@@ -2,7 +2,7 @@ package io.silvicky.novel.compiler.tokens;
 
 public class IdentifierTokenBuilder extends TokenBuilder
 {
-    StringBuilder stringBuilder=new StringBuilder();
+    private final StringBuilder stringBuilder=new StringBuilder();
     @Override
     public boolean append(char c)
     {

@@ -1,6 +1,5 @@
 package io.silvicky.novel.compiler.parser;
 
-import io.silvicky.novel.compiler.code.GotoCode;
 import io.silvicky.novel.compiler.code.LabelCode;
 import io.silvicky.novel.compiler.code.UnconditionalGotoCode;
 import io.silvicky.novel.compiler.parser.operation.AppendCodeOperation;
@@ -101,14 +100,20 @@ public class Line extends NonTerminal
             }
             if(type==KeywordType.IF)
             {
-                //TODO else
+                //TODO allow single line
                 LabelCode end=new LabelCode();
                 Block block=new Block();
                 Expression expression=new Expression();
+                Else els=new Else();
+                LabelCode elseLabel=new LabelCode();
                 ret.add(new AppendCodeOperation(this,end));
+                ret.add(new AppendCodeSeqOperation(this,els));
+                ret.add(new AppendCodeOperation(this,elseLabel));
+                ret.add(new AppendCodeOperation(this,new UnconditionalGotoCode(end.id())));
                 ret.add(new AppendCodeSeqOperation(this,block));
-                ret.add(new AppendExpressionGotoCodeOperation(this,expression,end.id(),OperatorType.NOT));
+                ret.add(new AppendExpressionGotoCodeOperation(this,expression,elseLabel.id(),OperatorType.NOT));
                 ret.add(new AppendCodeSeqOperation(this,expression));
+                ret.add(els);
                 ret.add(new OperatorToken(OperatorType.R_BRACE));
                 ret.add(block);
                 ret.add(new OperatorToken(OperatorType.L_BRACE));

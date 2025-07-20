@@ -50,7 +50,7 @@ public enum OperatorType
     XOR_EQUAL("^=",OperatorArgsProperties.BINARY,(a,b,c)->a^b),
     NOP("",OperatorArgsProperties.UNARY_R,(a,b,c)->a)
     ;
-    public static enum OperatorArgsProperties
+    public enum OperatorArgsProperties
     {
         UNARY_R,
         UNARY,

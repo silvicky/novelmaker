@@ -8,6 +8,6 @@ import java.util.List;
 
 public abstract class NonTerminal implements Token
 {
-    public List<Code> codes=new ArrayList<>();
+    public final List<Code> codes=new ArrayList<>();
     public abstract List<Token> lookup(Token next, Token second);
 }
