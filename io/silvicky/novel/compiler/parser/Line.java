@@ -5,7 +5,7 @@ import io.silvicky.novel.compiler.tokens.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Line implements NonTerminal
+public class Line extends NonTerminal
 {
 
     @Override
@@ -60,11 +60,24 @@ public class Line implements NonTerminal
                 ret.add(new KeywordToken(KeywordType.INT));
                 return ret;
             }
+            if(type==KeywordType.IF)
+            {
+                //TODO
+                ret.add(new OperatorToken(OperatorType.R_BRACE));
+                ret.add(new Block());
+                ret.add(new OperatorToken(OperatorType.L_BRACE));
+                ret.add(new OperatorToken(OperatorType.R_PARENTHESES));
+                ret.add(new Expression());
+                ret.add(new OperatorToken(OperatorType.L_PARENTHESES));
+                ret.add(new KeywordToken(KeywordType.IF));
+                return ret;
+            }
             //TODO
             return null;
         }
         else
         {
+            ret.add(new OperatorToken(OperatorType.SEMICOLON));
             ret.add(new Expression());
             return ret;
         }

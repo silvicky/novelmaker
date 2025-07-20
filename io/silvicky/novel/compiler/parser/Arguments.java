@@ -4,7 +4,7 @@ import io.silvicky.novel.compiler.tokens.Token;
 
 import java.util.List;
 
-public class Arguments implements NonTerminal
+public class Arguments extends NonTerminal
 {
     @Override
     public List<Token> lookup(Token next, Token second) throws GrammarException

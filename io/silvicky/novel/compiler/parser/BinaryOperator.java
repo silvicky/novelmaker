@@ -1,6 +1,5 @@
 package io.silvicky.novel.compiler.parser;
 
-import io.silvicky.novel.compiler.tokens.EofToken;
 import io.silvicky.novel.compiler.tokens.OperatorToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
 import io.silvicky.novel.compiler.tokens.Token;
@@ -8,16 +7,17 @@ import io.silvicky.novel.compiler.tokens.Token;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Block extends NonTerminal
+public class BinaryOperator extends NonTerminal
 {
     @Override
     public List<Token> lookup(Token next, Token second) throws GrammarException
     {
         List<Token> ret=new ArrayList<>();
-        if(next instanceof OperatorToken&&((OperatorToken) next).type()== OperatorType.R_BRACE)return ret;
-        if(next instanceof EofToken)return ret;
-        ret.add(new Block());
-        ret.add(new Line());
-        return ret;
+        if(next instanceof OperatorToken&&((OperatorToken) next).type().properties== OperatorType.OperatorArgsProperties.BINARY)
+        {
+            ret.add(new OperatorToken(((OperatorToken) next).type()));
+            return ret;
+        }
+        throw new GrammarException(this.getClass().getSimpleName()+next);
     }
 }

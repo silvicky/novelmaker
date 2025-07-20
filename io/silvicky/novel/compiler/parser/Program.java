@@ -5,7 +5,7 @@ import io.silvicky.novel.compiler.tokens.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Program implements NonTerminal
+public class Program extends NonTerminal
 {
     @Override
     public List<Token> lookup(Token next, Token second) throws GrammarException

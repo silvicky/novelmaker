@@ -8,7 +8,7 @@ import io.silvicky.novel.compiler.tokens.Token;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VariableDeclaration implements NonTerminal
+public class VariableDeclaration extends NonTerminal
 {
     @Override
     public List<Token> lookup(Token next, Token second) throws GrammarException
