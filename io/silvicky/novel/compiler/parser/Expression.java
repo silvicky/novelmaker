@@ -20,7 +20,7 @@ public class Expression extends NonTerminal
     @Override
     public List<Token> lookup(Token next, Token second)
     {
-        //TODO
+        //TODO Better parsing
         List<Token> ret=new ArrayList<>();
         if(next instanceof IdentifierToken)
         {

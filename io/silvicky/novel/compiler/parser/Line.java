@@ -1,6 +1,11 @@
 package io.silvicky.novel.compiler.parser;
 
+import io.silvicky.novel.compiler.code.GotoCode;
+import io.silvicky.novel.compiler.code.LabelCode;
+import io.silvicky.novel.compiler.code.UnconditionalGotoCode;
+import io.silvicky.novel.compiler.parser.operation.AppendCodeOperation;
 import io.silvicky.novel.compiler.parser.operation.AppendCodeSeqOperation;
+import io.silvicky.novel.compiler.parser.operation.AppendExpressionGotoCodeOperation;
 import io.silvicky.novel.compiler.tokens.*;
 
 import java.util.ArrayList;
@@ -14,43 +19,76 @@ public class Line extends NonTerminal
     {
         List<Token> ret=new ArrayList<>();
         if(next instanceof KeywordToken)
-        {//TODO
+        {//TODO Loop controlling lines
             KeywordType type=((KeywordToken) next).type();
             if(type==KeywordType.FOR)
             {
+                LabelCode head=new LabelCode();
+                LabelCode end=new LabelCode();
+                Block block=new Block();
+                Expression first=new Expression();
+                Expression expression=new Expression();
+                Expression third=new Expression();
+                ret.add(new AppendCodeOperation(this,end));
+                ret.add(new AppendCodeOperation(this,new UnconditionalGotoCode(head.id())));
+                ret.add(new AppendCodeSeqOperation(this,third));
+                ret.add(new AppendCodeSeqOperation(this,block));
+                ret.add(new AppendExpressionGotoCodeOperation(this,expression,end.id(),OperatorType.NOT));
+                ret.add(new AppendCodeSeqOperation(this,expression));
+                ret.add(new AppendCodeOperation(this,head));
+                ret.add(new AppendCodeSeqOperation(this,first));
                 ret.add(new OperatorToken(OperatorType.R_BRACE));
-                ret.add(new Block());
+                ret.add(block);
                 ret.add(new OperatorToken(OperatorType.L_BRACE));
                 ret.add(new OperatorToken(OperatorType.R_PARENTHESES));
-                ret.add(new Expression());
+                ret.add(third);
                 ret.add(new OperatorToken(OperatorType.SEMICOLON));
-                ret.add(new Expression());
+                ret.add(expression);
                 ret.add(new OperatorToken(OperatorType.SEMICOLON));
-                ret.add(new Expression());
+                ret.add(first);
                 ret.add(new OperatorToken(OperatorType.L_PARENTHESES));
                 ret.add(new KeywordToken(KeywordType.FOR));
                 return ret;
             }
             if(type==KeywordType.WHILE)
             {
+                LabelCode head=new LabelCode();
+                LabelCode end=new LabelCode();
+                Block block=new Block();
+                Expression expression=new Expression();
+                ret.add(new AppendCodeOperation(this,end));
+                ret.add(new AppendCodeOperation(this,new UnconditionalGotoCode(head.id())));
+                ret.add(new AppendCodeSeqOperation(this,block));
+                ret.add(new AppendExpressionGotoCodeOperation(this,expression,end.id(),OperatorType.NOT));
+                ret.add(new AppendCodeSeqOperation(this,expression));
+                ret.add(new AppendCodeOperation(this,head));
                 ret.add(new OperatorToken(OperatorType.R_BRACE));
-                ret.add(new Block());
+                ret.add(block);
                 ret.add(new OperatorToken(OperatorType.L_BRACE));
                 ret.add(new OperatorToken(OperatorType.R_PARENTHESES));
-                ret.add(new Expression());
+                ret.add(expression);
                 ret.add(new OperatorToken(OperatorType.L_PARENTHESES));
                 ret.add(new KeywordToken(KeywordType.WHILE));
                 return ret;
             }
             if(type==KeywordType.DO)
             {
+                LabelCode head=new LabelCode();
+                LabelCode end=new LabelCode();
+                Block block=new Block();
+                Expression expression=new Expression();
+                ret.add(new AppendCodeOperation(this,end));
+                ret.add(new AppendExpressionGotoCodeOperation(this,expression,head.id(),OperatorType.NOP));
+                ret.add(new AppendCodeSeqOperation(this,expression));
+                ret.add(new AppendCodeSeqOperation(this,block));
+                ret.add(new AppendCodeOperation(this,head));
                 ret.add(new OperatorToken(OperatorType.SEMICOLON));
                 ret.add(new OperatorToken(OperatorType.R_PARENTHESES));
-                ret.add(new Expression());
+                ret.add(expression);
                 ret.add(new OperatorToken(OperatorType.L_PARENTHESES));
                 ret.add(new KeywordToken(KeywordType.WHILE));
                 ret.add(new OperatorToken(OperatorType.R_BRACE));
-                ret.add(new Block());
+                ret.add(block);
                 ret.add(new OperatorToken(OperatorType.L_BRACE));
                 ret.add(new KeywordToken(KeywordType.DO));
                 return ret;
@@ -63,17 +101,24 @@ public class Line extends NonTerminal
             }
             if(type==KeywordType.IF)
             {
-                //TODO
+                //TODO else
+                LabelCode end=new LabelCode();
+                Block block=new Block();
+                Expression expression=new Expression();
+                ret.add(new AppendCodeOperation(this,end));
+                ret.add(new AppendCodeSeqOperation(this,block));
+                ret.add(new AppendExpressionGotoCodeOperation(this,expression,end.id(),OperatorType.NOT));
+                ret.add(new AppendCodeSeqOperation(this,expression));
                 ret.add(new OperatorToken(OperatorType.R_BRACE));
-                ret.add(new Block());
+                ret.add(block);
                 ret.add(new OperatorToken(OperatorType.L_BRACE));
                 ret.add(new OperatorToken(OperatorType.R_PARENTHESES));
-                ret.add(new Expression());
+                ret.add(expression);
                 ret.add(new OperatorToken(OperatorType.L_PARENTHESES));
                 ret.add(new KeywordToken(KeywordType.IF));
                 return ret;
             }
-            //TODO
+            //TODO idk
             return null;
         }
         else

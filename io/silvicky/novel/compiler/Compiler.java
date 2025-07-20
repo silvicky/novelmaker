@@ -17,13 +17,17 @@ public class Compiler
 {
     private static long labelCnt=0,variableCnt=0;
     private static final Map<String,Long> labelMap=new HashMap<>();
+    private static final Map<Long,String> labelBackMap=new HashMap<>();
     private static final Map<String,Long> variableMap=new HashMap<>();
+    private static final Map<Long,String> variableBackMap=new HashMap<>();
     private static final int maxLabel=30,maxVariable=30;
     public static final long[] variableMem= new long[maxVariable];
+    public static final long[] labelMem= new long[maxLabel];
     public static long registerVariable(String s)
     {
         if(variableMap.containsKey(s))throw new DeclarationException("Repeated:"+s);
         variableMap.put(s,variableCnt);
+        variableBackMap.put(variableCnt,s);
         return variableCnt++;
     }
     public static long lookupVariable(String s)
@@ -31,7 +35,30 @@ public class Compiler
         if(!variableMap.containsKey(s))throw new DeclarationException("Undefined:"+s);
         return variableMap.get(s);
     }
+    public static String lookupVariableName(long l)
+    {
+        if(!variableBackMap.containsKey(l))return "V"+l;
+        return variableBackMap.get(l);
+    }
     public static long requestInternalVariable(){return variableCnt++;}
+    public static long registerLabel(String s)
+    {
+        if(labelMap.containsKey(s))throw new DeclarationException("Repeated:"+s);
+        labelMap.put(s,labelCnt);
+        labelBackMap.put(labelCnt,s);
+        return labelCnt++;
+    }
+    public static long lookupLabel(String s)
+    {
+        if(!labelMap.containsKey(s))throw new DeclarationException("Undefined:"+s);
+        return labelMap.get(s);
+    }
+    public static String lookupLabelName(long l)
+    {
+        if(!labelBackMap.containsKey(l))return "L"+l;
+        return labelBackMap.get(l);
+    }
+    public static long requestInternalLabel(){return labelCnt++;}
     public static List<Token> lexer(String input)
     {
         List<Token> ret=new ArrayList<>();
@@ -99,6 +126,6 @@ public class Compiler
         }
         List<Token> tokenList=lexer(stringBuilder.toString());
         List<Code> codeList=parser(tokenList);
-        System.out.println(codeList);
+        for(Code c:codeList)System.out.println(c);
     }
 }
