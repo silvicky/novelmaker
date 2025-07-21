@@ -163,6 +163,11 @@ public class Compiler
                 mem[assignCode.target()]=assignCode.op().operation.cal(mem[assignCode.left()],mem[assignCode.right()],0);
                 continue;
             }
+            if(code instanceof AssignVariableNumberCode assignVariableNumberCode)
+            {
+                mem[assignVariableNumberCode.target()]=assignVariableNumberCode.op().operation.cal(mem[assignVariableNumberCode.left()],assignVariableNumberCode.right(),0);
+                continue;
+            }
             System.out.println("Unknown TAC: "+code.toString());
         }
         for(Map.Entry<String,Integer> entry:variableMap.entrySet())
