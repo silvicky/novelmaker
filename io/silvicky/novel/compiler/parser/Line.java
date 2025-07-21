@@ -10,6 +10,9 @@ import io.silvicky.novel.compiler.tokens.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.silvicky.novel.compiler.Compiler.lookupLabel;
+import static io.silvicky.novel.compiler.Compiler.registerLabel;
+
 public class Line extends NonTerminal
 {
     public final int breakLabel,continueLabel;
@@ -145,8 +148,31 @@ public class Line extends NonTerminal
                 ret.add(new KeywordToken(KeywordType.CONTINUE));
                 return ret;
             }
+            if(type==KeywordType.GOTO)
+            {
+                if(!(second instanceof IdentifierToken identifierToken))
+                {
+                    throw new GrammarException("goto label not named with an identifier");
+                }
+                ret.add(new AppendCodeOperation(this,new UnconditionalGotoCode(lookupLabel(identifierToken.id()))));
+                ret.add(new OperatorToken(OperatorType.SEMICOLON));
+                ret.add(new IdentifierToken(identifierToken.id()));
+                ret.add(new KeywordToken(KeywordType.GOTO));
+                return ret;
+            }
             //TODO idk
             return null;
+        }
+        else if(second instanceof OperatorToken operatorToken&&operatorToken.type()==OperatorType.LABEL)
+        {
+            if(!(next instanceof IdentifierToken identifierToken))
+            {
+                throw new GrammarException("label not named with an identifier");
+            }
+            ret.add(new AppendCodeOperation(this,new LabelCode(lookupLabel(identifierToken.id()))));
+            ret.add(new OperatorToken(OperatorType.LABEL));
+            ret.add(new IdentifierToken(identifierToken.id()));
+            return ret;
         }
         else
         {

@@ -82,6 +82,29 @@ public class Compiler
         ret.add(new EofToken());
         return ret;
     }
+    public static void tokenParser(List<Token> tokens)
+    {
+        for(int i=0;i<tokens.size();i++)
+        {
+            Token token=tokens.get(i);
+            if(token instanceof KeywordToken keywordToken&&keywordToken.type()==KeywordType.TRUE)
+            {
+                tokens.set(i,new NumberToken(1));
+                continue;
+            }
+            if(token instanceof KeywordToken keywordToken&&keywordToken.type()==KeywordType.FALSE)
+            {
+                tokens.set(i,new NumberToken(0));
+                continue;
+            }
+            if(token instanceof OperatorToken operatorToken&&operatorToken.type()==OperatorType.LABEL)
+            {
+                Token last=tokens.get(i-1);
+                if(!(last instanceof IdentifierToken identifierToken))throw new GrammarException("label not named with an identifier");
+                registerLabel(identifierToken.id());
+            }
+        }
+    }
     public static List<Code> parser(List<Token> tokens)
     {
         int rul=0;
@@ -159,7 +182,9 @@ public class Compiler
             stringBuilder.append(cur);
         }
         List<Token> tokenList=lexer(stringBuilder.toString());
+        tokenParser(tokenList);
         List<Code> codeList=parser(tokenList);
+        //for(Code code:codeList)System.out.println(code);
         emulateTAC(codeList);
     }
 }

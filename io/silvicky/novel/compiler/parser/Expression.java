@@ -22,44 +22,86 @@ public class Expression extends NonTerminal
     {
         //TODO Better parsing
         List<Token> ret=new ArrayList<>();
-        if(next instanceof IdentifierToken)
+        if(next instanceof IdentifierToken identifierToken)
         {
-            if(second instanceof OperatorToken&&((OperatorToken) second).type()==OperatorType.EQUAL)
+            if(second instanceof OperatorToken operatorToken)
             {
-                Expression rvalue=new Expression();
-                IdentifierToken lvalue=new IdentifierToken(((IdentifierToken) next).id());
-                ret.add(new AppendCodeOperation(this,new AssignCode(this.resultId,lookupVariable(lvalue.id()),0,OperatorType.NOP)));
-                ret.add(new AppendCodeOperation(this,new AssignCode(lookupVariable(lvalue.id()),rvalue.resultId,0,OperatorType.NOP)));
-                ret.add(new AppendCodeSeqOperation(this,rvalue));
-                ret.add(rvalue);
-                ret.add(new OperatorToken(OperatorType.EQUAL));
-                ret.add(lvalue);
+                if(operatorToken.type().properties== OperatorType.OperatorArgsProperties.INVALID)
+                {
+                    IdentifierToken lvalue=new IdentifierToken(identifierToken.id());
+                    ret.add(new AppendCodeOperation(this,new AssignCode(this.resultId,lookupVariable(lvalue.id()),0,OperatorType.NOP)));
+                    ret.add(lvalue);
+                    return ret;
+                }
+                if(operatorToken.type().properties== OperatorType.OperatorArgsProperties.BINARY_ASSIGN)
+                {
+                    Expression rvalue = new Expression();
+                    IdentifierToken lvalue = new IdentifierToken(identifierToken.id());
+                    int lvalueId = lookupVariable(lvalue.id());
+                    ret.add(new AppendCodeOperation(this, new AssignCode(this.resultId, lvalueId, 0, OperatorType.NOP)));
+                    ret.add(new AppendCodeOperation(this, new AssignCode(lvalueId, lvalueId, rvalue.resultId, operatorToken.type().baseType)));
+                    ret.add(new AppendCodeSeqOperation(this, rvalue));
+                    ret.add(rvalue);
+                    ret.add(new OperatorToken(operatorToken.type()));
+                    ret.add(lvalue);
+                    return ret;
+                }
+                else if(operatorToken.type()==OperatorType.COLON)
+                {
+                    //TODO ternary op
+                }
+                else if(operatorToken.type().properties== OperatorType.OperatorArgsProperties.BINARY)
+                {
+                    Expression rvalue = new Expression();
+                    IdentifierToken lvalue = new IdentifierToken(identifierToken.id());
+                    ret.add(new AppendCodeOperation(this, new AssignCode(this.resultId, lookupVariable(lvalue.id()), rvalue.resultId, operatorToken.type())));
+                    ret.add(new AppendCodeSeqOperation(this, rvalue));
+                    ret.add(rvalue);
+                    ret.add(new OperatorToken(operatorToken.type()));
+                    ret.add(lvalue);
+                    return ret;
+                }
             }
+            //TODO Consider unary
             else
             {
-                IdentifierToken lvalue=new IdentifierToken(((IdentifierToken) next).id());
+                IdentifierToken lvalue=new IdentifierToken(identifierToken.id());
                 ret.add(new AppendCodeOperation(this,new AssignCode(this.resultId,lookupVariable(lvalue.id()),0,OperatorType.NOP)));
                 ret.add(lvalue);
             }
             return ret;
         }
-        if(next instanceof NumberToken)
+        if(next instanceof NumberToken numberToken)
         {
-            ret.add(new AppendCodeOperation(this,new AssignNumberCode(this.resultId,((NumberToken) next).value())));
-            ret.add(new NumberToken(((NumberToken) next).value()));
+            ret.add(new AppendCodeOperation(this,new AssignNumberCode(this.resultId,numberToken.value())));
+            ret.add(new NumberToken(numberToken.value()));
             return ret;
         }
-        Expression lvalue=new Expression();
-        Expression rvalue=new Expression();
-        BinaryOperator operator=new BinaryOperator();
-        ret.add(new AppendExpressionCodeOperation(this,lvalue,rvalue,operator));
-        ret.add(new AppendCodeSeqOperation(this,rvalue));
-        ret.add(new AppendCodeSeqOperation(this,lvalue));
-        ret.add(new OperatorToken(OperatorType.R_PARENTHESES));
-        ret.add(rvalue);
-        ret.add(operator);
-        ret.add(lvalue);
-        ret.add(new OperatorToken(OperatorType.L_PARENTHESES));
-        return ret;
+        if(next instanceof OperatorToken operatorToken&&operatorToken.type()==OperatorType.L_PARENTHESES)
+        {
+            if(second instanceof IdentifierToken||second instanceof NumberToken)
+            {
+                Expression expression = new Expression();
+                ret.add(new AppendCodeOperation(this, new AssignCode(this.resultId, expression.resultId, 0, OperatorType.NOP)));
+                ret.add(new AppendCodeSeqOperation(this, expression));
+                ret.add(new OperatorToken(OperatorType.R_PARENTHESES));
+                ret.add(expression);
+                ret.add(new OperatorToken(OperatorType.L_PARENTHESES));
+                return ret;
+            }
+            Expression lvalue = new Expression();
+            Expression rvalue = new Expression();
+            BinaryOperator operator = new BinaryOperator();
+            ret.add(new AppendExpressionCodeOperation(this, lvalue, rvalue, operator));
+            ret.add(new AppendCodeSeqOperation(this, rvalue));
+            ret.add(new AppendCodeSeqOperation(this, lvalue));
+            ret.add(new OperatorToken(OperatorType.R_PARENTHESES));
+            ret.add(rvalue);
+            ret.add(operator);
+            ret.add(lvalue);
+            ret.add(new OperatorToken(OperatorType.L_PARENTHESES));
+            return ret;
+        }
+        throw new GrammarException(this.getClass().getSimpleName()+next+second);
     }
 }
