@@ -3,6 +3,12 @@ package io.silvicky.novel.compiler.tokens;
 public class IdentifierTokenBuilder extends TokenBuilder
 {
     private final StringBuilder stringBuilder=new StringBuilder();
+
+    public IdentifierTokenBuilder(String fileName, int line, int pos)
+    {
+        super(fileName, line, pos);
+    }
+
     @Override
     public boolean append(char c)
     {
@@ -14,10 +20,10 @@ public class IdentifierTokenBuilder extends TokenBuilder
         return false;
     }
     @Override
-    public Token build()
+    public AbstractToken build()
     {
         KeywordType type=KeywordType.find(stringBuilder.toString());
-        if(type!=null)return new KeywordToken(type);
-        return new IdentifierToken(stringBuilder.toString());
+        if(type!=null)return new KeywordToken(type,fileName,line,pos);
+        return new IdentifierToken(stringBuilder.toString(),fileName,line,pos);
     }
 }

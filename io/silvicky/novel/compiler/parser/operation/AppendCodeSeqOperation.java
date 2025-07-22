@@ -1,9 +1,9 @@
 package io.silvicky.novel.compiler.parser.operation;
 
 import io.silvicky.novel.compiler.parser.NonTerminal;
-import io.silvicky.novel.compiler.tokens.Token;
+import io.silvicky.novel.compiler.tokens.AbstractToken;
 
-public record AppendCodeSeqOperation(NonTerminal target, Token source) implements Operation
+public record AppendCodeSeqOperation(NonTerminal target, AbstractToken source) implements Operation
 {
     @Override
     public void execute()

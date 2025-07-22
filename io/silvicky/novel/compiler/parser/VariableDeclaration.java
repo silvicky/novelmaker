@@ -3,7 +3,7 @@ package io.silvicky.novel.compiler.parser;
 import io.silvicky.novel.compiler.tokens.IdentifierToken;
 import io.silvicky.novel.compiler.tokens.OperatorToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
-import io.silvicky.novel.compiler.tokens.Token;
+import io.silvicky.novel.compiler.tokens.AbstractToken;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,31 +13,31 @@ import static io.silvicky.novel.compiler.Compiler.registerVariable;
 public class VariableDeclaration extends NonTerminal
 {
     @Override
-    public List<Token> lookup(Token next, Token second)
+    public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
-        List<Token> ret=new ArrayList<>();
-        if(!(next instanceof IdentifierToken))
+        List<AbstractToken> ret=new ArrayList<>();
+        if(!(next instanceof IdentifierToken identifierToken))
         {
             throw new GrammarException(this.getClass().getSimpleName()+next);
         }
-        if(!(second instanceof OperatorToken))
+        if(!(second instanceof OperatorToken operatorToken))
         {
             throw new GrammarException(this.getClass().getSimpleName()+next+second);
         }
-        if(((OperatorToken) second).type() == OperatorType.COMMA)
+        if(operatorToken.type == OperatorType.COMMA)
         {
 
             ret.add(new VariableDeclaration());
             ret.add(new OperatorToken(OperatorType.COMMA));
-            String id=((IdentifierToken) next).id();
+            String id=identifierToken.id;
             registerVariable(id);
             ret.add(new IdentifierToken(id));
             return ret;
         }
-        if(((OperatorToken) second).type() == OperatorType.SEMICOLON)
+        if(operatorToken.type == OperatorType.SEMICOLON)
         {
             ret.add(new OperatorToken(OperatorType.SEMICOLON));
-            String id=((IdentifierToken) next).id();
+            String id=identifierToken.id;
             registerVariable(id);
             ret.add(new IdentifierToken(id));
             return ret;

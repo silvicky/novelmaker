@@ -8,11 +8,11 @@ import java.util.List;
 public class Program extends NonTerminal
 {
     @Override
-    public List<Token> lookup(Token next, Token second)
+    public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
-        List<Token> ret=new ArrayList<>();
+        List<AbstractToken> ret=new ArrayList<>();
         if(next==null)return ret;
-        if(next instanceof KeywordToken&&((KeywordToken) next).type()== KeywordType.INT)
+        if(next instanceof KeywordToken keywordToken&&keywordToken.type== KeywordType.INT)
         {
             ret.add(new Program());
             ret.add(new Declaration());

@@ -1,7 +1,7 @@
 package io.silvicky.novel.compiler.parser.operation;
 
-import io.silvicky.novel.compiler.tokens.Token;
-public interface Operation extends Token
+import io.silvicky.novel.compiler.tokens.AbstractToken;
+public interface Operation extends AbstractToken
 {
     void execute();
 }

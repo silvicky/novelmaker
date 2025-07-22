@@ -3,6 +3,12 @@ package io.silvicky.novel.compiler.tokens;
 public class OperatorTokenBuilder extends TokenBuilder
 {
     private final StringBuilder stringBuilder=new StringBuilder();
+
+    public OperatorTokenBuilder(String fileName, int line, int pos)
+    {
+        super(fileName, line, pos);
+    }
+
     @Override
     public boolean append(char c)
     {
@@ -12,9 +18,9 @@ public class OperatorTokenBuilder extends TokenBuilder
         return true;
     }
     @Override
-    public Token build()
+    public AbstractToken build()
     {
         OperatorType type=OperatorType.find(stringBuilder.toString());
-        return new OperatorToken(type);
+        return new OperatorToken(type,fileName,line,pos);
     }
 }

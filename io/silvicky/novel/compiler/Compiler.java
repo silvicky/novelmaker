@@ -4,11 +4,11 @@ import io.silvicky.novel.compiler.code.*;
 import io.silvicky.novel.compiler.parser.Block;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.NonTerminal;
-import io.silvicky.novel.compiler.parser.Program;
 import io.silvicky.novel.compiler.parser.operation.Operation;
 import io.silvicky.novel.compiler.tokens.*;
 
 import java.io.*;
+import java.nio.file.Path;
 import java.util.*;
 
 import static io.silvicky.novel.util.Util.addNonNull;
@@ -56,25 +56,33 @@ public class Compiler
         return labelBackMap.get(l);
     }
     public static int requestInternalLabel(){return labelCnt++;}
-    public static List<Token> lexer(String input)
+    public static List<AbstractToken> lexer(Path input) throws IOException
     {
-        List<Token> ret=new ArrayList<>();
-        TokenBuilder tokenBuilder=new TokenBuilder();
-        for(char c:input.toCharArray())
+        List<AbstractToken> ret=new ArrayList<>();
+        TokenBuilder tokenBuilder=new TokenBuilder(input.toString(),1,1);
+        BufferedReader bufferedReader=new BufferedReader(new FileReader(input.toFile()));
+        String cur;
+        for(int line=1;;line++)
         {
-            if(Character.isLetter(c)||c=='_'||Character.isDigit(c)||OperatorType.find(String.valueOf(c))!=null)
+            cur= bufferedReader.readLine();
+            if(cur==null)break;
+            for(int pos=0;pos<cur.length();pos++)
             {
-                if(!tokenBuilder.append(c))
+                char c=cur.charAt(pos);
+                if(Character.isLetter(c)||c=='_'||Character.isDigit(c)||OperatorType.find(String.valueOf(c))!=null)
+                {
+                    if(!tokenBuilder.append(c))
+                    {
+                        addNonNull(ret, tokenBuilder.build());
+                        tokenBuilder=new TokenBuilder(input.toString(),line,pos+1);
+                        tokenBuilder.append(c);
+                    }
+                }
+                else
                 {
                     addNonNull(ret, tokenBuilder.build());
-                    tokenBuilder=new TokenBuilder();
-                    tokenBuilder.append(c);
+                    tokenBuilder=new TokenBuilder(input.toString(),line,pos+1);
                 }
-            }
-            else
-            {
-                addNonNull(ret, tokenBuilder.build());
-                tokenBuilder=new TokenBuilder();
             }
         }
         addNonNull(ret, tokenBuilder.build());
@@ -82,54 +90,63 @@ public class Compiler
         ret.add(new EofToken());
         return ret;
     }
-    public static void tokenParser(List<Token> tokens)
+    public static void tokenParser(List<AbstractToken> abstractTokens)
     {
-        for(int i=0;i<tokens.size();i++)
+        for(int i = 0; i< abstractTokens.size(); i++)
         {
-            Token token=tokens.get(i);
-            if(token instanceof KeywordToken keywordToken&&keywordToken.type()==KeywordType.TRUE)
+            AbstractToken abstractToken = abstractTokens.get(i);
+            if(abstractToken instanceof KeywordToken keywordToken&&keywordToken.type==KeywordType.TRUE)
             {
-                tokens.set(i,new NumberToken(1));
+                abstractTokens.set(i,new NumberToken(1,keywordToken.fileName,keywordToken.line,keywordToken.pos));
                 continue;
             }
-            if(token instanceof KeywordToken keywordToken&&keywordToken.type()==KeywordType.FALSE)
+            if(abstractToken instanceof KeywordToken keywordToken&&keywordToken.type==KeywordType.FALSE)
             {
-                tokens.set(i,new NumberToken(0));
+                abstractTokens.set(i,new NumberToken(0,keywordToken.fileName,keywordToken.line,keywordToken.pos));
                 continue;
             }
-            if(token instanceof OperatorToken operatorToken&&operatorToken.type()==OperatorType.LABEL)
+            if(abstractToken instanceof OperatorToken operatorToken&&operatorToken.type==OperatorType.LABEL)
             {
-                Token last=tokens.get(i-1);
+                AbstractToken last= abstractTokens.get(i-1);
                 if(!(last instanceof IdentifierToken identifierToken))throw new GrammarException("label not named with an identifier");
-                registerLabel(identifierToken.id());
+                registerLabel(identifierToken.id);
             }
         }
     }
-    public static List<Code> parser(List<Token> tokens)
+    public static boolean match(AbstractToken a, AbstractToken b)
+    {
+        if(!(a.getClass().equals(b.getClass())))return false;
+        if(a instanceof IdentifierToken)return ((IdentifierToken) a).id.equals(((IdentifierToken) b).id);
+        if(a instanceof KeywordToken)return ((KeywordToken) a).type.equals(((KeywordToken) b).type);
+        if(a instanceof OperatorToken)return ((OperatorToken) a).type.equals(((OperatorToken) b).type);
+        if(a instanceof NumberToken)return ((NumberToken) a).value==((NumberToken) b).value;
+        return false;
+    }
+    public static List<Code> parser(List<AbstractToken> abstractTokens)
     {
         int rul=0;
-        Stack<Token> stack=new Stack<>();
+        Stack<AbstractToken> stack=new Stack<>();
         //stack.push(new Program());
         Block root=new Block();
         stack.push(root);
         while(!stack.empty())
         {
-            Token top=stack.pop();
+            AbstractToken top=stack.pop();
             if(top instanceof Operation)
             {
                 ((Operation) top).execute();
                 continue;
             }
-            Token next=tokens.get(rul);
-            Token second=tokens.get(rul+1);
+            AbstractToken next= abstractTokens.get(rul);
+            AbstractToken second= abstractTokens.get(rul+1);
             if(!(top instanceof NonTerminal))
             {
-                if(!top.equals(next))throw new GrammarException("Mismatch:"+top+next);
+                if(!match(top,next))throw new GrammarException("Mismatch: "+top+" and "+next);
                 rul++;
                 continue;
             }
-            List<Token> list=((NonTerminal) top).lookup(next,second);
-            for(Token token:list)stack.push(token);
+            List<AbstractToken> list=((NonTerminal) top).lookup(next,second);
+            for(AbstractToken abstractToken :list)stack.push(abstractToken);
         }
         return root.codes;
     }
@@ -177,18 +194,9 @@ public class Compiler
     }
     public static void main(String[] args) throws IOException
     {
-        BufferedReader bufferedReader=new BufferedReader(new FileReader(args[0]));
-        StringBuilder stringBuilder=new StringBuilder();
-        String cur;
-        while(true)
-        {
-            cur= bufferedReader.readLine();
-            if(cur==null)break;
-            stringBuilder.append(cur);
-        }
-        List<Token> tokenList=lexer(stringBuilder.toString());
-        tokenParser(tokenList);
-        List<Code> codeList=parser(tokenList);
+        List<AbstractToken> abstractTokenList =lexer(Path.of(args[0]));
+        tokenParser(abstractTokenList);
+        List<Code> codeList=parser(abstractTokenList);
         //for(Code code:codeList)System.out.println(code);
         emulateTAC(codeList);
     }

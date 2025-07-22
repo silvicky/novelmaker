@@ -2,6 +2,11 @@ package io.silvicky.novel.compiler.tokens;
 
 public class NumberTokenBuilder extends TokenBuilder
 {
+    public NumberTokenBuilder(String fileName, int line, int pos)
+    {
+        super(fileName, line, pos);
+    }
+
     private enum Sign
     {
         UNKNOWN(1),
@@ -42,5 +47,5 @@ public class NumberTokenBuilder extends TokenBuilder
         return false;
     }
     @Override
-    public Token build(){return new NumberToken(abs*sign.value);}
+    public AbstractToken build(){return new NumberToken(abs*sign.value,fileName,line,pos);}
 }

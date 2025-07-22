@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static io.silvicky.novel.compiler.Compiler.lookupLabel;
-import static io.silvicky.novel.compiler.Compiler.registerLabel;
 
 public class Line extends NonTerminal
 {
@@ -19,10 +18,10 @@ public class Line extends NonTerminal
     public Line(int breakLabel,int continueLabel){this.breakLabel=breakLabel;this.continueLabel=continueLabel;}
     public Line(){this(-1,-1);}
     @Override
-    public List<Token> lookup(Token next, Token second)
+    public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
-        List<Token> ret=new ArrayList<>();
-        if(next instanceof OperatorToken operatorToken&&operatorToken.type()==OperatorType.L_BRACE)
+        List<AbstractToken> ret=new ArrayList<>();
+        if(next instanceof OperatorToken operatorToken&&operatorToken.type==OperatorType.L_BRACE)
         {
             Block block=new Block(breakLabel,continueLabel);
             ret.add(new AppendCodeSeqOperation(this,block));
@@ -33,7 +32,7 @@ public class Line extends NonTerminal
         }
         if(next instanceof KeywordToken)
         {
-            KeywordType type=((KeywordToken) next).type();
+            KeywordType type=((KeywordToken) next).type;
             if(type==KeywordType.FOR)
             {
                 LabelCode head=new LabelCode();
@@ -154,24 +153,24 @@ public class Line extends NonTerminal
                 {
                     throw new GrammarException("goto label not named with an identifier");
                 }
-                ret.add(new AppendCodeOperation(this,new UnconditionalGotoCode(lookupLabel(identifierToken.id()))));
+                ret.add(new AppendCodeOperation(this,new UnconditionalGotoCode(lookupLabel(identifierToken.id))));
                 ret.add(new OperatorToken(OperatorType.SEMICOLON));
-                ret.add(new IdentifierToken(identifierToken.id()));
+                ret.add(new IdentifierToken(identifierToken.id));
                 ret.add(new KeywordToken(KeywordType.GOTO));
                 return ret;
             }
             //TODO idk
             return null;
         }
-        else if(second instanceof OperatorToken operatorToken&&operatorToken.type()==OperatorType.LABEL)
+        else if(second instanceof OperatorToken operatorToken&&operatorToken.type==OperatorType.LABEL)
         {
             if(!(next instanceof IdentifierToken identifierToken))
             {
                 throw new GrammarException("label not named with an identifier");
             }
-            ret.add(new AppendCodeOperation(this,new LabelCode(lookupLabel(identifierToken.id()))));
+            ret.add(new AppendCodeOperation(this,new LabelCode(lookupLabel(identifierToken.id))));
             ret.add(new OperatorToken(OperatorType.LABEL));
-            ret.add(new IdentifierToken(identifierToken.id()));
+            ret.add(new IdentifierToken(identifierToken.id));
             return ret;
         }
         else
