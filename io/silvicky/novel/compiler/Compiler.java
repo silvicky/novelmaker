@@ -4,6 +4,7 @@ import io.silvicky.novel.compiler.code.*;
 import io.silvicky.novel.compiler.parser.Block;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.NonTerminal;
+import io.silvicky.novel.compiler.parser.operation.LocalVariableClearOperation;
 import io.silvicky.novel.compiler.parser.operation.Operation;
 import io.silvicky.novel.compiler.tokens.*;
 
@@ -20,6 +21,7 @@ public class Compiler
     private static final Map<Integer,String> labelBackMap=new HashMap<>();
     private static final Map<String,Integer> variableMap=new HashMap<>();
     private static final Map<Integer,String> variableBackMap=new HashMap<>();
+    private static final Map<String,Stack<Integer> > localVariableMap=new HashMap<>();
     public static int registerVariable(String s)
     {
         if(variableMap.containsKey(s))throw new DeclarationException("Repeated:"+s);
@@ -27,8 +29,21 @@ public class Compiler
         variableBackMap.put(variableCnt,s);
         return variableCnt++;
     }
+    public static int registerLocalVariable(String s)
+    {
+        if(!localVariableMap.containsKey(s))localVariableMap.put(s,new Stack<>());
+        localVariableMap.get(s).push(variableCnt);
+        return variableCnt++;
+    }
+    public static void revokeLocalVariable(String s)
+    {
+        if(!localVariableMap.containsKey(s))throw new DeclarationException("Undefined:"+s);
+        if(localVariableMap.get(s).empty())throw new DeclarationException("Undefined:"+s);
+        localVariableMap.get(s).pop();
+    }
     public static int lookupVariable(String s)
     {
+        if(localVariableMap.containsKey(s)&&!localVariableMap.get(s).empty())return localVariableMap.get(s).peek();
         if(!variableMap.containsKey(s))throw new DeclarationException("Undefined:"+s);
         return variableMap.get(s);
     }
@@ -139,13 +154,14 @@ public class Compiler
             }
             AbstractToken next= abstractTokens.get(rul);
             AbstractToken second= abstractTokens.get(rul+1);
-            if(!(top instanceof NonTerminal))
+            if(!(top instanceof NonTerminal nonTerminal))
             {
                 if(!match(top,next))throw new GrammarException("Mismatch: "+top+" and "+next);
                 rul++;
                 continue;
             }
-            List<AbstractToken> list=((NonTerminal) top).lookup(next,second);
+            List<AbstractToken> list=nonTerminal.lookup(next,second);
+            stack.push(new LocalVariableClearOperation(nonTerminal));
             for(AbstractToken abstractToken :list)stack.push(abstractToken);
         }
         return root.codes;

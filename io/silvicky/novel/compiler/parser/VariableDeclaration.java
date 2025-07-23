@@ -8,10 +8,18 @@ import io.silvicky.novel.compiler.tokens.AbstractToken;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.silvicky.novel.compiler.Compiler.registerLocalVariable;
 import static io.silvicky.novel.compiler.Compiler.registerVariable;
 
 public class VariableDeclaration extends NonTerminal
 {
+    public final NonTerminal directParent;
+
+    public VariableDeclaration(NonTerminal directParent)
+    {
+        this.directParent = directParent;
+    }
+
     @Override
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
@@ -27,10 +35,15 @@ public class VariableDeclaration extends NonTerminal
         if(operatorToken.type == OperatorType.COMMA)
         {
 
-            ret.add(new VariableDeclaration());
+            ret.add(new VariableDeclaration(this.directParent));
             ret.add(new OperatorToken(OperatorType.COMMA));
             String id=identifierToken.id;
-            registerVariable(id);
+            if(this.directParent==null)registerVariable(id);
+            else
+            {
+                registerLocalVariable(id);
+                this.directParent.revokedVariables.add(id);
+            }
             ret.add(new IdentifierToken(id));
             return ret;
         }
@@ -38,7 +51,12 @@ public class VariableDeclaration extends NonTerminal
         {
             ret.add(new OperatorToken(OperatorType.SEMICOLON));
             String id=identifierToken.id;
-            registerVariable(id);
+            if(this.directParent==null)registerVariable(id);
+            else
+            {
+                registerLocalVariable(id);
+                this.directParent.revokedVariables.add(id);
+            }
             ret.add(new IdentifierToken(id));
             return ret;
         }

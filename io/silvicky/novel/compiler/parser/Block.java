@@ -8,20 +8,22 @@ import io.silvicky.novel.compiler.tokens.AbstractToken;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Block extends NonTerminal
 {
     public final int breakLabel,continueLabel;
-    public Block(int breakLabel,int continueLabel){this.breakLabel=breakLabel;this.continueLabel=continueLabel;}
-    public Block(){this(-1,-1);}
+    public final NonTerminal directParent;
+    public Block(int breakLabel,int continueLabel,NonTerminal directParent){this.breakLabel=breakLabel;this.continueLabel=continueLabel;this.directParent=directParent;}
+    public Block(){this(-1,-1,null);}
     @Override
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
         List<AbstractToken> ret=new ArrayList<>();
         if(next instanceof OperatorToken&&((OperatorToken) next).type== OperatorType.R_BRACE)return ret;
         if(next instanceof EofToken)return ret;
-        Block residue=new Block(breakLabel,continueLabel);
-        Line current=new Line(breakLabel,continueLabel);
+        Block residue=new Block(breakLabel,continueLabel, Objects.requireNonNullElse(this.directParent,this));
+        Line current=new Line(breakLabel,continueLabel,Objects.requireNonNullElse(this.directParent,this));
         ret.add(new AppendCodeSeqOperation(this,residue));
         ret.add(residue);
         ret.add(new AppendCodeSeqOperation(this,current));

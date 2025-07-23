@@ -20,7 +20,7 @@ public class Declaration extends NonTerminal
         }
         if(second instanceof OperatorToken&&(((OperatorToken) second).type== OperatorType.COMMA||((OperatorToken) second).type==OperatorType.SEMICOLON))
         {
-            ret.add(new VariableDeclaration());
+            ret.add(new VariableDeclaration(null));
             return ret;
         }
         if(second instanceof OperatorToken&&((OperatorToken) second).type==OperatorType.L_PARENTHESES)

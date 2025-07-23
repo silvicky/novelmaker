@@ -9,5 +9,6 @@ import java.util.List;
 public abstract class NonTerminal implements AbstractToken
 {
     public final List<Code> codes=new ArrayList<>();
+    public final List<String> revokedVariables=new ArrayList<>();
     public abstract List<AbstractToken> lookup(AbstractToken next, AbstractToken second);
 }

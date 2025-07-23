@@ -9,21 +9,22 @@ import io.silvicky.novel.compiler.tokens.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static io.silvicky.novel.compiler.Compiler.lookupLabel;
 
 public class Line extends NonTerminal
 {
     public final int breakLabel,continueLabel;
-    public Line(int breakLabel,int continueLabel){this.breakLabel=breakLabel;this.continueLabel=continueLabel;}
-    public Line(){this(-1,-1);}
+    public final NonTerminal directParent;
+    public Line(int breakLabel,int continueLabel, NonTerminal directParent){this.breakLabel=breakLabel;this.continueLabel=continueLabel;this.directParent=directParent;}
     @Override
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
         List<AbstractToken> ret=new ArrayList<>();
         if(next instanceof OperatorToken operatorToken&&operatorToken.type==OperatorType.L_BRACE)
         {
-            Block block=new Block(breakLabel,continueLabel);
+            Block block=new Block(breakLabel,continueLabel,this);
             ret.add(new AppendCodeSeqOperation(this,block));
             ret.add(new OperatorToken(OperatorType.R_BRACE));
             ret.add(block);
@@ -38,7 +39,7 @@ public class Line extends NonTerminal
                 LabelCode head=new LabelCode();
                 LabelCode cont=new LabelCode();
                 LabelCode end=new LabelCode();
-                Line line=new Line(end.id(),cont.id());
+                Line line=new Line(end.id(),cont.id(),this);
                 Expression first=new Expression();
                 Expression expression=new Expression();
                 Expression third=new Expression();
@@ -66,7 +67,7 @@ public class Line extends NonTerminal
             {
                 LabelCode head=new LabelCode();
                 LabelCode end=new LabelCode();
-                Line line=new Line(end.id(),head.id());
+                Line line=new Line(end.id(),head.id(),this);
                 Expression expression=new Expression();
                 ret.add(new AppendCodeOperation(this,end));
                 ret.add(new AppendCodeOperation(this,new UnconditionalGotoCode(head.id())));
@@ -86,7 +87,7 @@ public class Line extends NonTerminal
                 LabelCode head=new LabelCode();
                 LabelCode end=new LabelCode();
                 LabelCode cont=new LabelCode();
-                Line line=new Line(end.id(),cont.id());
+                Line line=new Line(end.id(),cont.id(),this);
                 Expression expression=new Expression();
                 ret.add(new AppendCodeOperation(this,end));
                 ret.add(new AppendExpressionGotoCodeOperation(this,expression,head.id(),OperatorType.NOP));
@@ -105,14 +106,14 @@ public class Line extends NonTerminal
             }
             if(type == KeywordType.INT)
             {
-                ret.add(new VariableDeclaration());
+                ret.add(new VariableDeclaration(Objects.requireNonNullElse(this.directParent, this)));
                 ret.add(new KeywordToken(KeywordType.INT));
                 return ret;
             }
             if(type==KeywordType.IF)
             {
                 LabelCode end=new LabelCode();
-                Line line=new Line(breakLabel,continueLabel);
+                Line line=new Line(breakLabel,continueLabel,null);
                 Expression expression=new Expression();
                 Else els=new Else(breakLabel,continueLabel);
                 LabelCode elseLabel=new LabelCode();
