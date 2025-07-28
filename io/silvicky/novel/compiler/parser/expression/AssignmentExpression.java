@@ -1,6 +1,7 @@
 package io.silvicky.novel.compiler.parser.expression;
 
 import io.silvicky.novel.compiler.code.AssignCode;
+import io.silvicky.novel.compiler.parser.ASTNode;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.IdentifierToken;
 import io.silvicky.novel.compiler.tokens.OperatorToken;
