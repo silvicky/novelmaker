@@ -1,5 +1,9 @@
 package io.silvicky.novel.compiler.parser;
 
+import io.silvicky.novel.compiler.code.AssignCode;
+import io.silvicky.novel.compiler.parser.expression.AssignmentExpression;
+import io.silvicky.novel.compiler.parser.operation.AppendCodeOperation;
+import io.silvicky.novel.compiler.parser.operation.AppendCodeSeqOperation;
 import io.silvicky.novel.compiler.tokens.IdentifierToken;
 import io.silvicky.novel.compiler.tokens.OperatorToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
@@ -32,11 +36,8 @@ public class VariableDeclaration extends NonTerminal
         {
             throw new GrammarException(this.getClass().getSimpleName()+next+second);
         }
-        if(operatorToken.type == OperatorType.COMMA)
+        if(operatorToken.type == OperatorType.COMMA||operatorToken.type==OperatorType.SEMICOLON)
         {
-
-            ret.add(new VariableDeclaration(this.directParent));
-            ret.add(new OperatorToken(OperatorType.COMMA));
             String id=identifierToken.id;
             if(this.directParent==null)registerVariable(id);
             else
@@ -44,19 +45,30 @@ public class VariableDeclaration extends NonTerminal
                 registerLocalVariable(id);
                 this.directParent.revokedVariables.add(id);
             }
+            VariableDeclarationResidue residue=new VariableDeclarationResidue(this.directParent);
+            ret.add(new AppendCodeSeqOperation(this,residue));
+            ret.add(residue);
             ret.add(new IdentifierToken(id));
             return ret;
         }
-        if(operatorToken.type == OperatorType.SEMICOLON)
+        else if(operatorToken.type==OperatorType.EQUAL)
         {
-            ret.add(new OperatorToken(OperatorType.SEMICOLON));
             String id=identifierToken.id;
-            if(this.directParent==null)registerVariable(id);
+            int nid;
+            if(this.directParent==null)nid=registerVariable(id);
             else
             {
-                registerLocalVariable(id);
+                nid=registerLocalVariable(id);
                 this.directParent.revokedVariables.add(id);
             }
+            VariableDeclarationResidue residue=new VariableDeclarationResidue(this.directParent);
+            ret.add(new AppendCodeSeqOperation(this,residue));
+            ret.add(residue);
+            AssignmentExpression expression=new AssignmentExpression();
+            ret.add(new AppendCodeOperation(this,new AssignCode(nid,expression.resultId,0,OperatorType.NOP)));
+            ret.add(new AppendCodeSeqOperation(this,expression));
+            ret.add(expression);
+            ret.add(new OperatorToken(OperatorType.EQUAL));
             ret.add(new IdentifierToken(id));
             return ret;
         }

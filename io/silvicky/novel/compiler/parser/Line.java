@@ -1,5 +1,6 @@
 package io.silvicky.novel.compiler.parser;
 
+import io.silvicky.novel.compiler.code.AssignCode;
 import io.silvicky.novel.compiler.code.LabelCode;
 import io.silvicky.novel.compiler.code.UnconditionalGotoCode;
 import io.silvicky.novel.compiler.parser.expression.ExpressionRoot;
@@ -41,10 +42,9 @@ public class Line extends NonTerminal
                 LabelCode cont=new LabelCode();
                 LabelCode end=new LabelCode();
                 Line line=new Line(end.id(),cont.id(),this);
-                //TODO First
-                ExpressionRoot first=new ExpressionRoot(false);
-                ExpressionRoot expression=new ExpressionRoot(false);
-                ExpressionRoot third=new ExpressionRoot(false);
+                ForFirst first=new ForFirst(this);
+                ExpressionRoot expression=new ExpressionRoot();
+                ExpressionRoot third=new ExpressionRoot();
                 ret.add(new AppendCodeOperation(this,end));
                 ret.add(new AppendCodeOperation(this,new UnconditionalGotoCode(head.id())));
                 ret.add(new AppendCodeSeqOperation(this,third));
@@ -70,7 +70,7 @@ public class Line extends NonTerminal
                 LabelCode head=new LabelCode();
                 LabelCode end=new LabelCode();
                 Line line=new Line(end.id(),head.id(),this);
-                ExpressionRoot expression=new ExpressionRoot(false);
+                ExpressionRoot expression=new ExpressionRoot();
                 ret.add(new AppendCodeOperation(this,end));
                 ret.add(new AppendCodeOperation(this,new UnconditionalGotoCode(head.id())));
                 ret.add(new AppendCodeSeqOperation(this,line));
@@ -90,7 +90,7 @@ public class Line extends NonTerminal
                 LabelCode end=new LabelCode();
                 LabelCode cont=new LabelCode();
                 Line line=new Line(end.id(),cont.id(),this);
-                ExpressionRoot expression=new ExpressionRoot(false);
+                ExpressionRoot expression=new ExpressionRoot();
                 ret.add(new AppendCodeOperation(this,end));
                 ret.add(new AppendExpressionGotoCodeOperation(this,expression,head.id(),OperatorType.NOP));
                 ret.add(new AppendCodeSeqOperation(this,expression));
@@ -108,7 +108,10 @@ public class Line extends NonTerminal
             }
             if(type == KeywordType.INT)
             {
-                ret.add(new VariableDeclaration(Objects.requireNonNullElse(this.directParent, this)));
+                VariableDeclaration declaration=new VariableDeclaration(Objects.requireNonNullElse(this.directParent, this));
+                ret.add(new OperatorToken(OperatorType.SEMICOLON));
+                ret.add(new AppendCodeSeqOperation(this,declaration));
+                ret.add(declaration);
                 ret.add(new KeywordToken(KeywordType.INT));
                 return ret;
             }
@@ -116,7 +119,7 @@ public class Line extends NonTerminal
             {
                 LabelCode end=new LabelCode();
                 Line line=new Line(breakLabel,continueLabel,null);
-                ExpressionRoot expression=new ExpressionRoot(false);
+                ExpressionRoot expression=new ExpressionRoot();
                 Else els=new Else(breakLabel,continueLabel);
                 LabelCode elseLabel=new LabelCode();
                 ret.add(new AppendCodeOperation(this,end));
@@ -179,7 +182,7 @@ public class Line extends NonTerminal
         else
         {
             ret.add(new OperatorToken(OperatorType.SEMICOLON));
-            ExpressionRoot e=new ExpressionRoot(false);
+            ExpressionRoot e=new ExpressionRoot();
             ret.add(new AppendCodeSeqOperation(this,e));
             ret.add(e);
             return ret;

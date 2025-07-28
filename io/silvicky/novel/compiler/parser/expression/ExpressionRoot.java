@@ -11,12 +11,7 @@ import static io.silvicky.novel.compiler.parser.expression.Rotator.rotateLeft;
 
 public class ExpressionRoot extends AbstractExpression implements ASTNode
 {
-    private final boolean isDeclaration;
     private ExpressionNew child;
-    public ExpressionRoot(boolean isDeclaration)
-    {
-        this.isDeclaration = isDeclaration;
-    }
 
     @Override
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)

@@ -104,6 +104,7 @@ public class Compiler
         addNonNull(ret, tokenBuilder.build());
         ret.add(new EofToken());
         ret.add(new EofToken());
+        bufferedReader.close();
         return ret;
     }
     public static void tokenParser(List<AbstractToken> abstractTokens)
