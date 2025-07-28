@@ -1,6 +1,7 @@
 package io.silvicky.novel.compiler.parser.expression;
 
 import io.silvicky.novel.compiler.code.AssignCode;
+import io.silvicky.novel.compiler.parser.operation.ResolveOperation;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
 
@@ -17,7 +18,9 @@ public class RelationalExpression extends LTRExpression
     {
         List<AbstractToken> ret=new ArrayList<>();
         left=new ShiftExpression();
-        ret.add(new RelationalExpressionResidue(this));
+        RelationalExpressionResidue residue=new RelationalExpressionResidue(this);
+        ret.add(new ResolveOperation(residue));
+        ret.add(residue);
         ret.add(left);
         return ret;
     }
@@ -38,7 +41,7 @@ public class RelationalExpression extends LTRExpression
         }
         else
         {
-            codes.add(new AssignCode(resultId,left.resultId,-1,OperatorType.NOP));
+            codes.add(new AssignCode(resultId,left.resultId,left.resultId,OperatorType.NOP));
         }
     }
 }

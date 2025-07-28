@@ -46,13 +46,13 @@ public class AssignmentExpression extends AbstractExpression implements ASTNode
             right.travel();
             codes.addAll(right.codes);
             codes.add(new AssignCode(left,left,right.resultId,op.baseType));
-            codes.add(new AssignCode(resultId,left,-1,OperatorType.NOP));
+            codes.add(new AssignCode(resultId,left,left,OperatorType.NOP));
         }
         else
         {
             nextExpression.travel();
             codes.addAll(nextExpression.codes);
-            codes.add(new AssignCode(resultId, nextExpression.resultId, -1,OperatorType.NOP));
+            codes.add(new AssignCode(resultId, nextExpression.resultId, nextExpression.resultId,OperatorType.NOP));
         }
     }
 }

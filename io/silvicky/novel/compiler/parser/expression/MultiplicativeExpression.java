@@ -1,6 +1,7 @@
 package io.silvicky.novel.compiler.parser.expression;
 
 import io.silvicky.novel.compiler.code.AssignCode;
+import io.silvicky.novel.compiler.parser.operation.ResolveOperation;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
 
@@ -18,7 +19,9 @@ public class MultiplicativeExpression extends LTRExpression
         List<AbstractToken> ret=new ArrayList<>();
         //TODO Cast
         left=new UnaryExpression();
-        ret.add(new MultiplicativeExpressionResidue(this));
+        MultiplicativeExpressionResidue residue=new MultiplicativeExpressionResidue(this);
+        ret.add(new ResolveOperation(residue));
+        ret.add(residue);
         ret.add(left);
         return ret;
     }
@@ -32,11 +35,11 @@ public class MultiplicativeExpression extends LTRExpression
         {
             right.travel();
             codes.addAll(right.codes);
-            codes.add(new AssignCode(resultId,left.resultId,right.resultId, OperatorType.OR_OR));
+            codes.add(new AssignCode(resultId,left.resultId,right.resultId, type));
         }
         else
         {
-            codes.add(new AssignCode(resultId,left.resultId,-1,OperatorType.NOP));
+            codes.add(new AssignCode(resultId,left.resultId,left.resultId,OperatorType.NOP));
         }
     }
 }

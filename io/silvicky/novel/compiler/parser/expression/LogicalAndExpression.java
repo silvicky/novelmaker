@@ -1,6 +1,7 @@
 package io.silvicky.novel.compiler.parser.expression;
 
 import io.silvicky.novel.compiler.code.AssignCode;
+import io.silvicky.novel.compiler.parser.operation.ResolveOperation;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
 
@@ -16,7 +17,9 @@ public class LogicalAndExpression extends LTRExpression
     {
         List<AbstractToken> ret=new ArrayList<>();
         left=new InclusiveOrExpression();
-        ret.add(new LogicalAndExpressionResidue(this));
+        LogicalAndExpressionResidue residue=new LogicalAndExpressionResidue(this);
+        ret.add(new ResolveOperation(residue));
+        ret.add(residue);
         ret.add(left);
         return ret;
     }
@@ -37,7 +40,7 @@ public class LogicalAndExpression extends LTRExpression
         }
         else
         {
-            codes.add(new AssignCode(resultId,left.resultId,-1,OperatorType.NOP));
+            codes.add(new AssignCode(resultId,left.resultId,left.resultId,OperatorType.NOP));
         }
     }
 }

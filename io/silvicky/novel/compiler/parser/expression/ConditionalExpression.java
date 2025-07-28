@@ -4,6 +4,7 @@ import io.silvicky.novel.compiler.code.AssignCode;
 import io.silvicky.novel.compiler.code.GotoCode;
 import io.silvicky.novel.compiler.code.LabelCode;
 import io.silvicky.novel.compiler.code.UnconditionalGotoCode;
+import io.silvicky.novel.compiler.parser.operation.ResolveOperation;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
 
@@ -23,7 +24,9 @@ public class ConditionalExpression extends AbstractExpression
     {
         List<AbstractToken> ret=new ArrayList<>();
         left=new LogicalOrExpression();
-        ret.add(new ConditionalExpressionResidue(this));
+        ConditionalExpressionResidue residue=new ConditionalExpressionResidue(this);
+        ret.add(new ResolveOperation(residue));
+        ret.add(residue);
         ret.add(left);
         return ret;
     }
@@ -38,21 +41,21 @@ public class ConditionalExpression extends AbstractExpression
         {
             int lbRight=requestInternalLabel();
             int lbEnd=requestInternalLabel();
-            codes.add(new GotoCode(left.resultId,-1, OperatorType.NOT,lbRight));
+            codes.add(new GotoCode(left.resultId,left.resultId, OperatorType.NOT,lbRight));
             if(middle.right instanceof ExpressionNew)middle= rotateLeft(middle);
             middle.travel();
             codes.addAll(middle.codes);
-            codes.add(new AssignCode(resultId, middle.resultId,-1,OperatorType.NOP));
+            codes.add(new AssignCode(resultId, middle.resultId, middle.resultId, OperatorType.NOP));
             codes.add(new UnconditionalGotoCode(lbEnd));
             codes.add(new LabelCode(lbRight));
             right.travel();
             codes.addAll(right.codes);
-            codes.add(new AssignCode(resultId, right.resultId,-1,OperatorType.NOP));
+            codes.add(new AssignCode(resultId, right.resultId,right.resultId,OperatorType.NOP));
             codes.add(new LabelCode(lbEnd));
         }
         else
         {
-            codes.add(new AssignCode(resultId, left.resultId,-1,OperatorType.NOP));
+            codes.add(new AssignCode(resultId, left.resultId,left.resultId,OperatorType.NOP));
         }
     }
 }

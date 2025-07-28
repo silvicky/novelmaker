@@ -46,15 +46,15 @@ public class PrimaryExpression extends AbstractExpression
             if(nextExpression.right instanceof ExpressionNew)nextExpression= rotateLeft(nextExpression);
             nextExpression.travel();
             codes.addAll(nextExpression.codes);
-            codes.add(new AssignCode(resultId,nextExpression.resultId,-1,OperatorType.NOP));
+            codes.add(new AssignCode(resultId,nextExpression.resultId,nextExpression.resultId,OperatorType.NOP));
         }
         else if(variable!=-1)
         {
-            codes.add(new AssignCode(resultId,variable,-1,OperatorType.NOP));
+            codes.add(new AssignCode(resultId,variable,variable,OperatorType.NOP));
         }
         else
         {
-            codes.add(new AssignVariableNumberCode(resultId,-1,numericVal,OperatorType.COMMA));
+            codes.add(new AssignVariableNumberCode(resultId,0,numericVal,OperatorType.COMMA));
         }
     }
 }

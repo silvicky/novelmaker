@@ -33,6 +33,6 @@ public class ExpressionRoot extends AbstractExpression implements ASTNode
         if(child.right instanceof ExpressionNew)child= rotateLeft(child);
         child.travel();
         codes.addAll(child.codes);
-        codes.add(new AssignCode(resultId,child.resultId,-1, OperatorType.NOP));
+        codes.add(new AssignCode(resultId,child.resultId,child.resultId, OperatorType.NOP));
     }
 }

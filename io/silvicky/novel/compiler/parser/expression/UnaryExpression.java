@@ -86,18 +86,20 @@ public class UnaryExpression extends AbstractExpression
             if(target!=-1)
             {
                 codes.add(new AssignVariableNumberCode(target,target,1,op.baseType));
-                codes.add(new AssignCode(resultId,target,-1,OperatorType.NOP));
+                codes.add(new AssignCode(resultId,target,target,OperatorType.NOP));
             }
             else
             {
                 child.travel();
+                codes.addAll(child.codes);
                 codes.add(new AssignVariableNumberCode(resultId,child.resultId,0,op));
             }
         }
         else
         {
             nextExpression.travel();
-            codes.add(new AssignCode(resultId,nextExpression.resultId,-1,OperatorType.NOP));
+            codes.addAll(nextExpression.codes);
+            codes.add(new AssignCode(resultId,nextExpression.resultId,nextExpression.resultId,OperatorType.NOP));
         }
     }
 }

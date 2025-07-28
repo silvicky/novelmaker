@@ -42,13 +42,14 @@ public class PostfixExpression extends AbstractExpression
     {
         if(nextExpression==null)
         {
-            codes.add(new AssignCode(resultId,target,-1,OperatorType.NOP));
+            codes.add(new AssignCode(resultId,target,target,OperatorType.NOP));
             codes.add(new AssignVariableNumberCode(target,target,1,op.baseType));
         }
         else
         {
             nextExpression.travel();
-            codes.add(new AssignCode(resultId,nextExpression.resultId,-1,OperatorType.NOP));
+            codes.addAll(nextExpression.codes);
+            codes.add(new AssignCode(resultId,nextExpression.resultId,nextExpression.resultId,OperatorType.NOP));
         }
     }
 }

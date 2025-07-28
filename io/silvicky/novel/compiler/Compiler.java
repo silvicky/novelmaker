@@ -33,6 +33,7 @@ public class Compiler
     {
         if(!localVariableMap.containsKey(s))localVariableMap.put(s,new Stack<>());
         localVariableMap.get(s).push(variableCnt);
+        variableBackMap.put(variableCnt,String.format("%s(V%d)",s,variableCnt));
         return variableCnt++;
     }
     public static void revokeLocalVariable(String s)
