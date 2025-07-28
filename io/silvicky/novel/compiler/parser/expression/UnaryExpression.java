@@ -1,5 +1,7 @@
 package io.silvicky.novel.compiler.parser.expression;
 
+import io.silvicky.novel.compiler.code.AssignCode;
+import io.silvicky.novel.compiler.code.AssignVariableNumberCode;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.IdentifierToken;
 import io.silvicky.novel.compiler.tokens.OperatorToken;
@@ -8,8 +10,14 @@ import io.silvicky.novel.compiler.tokens.OperatorType;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.silvicky.novel.compiler.Compiler.lookupVariable;
+
 public class UnaryExpression extends AbstractExpression
 {
+    private OperatorType op=null;
+    private int target=-1;
+    private UnaryExpression child=null;
+    private PostfixExpression nextExpression=null;
     @Override
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
@@ -18,31 +26,78 @@ public class UnaryExpression extends AbstractExpression
         {
             if(operatorToken.type==OperatorType.PLUS_PLUS)
             {
+                op=OperatorType.PLUS_PLUS;
+                target=lookupVariable(((IdentifierToken)second).id);
                 ret.add(new IdentifierToken(((IdentifierToken)second).id));
-                ret.add(new OperatorToken(OperatorType.PLUS_PLUS));
+                ret.add(new OperatorToken(op));
                 return ret;
             }
             if(operatorToken.type==OperatorType.MINUS_MINUS)
             {
+                op=OperatorType.MINUS_MINUS;
+                target=lookupVariable(((IdentifierToken)second).id);
                 ret.add(new IdentifierToken(((IdentifierToken)second).id));
-                ret.add(new OperatorToken(OperatorType.MINUS_MINUS));
+                ret.add(new OperatorToken(op));
                 return ret;
             }
-            //TODO Unary plus&minus
+            if(operatorToken.type==OperatorType.PLUS)
+            {
+                op=OperatorType.PLUS;
+                child=new UnaryExpression();
+                ret.add(child);
+                ret.add(new OperatorToken(op));
+                return ret;
+            }
+            if(operatorToken.type==OperatorType.MINUS)
+            {
+                op=OperatorType.MINUS;
+                child=new UnaryExpression();
+                ret.add(child);
+                ret.add(new OperatorToken(op));
+                return ret;
+            }
             if(operatorToken.type==OperatorType.NOT)
             {
-                ret.add(new UnaryExpression());
-                ret.add(new OperatorToken(OperatorType.NOT));
+                op=OperatorType.NOT;
+                child=new UnaryExpression();
+                ret.add(child);
+                ret.add(new OperatorToken(op));
                 return ret;
             }
             if(operatorToken.type==OperatorType.REVERSE)
             {
-                ret.add(new UnaryExpression());
-                ret.add(new OperatorToken(OperatorType.REVERSE));
+                op=OperatorType.REVERSE;
+                child=new UnaryExpression();
+                ret.add(child);
+                ret.add(new OperatorToken(op));
                 return ret;
             }
         }
-        ret.add(new PostfixExpression());
+        nextExpression=new PostfixExpression();
+        ret.add(nextExpression);
         return ret;
+    }
+
+    @Override
+    public void travel()
+    {
+        if(nextExpression==null)
+        {
+            if(target!=-1)
+            {
+                codes.add(new AssignVariableNumberCode(target,target,1,op.baseType));
+                codes.add(new AssignCode(resultId,target,-1,OperatorType.NOP));
+            }
+            else
+            {
+                child.travel();
+                codes.add(new AssignVariableNumberCode(resultId,child.resultId,0,op));
+            }
+        }
+        else
+        {
+            nextExpression.travel();
+            codes.add(new AssignCode(resultId,nextExpression.resultId,-1,OperatorType.NOP));
+        }
     }
 }

@@ -2,7 +2,7 @@ package io.silvicky.novel.compiler.parser.expression;
 
 public class Rotator
 {
-    public static <T extends LTRExpression> T rotate(T root)
+    public static <T extends LTRExpression> T rotateLeft(T root)
     {
         T currentRoot=root;
         T right;

@@ -2,6 +2,7 @@ package io.silvicky.novel.compiler.parser;
 
 import io.silvicky.novel.compiler.code.LabelCode;
 import io.silvicky.novel.compiler.code.UnconditionalGotoCode;
+import io.silvicky.novel.compiler.parser.expression.ExpressionRoot;
 import io.silvicky.novel.compiler.parser.operation.AppendCodeOperation;
 import io.silvicky.novel.compiler.parser.operation.AppendCodeSeqOperation;
 import io.silvicky.novel.compiler.parser.operation.AppendExpressionGotoCodeOperation;
@@ -40,9 +41,10 @@ public class Line extends NonTerminal
                 LabelCode cont=new LabelCode();
                 LabelCode end=new LabelCode();
                 Line line=new Line(end.id(),cont.id(),this);
-                Expression first=new Expression();
-                Expression expression=new Expression();
-                Expression third=new Expression();
+                //TODO First
+                ExpressionRoot first=new ExpressionRoot(false);
+                ExpressionRoot expression=new ExpressionRoot(false);
+                ExpressionRoot third=new ExpressionRoot(false);
                 ret.add(new AppendCodeOperation(this,end));
                 ret.add(new AppendCodeOperation(this,new UnconditionalGotoCode(head.id())));
                 ret.add(new AppendCodeSeqOperation(this,third));
@@ -68,7 +70,7 @@ public class Line extends NonTerminal
                 LabelCode head=new LabelCode();
                 LabelCode end=new LabelCode();
                 Line line=new Line(end.id(),head.id(),this);
-                Expression expression=new Expression();
+                ExpressionRoot expression=new ExpressionRoot(false);
                 ret.add(new AppendCodeOperation(this,end));
                 ret.add(new AppendCodeOperation(this,new UnconditionalGotoCode(head.id())));
                 ret.add(new AppendCodeSeqOperation(this,line));
@@ -88,7 +90,7 @@ public class Line extends NonTerminal
                 LabelCode end=new LabelCode();
                 LabelCode cont=new LabelCode();
                 Line line=new Line(end.id(),cont.id(),this);
-                Expression expression=new Expression();
+                ExpressionRoot expression=new ExpressionRoot(false);
                 ret.add(new AppendCodeOperation(this,end));
                 ret.add(new AppendExpressionGotoCodeOperation(this,expression,head.id(),OperatorType.NOP));
                 ret.add(new AppendCodeSeqOperation(this,expression));
@@ -114,7 +116,7 @@ public class Line extends NonTerminal
             {
                 LabelCode end=new LabelCode();
                 Line line=new Line(breakLabel,continueLabel,null);
-                Expression expression=new Expression();
+                ExpressionRoot expression=new ExpressionRoot(false);
                 Else els=new Else(breakLabel,continueLabel);
                 LabelCode elseLabel=new LabelCode();
                 ret.add(new AppendCodeOperation(this,end));
@@ -177,7 +179,7 @@ public class Line extends NonTerminal
         else
         {
             ret.add(new OperatorToken(OperatorType.SEMICOLON));
-            Expression e=new Expression();
+            ExpressionRoot e=new ExpressionRoot(false);
             ret.add(new AppendCodeSeqOperation(this,e));
             ret.add(e);
             return ret;
