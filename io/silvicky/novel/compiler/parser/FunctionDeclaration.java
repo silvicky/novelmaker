@@ -21,7 +21,6 @@ public class FunctionDeclaration extends NonTerminal
     @Override
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
-        //TODO Call
         if(!(next instanceof IdentifierToken identifierToken))throw new GrammarException(this.getClass().getSimpleName()+next+second);
         List<AbstractToken> ret=new ArrayList<>();
         ctx=registerLabel(identifierToken.id);

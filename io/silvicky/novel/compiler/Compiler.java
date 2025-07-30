@@ -18,7 +18,6 @@ import static io.silvicky.novel.util.Util.addNonNull;
 
 public class Compiler
 {
-    //TODO Fully rewrite
     private static int labelCnt=0;
     private static int variableCnt=0;
     public static int ctx=-1;
@@ -26,7 +25,6 @@ public class Compiler
     private static final Map<String,Integer> labelMap=new HashMap<>();
     private static final Map<Integer,String> labelBackMap=new HashMap<>();
     private static final Map<Integer,Map<String,Integer>> localLabelMap=new HashMap<>();
-    private static final Map<Integer,Map<Integer,String>> localLabelBackMap=new HashMap<>();
     private static final Map<String,Integer> variableMap=new HashMap<>();
     private static final Map<Integer,String> variableBackMap=new HashMap<>();
     private static final Map<Integer,Map<String,Stack<Integer>>> localVariableMap=new HashMap<>();
@@ -84,14 +82,23 @@ public class Compiler
         labelBackMap.put(labelCnt,s);
         return labelCnt++;
     }
+    public static int registerLocalLabel(String s)
+    {
+        if(!localLabelMap.containsKey(ctx))localLabelMap.put(ctx,new HashMap<>());
+        if(localLabelMap.get(ctx).containsKey(s))throw new DeclarationException("Repeated:"+s);
+        localLabelMap.get(ctx).put(s,labelCnt);
+        labelBackMap.put(labelCnt,String.format("%s(L%d)",s,labelCnt));
+        return labelCnt++;
+    }
     public static int requestLabel()
     {
         return labelCnt++;
     }
     public static int lookupLabel(String s)
     {
-        if(!labelMap.containsKey(s))throw new DeclarationException("Undefined:"+s);
-        return labelMap.get(s);
+        if(localLabelMap.containsKey(ctx)&&localLabelMap.get(ctx).containsKey(s))return localLabelMap.get(ctx).get(s);
+        if(labelMap.containsKey(s))return labelMap.get(s);
+        throw new DeclarationException("Undefined:"+s);
     }
     public static String lookupLabelName(int l)
     {
@@ -147,14 +154,6 @@ public class Compiler
             if(abstractToken instanceof KeywordToken keywordToken&&keywordToken.type==KeywordType.FALSE)
             {
                 abstractTokens.set(i,new NumberToken(0,keywordToken.fileName,keywordToken.line,keywordToken.pos));
-                continue;
-            }
-            if(abstractToken instanceof OperatorToken operatorToken&&operatorToken.type==OperatorType.LABEL)
-            {
-                AbstractToken last= abstractTokens.get(i-1);
-                if(!(last instanceof IdentifierToken identifierToken))throw new GrammarException("label not named with an identifier");
-                //TODO what is this
-                registerLabel(identifierToken.id);
             }
         }
     }
@@ -192,6 +191,14 @@ public class Compiler
             List<AbstractToken> list=nonTerminal.lookup(next,second);
             stack.push(new LocalVariableClearOperation(nonTerminal));
             for(AbstractToken abstractToken :list)stack.push(abstractToken);
+        }
+        for(int i=0;i<root.codes.size();i++)
+        {
+            if(root.codes.get(i) instanceof PlaceholderUnconditionalGotoCode tmp)
+            {
+                int target=localLabelMap.get(tmp.ctx()).get(tmp.labelName());
+                root.codes.set(i,new UnconditionalGotoCode(target));
+            }
         }
         return root.codes;
     }
@@ -237,6 +244,10 @@ public class Compiler
                 //TODO
                 break;
             }
+            if(code instanceof PlaceholderUnconditionalGotoCode)
+            {
+                throw new DeclarationException("Placeholder should be erased");
+            }
             System.out.println("Unknown TAC: "+code.toString());
         }
         for(Map.Entry<String,Integer> entry:variableMap.entrySet())
@@ -244,12 +255,21 @@ public class Compiler
             System.out.println(entry.getKey()+"="+mem[entry.getValue()]);
         }
     }
+    public static void printCodeList(List<Code> codeList)
+    {
+        for(Code code:codeList)
+        {
+            if(code instanceof LabelCode labelCode&&labelBackMap.containsKey(labelCode.id()))ctx=labelCode.id();
+            if(code instanceof ReturnCode)ctx=-1;
+            System.out.println(code);
+        }
+    }
     public static void main(String[] args) throws IOException
     {
         List<AbstractToken> abstractTokenList =lexer(Path.of(args[0]));
         tokenParser(abstractTokenList);
         List<Code> codeList=parser(abstractTokenList);
-        //for(Code code:codeList)System.out.println(code);
+        printCodeList(codeList);
         emulateTAC(codeList);
     }
 }

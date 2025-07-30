@@ -1,6 +1,7 @@
 package io.silvicky.novel.compiler.parser;
 
 import io.silvicky.novel.compiler.code.LabelCode;
+import io.silvicky.novel.compiler.code.PlaceholderUnconditionalGotoCode;
 import io.silvicky.novel.compiler.code.UnconditionalGotoCode;
 import io.silvicky.novel.compiler.parser.expression.ExpressionRoot;
 import io.silvicky.novel.compiler.parser.operation.AppendCodeOperation;
@@ -12,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static io.silvicky.novel.compiler.Compiler.lookupLabel;
+import static io.silvicky.novel.compiler.Compiler.*;
 
 public class Line extends NonTerminal
 {
@@ -158,7 +159,7 @@ public class Line extends NonTerminal
                 {
                     throw new GrammarException("goto label not named with an identifier");
                 }
-                ret.add(new AppendCodeOperation(this,new UnconditionalGotoCode(lookupLabel(identifierToken.id))));
+                ret.add(new AppendCodeOperation(this,new PlaceholderUnconditionalGotoCode(ctx,identifierToken.id)));
                 ret.add(new OperatorToken(OperatorType.SEMICOLON));
                 ret.add(new IdentifierToken(identifierToken.id));
                 ret.add(new KeywordToken(KeywordType.GOTO));
@@ -173,7 +174,7 @@ public class Line extends NonTerminal
             {
                 throw new GrammarException("label not named with an identifier");
             }
-            ret.add(new AppendCodeOperation(this,new LabelCode(lookupLabel(identifierToken.id))));
+            ret.add(new AppendCodeOperation(this,new LabelCode(registerLocalLabel(identifierToken.id))));
             ret.add(new OperatorToken(OperatorType.LABEL));
             ret.add(new IdentifierToken(identifierToken.id));
             return ret;
