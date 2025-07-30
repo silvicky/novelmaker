@@ -28,7 +28,7 @@ public class FunctionDeclaration extends NonTerminal
         Block block=new Block();
         ret.add(new ResetCtxOperation());
         ret.add(new AppendCodeOperation(this,new LabelCode(endLabel)));
-        ret.add(new AppendCodeOperation(this,new ReturnCode()));
+        ret.add(new AppendCodeOperation(this,new ReturnCode(0)));
         ret.add(new AppendCodeSeqOperation(this,block));
         ret.add(new OperatorToken(OperatorType.R_BRACE));
         ret.add(block);
@@ -36,7 +36,7 @@ public class FunctionDeclaration extends NonTerminal
         ret.add(new AppendCodeOperation(this,new UnconditionalGotoCode(endLabel)));
         ret.add(new OperatorToken(OperatorType.L_BRACE));
         ret.add(new OperatorToken(OperatorType.R_PARENTHESES));
-        ret.add(new Arguments());
+        ret.add(new Arguments(ctx));
         ret.add(new OperatorToken(OperatorType.L_PARENTHESES));
         ret.add(new IdentifierToken(identifierToken.id));
         return ret;

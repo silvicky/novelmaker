@@ -1,7 +1,9 @@
 package io.silvicky.novel.compiler.code;
 
-public record ReturnCode() implements Code
+import static io.silvicky.novel.compiler.Compiler.lookupVariableName;
+
+public record ReturnCode(int val) implements Code
 {
     @Override
-    public String toString(){return "RET";}
+    public String toString(){return "RET "+lookupVariableName(val);}
 }

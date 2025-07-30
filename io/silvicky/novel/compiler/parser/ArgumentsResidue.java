@@ -5,13 +5,11 @@ import io.silvicky.novel.compiler.tokens.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.silvicky.novel.compiler.Compiler.registerLocalVariable;
-
-public class Arguments extends NonTerminal
+public class ArgumentsResidue extends NonTerminal
 {
     private final int functionId;
 
-    public Arguments(int functionId)
+    public ArgumentsResidue(int functionId)
     {
         this.functionId = functionId;
     }
@@ -21,11 +19,8 @@ public class Arguments extends NonTerminal
     {
         List<AbstractToken> ret=new ArrayList<>();
         if(next instanceof OperatorToken operatorToken&&operatorToken.type==OperatorType.R_PARENTHESES)return ret;
-        if(!(second instanceof IdentifierToken identifierToken))throw new GrammarException("arg not identifier");
-        registerLocalVariable(identifierToken.id);
-        ret.add(new ArgumentsResidue(functionId));
-        ret.add(new IdentifierToken(identifierToken.id));
-        ret.add(new KeywordToken(KeywordType.INT));
+        ret.add(new Arguments(functionId));
+        ret.add(new OperatorToken(OperatorType.COMMA));
         return ret;
     }
 }

@@ -2,6 +2,7 @@ package io.silvicky.novel.compiler.parser;
 
 import io.silvicky.novel.compiler.code.LabelCode;
 import io.silvicky.novel.compiler.code.PlaceholderUnconditionalGotoCode;
+import io.silvicky.novel.compiler.code.ReturnCode;
 import io.silvicky.novel.compiler.code.UnconditionalGotoCode;
 import io.silvicky.novel.compiler.parser.expression.ExpressionRoot;
 import io.silvicky.novel.compiler.parser.operation.AppendCodeOperation;
@@ -163,6 +164,16 @@ public class Line extends NonTerminal
                 ret.add(new OperatorToken(OperatorType.SEMICOLON));
                 ret.add(new IdentifierToken(identifierToken.id));
                 ret.add(new KeywordToken(KeywordType.GOTO));
+                return ret;
+            }
+            if(type==KeywordType.RETURN)
+            {
+                ExpressionRoot expressionRoot=new ExpressionRoot();
+                ret.add(new AppendCodeOperation(this,new ReturnCode(expressionRoot.resultId)));
+                ret.add(new AppendCodeSeqOperation(this,expressionRoot));
+                ret.add(new OperatorToken(OperatorType.SEMICOLON));
+                ret.add(expressionRoot);
+                ret.add(new KeywordToken(KeywordType.RETURN));
                 return ret;
             }
             //TODO idk

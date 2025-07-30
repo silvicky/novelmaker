@@ -41,7 +41,7 @@ public class Compiler
     {
         if(!localVariableMap.containsKey(ctx))localVariableMap.put(ctx,new HashMap<>());
         if(!localVariableMap.get(ctx).containsKey(s))localVariableMap.get(ctx).put(s,new Stack<>());
-        if(!localVariableCount.containsKey(ctx))localVariableCount.put(ctx,0);
+        if(!localVariableCount.containsKey(ctx))localVariableCount.put(ctx,1);
         final int cnt=localVariableCount.get(ctx);
         localVariableMap.get(ctx).get(s).push(cnt);
         if(!localVariableBackMap.containsKey(ctx))localVariableBackMap.put(ctx,new HashMap<>());
@@ -70,7 +70,7 @@ public class Compiler
     }
     public static int requestInternalVariable()
     {
-        if(!localVariableCount.containsKey(ctx))localVariableCount.put(ctx,0);
+        if(!localVariableCount.containsKey(ctx))localVariableCount.put(ctx,1);
         final int cnt=localVariableCount.get(ctx);
         localVariableCount.put(ctx,cnt+1);
         return cnt;
@@ -202,14 +202,22 @@ public class Compiler
         }
         return root.codes;
     }
+    public static int addressTransformer(int bp,int val)
+    {
+        if(val>=dataSegmentBaseAddress)return val;
+        return bp-val;
+    }
     public static void emulateTAC(List<Code> codes)
     {
         Map<Integer,Integer> labelPos=new HashMap<>();
         long[] mem=new long[1048576];
         for(int i=0;i<codes.size();i++)if(codes.get(i) instanceof LabelCode labelCode)labelPos.put(labelCode.id(),i);
         if(!labelMap.containsKey("main"))throw new DeclarationException("no main function defined");
-        codes.add(new UnconditionalGotoCode(labelMap.get("main")));
+        codes.add(new CallCode(labelMap.get("main"),new ArrayList<>()));
         int ip=0;
+        int bp=dataSegmentBaseAddress-1;
+        int sp=bp;
+        long ret=0;
         while(ip<codes.size())
         {
             Code code=codes.get(ip++);
@@ -221,28 +229,50 @@ public class Compiler
             }
             if(code instanceof GotoCode gotoCode)
             {
-                if(gotoCode.op().operation.cal(mem[gotoCode.left()],mem[gotoCode.right()],0)!=0)ip=labelPos.get(gotoCode.id());
+                if(gotoCode.op().operation.cal(mem[addressTransformer(bp,gotoCode.left())],mem[addressTransformer(bp,gotoCode.right())],0)!=0)ip=labelPos.get(gotoCode.id());
                 continue;
             }
             if(code instanceof AssignNumberCode assignNumberCode)
             {
-                mem[assignNumberCode.target()]=assignNumberCode.left();
+                mem[addressTransformer(bp,assignNumberCode.target())]=assignNumberCode.left();
                 continue;
             }
             if(code instanceof AssignCode assignCode)
             {
-                mem[assignCode.target()]=assignCode.op().operation.cal(mem[assignCode.left()],mem[assignCode.right()],0);
+                mem[addressTransformer(bp,assignCode.target())]=assignCode.op().operation.cal(mem[addressTransformer(bp,assignCode.left())],mem[addressTransformer(bp,assignCode.right())],0);
                 continue;
             }
             if(code instanceof AssignVariableNumberCode assignVariableNumberCode)
             {
-                mem[assignVariableNumberCode.target()]=assignVariableNumberCode.op().operation.cal(mem[assignVariableNumberCode.left()],assignVariableNumberCode.right(),0);
+                mem[addressTransformer(bp,assignVariableNumberCode.target())]=assignVariableNumberCode.op().operation.cal(mem[addressTransformer(bp,assignVariableNumberCode.left())],assignVariableNumberCode.right(),0);
                 continue;
             }
-            if(code instanceof ReturnCode)
+            if(code instanceof ReturnCode returnCode)
             {
-                //TODO
-                break;
+                ret=mem[addressTransformer(bp,returnCode.val())];
+                sp=bp+2;
+                ip=(int)mem[bp+1];
+                bp=(int)mem[bp];
+                continue;
+            }
+            if(code instanceof CallCode callCode)
+            {
+                mem[--sp]=ip;
+                mem[--sp]=bp;
+                int oldBP=bp;
+                bp=sp;
+                sp=bp-localVariableCount.get(callCode.target());
+                for(int i=0;i<callCode.parameters().size();i++)
+                {
+                    mem[bp-i-1]=mem[addressTransformer(oldBP,callCode.parameters().get(i))];
+                }
+                ip=labelPos.get(callCode.target());
+                continue;
+            }
+            if(code instanceof FetchReturnValueCode fetchReturnValueCode)
+            {
+                mem[addressTransformer(bp,fetchReturnValueCode.target())]=ret;
+                continue;
             }
             if(code instanceof PlaceholderUnconditionalGotoCode)
             {
@@ -250,6 +280,7 @@ public class Compiler
             }
             System.out.println("Unknown TAC: "+code.toString());
         }
+        System.out.println("RESULT:");
         for(Map.Entry<String,Integer> entry:variableMap.entrySet())
         {
             System.out.println(entry.getKey()+"="+mem[entry.getValue()]);
