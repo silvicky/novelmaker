@@ -84,6 +84,10 @@ public class Compiler
         labelBackMap.put(labelCnt,s);
         return labelCnt++;
     }
+    public static int requestLabel()
+    {
+        return labelCnt++;
+    }
     public static int lookupLabel(String s)
     {
         if(!labelMap.containsKey(s))throw new DeclarationException("Undefined:"+s);
@@ -197,7 +201,8 @@ public class Compiler
         long[] mem=new long[1048576];
         for(int i=0;i<codes.size();i++)if(codes.get(i) instanceof LabelCode labelCode)labelPos.put(labelCode.id(),i);
         if(!labelMap.containsKey("main"))throw new DeclarationException("no main function defined");
-        int ip=labelPos.get(labelMap.get("main"));
+        codes.add(new UnconditionalGotoCode(labelMap.get("main")));
+        int ip=0;
         while(ip<codes.size())
         {
             Code code=codes.get(ip++);
