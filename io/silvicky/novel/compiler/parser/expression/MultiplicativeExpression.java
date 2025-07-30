@@ -8,8 +8,6 @@ import io.silvicky.novel.compiler.tokens.OperatorType;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.silvicky.novel.compiler.parser.expression.Rotator.rotateLeft;
-
 public class MultiplicativeExpression extends LTRExpression
 {
     public OperatorType type=null;

@@ -1,14 +1,16 @@
 package io.silvicky.novel.compiler;
 
 import io.silvicky.novel.compiler.code.*;
-import io.silvicky.novel.compiler.parser.Block;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.NonTerminal;
+import io.silvicky.novel.compiler.parser.Program;
 import io.silvicky.novel.compiler.parser.operation.LocalVariableClearOperation;
 import io.silvicky.novel.compiler.parser.operation.Operation;
 import io.silvicky.novel.compiler.tokens.*;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -16,44 +18,65 @@ import static io.silvicky.novel.util.Util.addNonNull;
 
 public class Compiler
 {
-    private static int labelCnt=0,variableCnt=0;
+    //TODO Fully rewrite
+    private static int labelCnt=0;
+    private static int variableCnt=0;
+    public static int ctx=-1;
+    public static final int dataSegmentBaseAddress=0xF0000;
     private static final Map<String,Integer> labelMap=new HashMap<>();
     private static final Map<Integer,String> labelBackMap=new HashMap<>();
+    private static final Map<Integer,Map<String,Integer>> localLabelMap=new HashMap<>();
+    private static final Map<Integer,Map<Integer,String>> localLabelBackMap=new HashMap<>();
     private static final Map<String,Integer> variableMap=new HashMap<>();
     private static final Map<Integer,String> variableBackMap=new HashMap<>();
-    private static final Map<String,Stack<Integer> > localVariableMap=new HashMap<>();
+    private static final Map<Integer,Map<String,Stack<Integer>>> localVariableMap=new HashMap<>();
+    private static final Map<Integer,Map<Integer,String>> localVariableBackMap=new HashMap<>();
+    private static final Map<Integer,Integer> localVariableCount=new HashMap<>();
     public static int registerVariable(String s)
     {
         if(variableMap.containsKey(s))throw new DeclarationException("Repeated:"+s);
-        variableMap.put(s,variableCnt);
-        variableBackMap.put(variableCnt,s);
-        return variableCnt++;
+        variableMap.put(s,variableCnt+dataSegmentBaseAddress);
+        variableBackMap.put(variableCnt+dataSegmentBaseAddress,s);
+        return dataSegmentBaseAddress+variableCnt++;
     }
     public static int registerLocalVariable(String s)
     {
-        if(!localVariableMap.containsKey(s))localVariableMap.put(s,new Stack<>());
-        localVariableMap.get(s).push(variableCnt);
-        variableBackMap.put(variableCnt,String.format("%s(V%d)",s,variableCnt));
-        return variableCnt++;
+        if(!localVariableMap.containsKey(ctx))localVariableMap.put(ctx,new HashMap<>());
+        if(!localVariableMap.get(ctx).containsKey(s))localVariableMap.get(ctx).put(s,new Stack<>());
+        if(!localVariableCount.containsKey(ctx))localVariableCount.put(ctx,0);
+        final int cnt=localVariableCount.get(ctx);
+        localVariableMap.get(ctx).get(s).push(cnt);
+        if(!localVariableBackMap.containsKey(ctx))localVariableBackMap.put(ctx,new HashMap<>());
+        localVariableBackMap.get(ctx).put(cnt,String.format("%s(V%d)",s,cnt));
+        localVariableCount.put(ctx,cnt+1);
+        return cnt;
     }
     public static void revokeLocalVariable(String s)
     {
-        if(!localVariableMap.containsKey(s))throw new DeclarationException("Undefined:"+s);
-        if(localVariableMap.get(s).empty())throw new DeclarationException("Undefined:"+s);
-        localVariableMap.get(s).pop();
+        if(!localVariableMap.containsKey(ctx))throw new DeclarationException("Undefined:"+s);
+        if(!localVariableMap.get(ctx).containsKey(s))throw new DeclarationException("Undefined:"+s);
+        if(localVariableMap.get(ctx).get(s).empty())throw new DeclarationException("Undefined:"+s);
+        localVariableMap.get(ctx).get(s).pop();
     }
     public static int lookupVariable(String s)
     {
-        if(localVariableMap.containsKey(s)&&!localVariableMap.get(s).empty())return localVariableMap.get(s).peek();
-        if(!variableMap.containsKey(s))throw new DeclarationException("Undefined:"+s);
-        return variableMap.get(s);
+        if(localVariableMap.containsKey(ctx)&&localVariableMap.get(ctx).containsKey(s)&&!localVariableMap.get(ctx).get(s).empty())return localVariableMap.get(ctx).get(s).peek();
+        if(variableMap.containsKey(s))return variableMap.get(s);
+        throw new DeclarationException("Undefined:"+s);
     }
     public static String lookupVariableName(int l)
     {
-        if(!variableBackMap.containsKey(l))return "V"+l;
-        return variableBackMap.get(l);
+        if(localVariableBackMap.containsKey(ctx)&&localVariableBackMap.get(ctx).containsKey(l))return localVariableBackMap.get(ctx).get(l);
+        if(variableBackMap.containsKey(l))return variableBackMap.get(l);
+        return "V"+l;
     }
-    public static int requestInternalVariable(){return variableCnt++;}
+    public static int requestInternalVariable()
+    {
+        if(!localVariableCount.containsKey(ctx))localVariableCount.put(ctx,0);
+        final int cnt=localVariableCount.get(ctx);
+        localVariableCount.put(ctx,cnt+1);
+        return cnt;
+    }
     public static int registerLabel(String s)
     {
         if(labelMap.containsKey(s))throw new DeclarationException("Repeated:"+s);
@@ -126,6 +149,7 @@ public class Compiler
             {
                 AbstractToken last= abstractTokens.get(i-1);
                 if(!(last instanceof IdentifierToken identifierToken))throw new GrammarException("label not named with an identifier");
+                //TODO what is this
                 registerLabel(identifierToken.id);
             }
         }
@@ -143,8 +167,7 @@ public class Compiler
     {
         int rul=0;
         Stack<AbstractToken> stack=new Stack<>();
-        //stack.push(new Program());
-        Block root=new Block();
+        Program root=new Program();
         stack.push(root);
         while(!stack.empty())
         {
@@ -173,7 +196,8 @@ public class Compiler
         Map<Integer,Integer> labelPos=new HashMap<>();
         long[] mem=new long[1048576];
         for(int i=0;i<codes.size();i++)if(codes.get(i) instanceof LabelCode labelCode)labelPos.put(labelCode.id(),i);
-        int ip=0;
+        if(!labelMap.containsKey("main"))throw new DeclarationException("no main function defined");
+        int ip=labelPos.get(labelMap.get("main"));
         while(ip<codes.size())
         {
             Code code=codes.get(ip++);
@@ -202,6 +226,11 @@ public class Compiler
             {
                 mem[assignVariableNumberCode.target()]=assignVariableNumberCode.op().operation.cal(mem[assignVariableNumberCode.left()],assignVariableNumberCode.right(),0);
                 continue;
+            }
+            if(code instanceof ReturnCode)
+            {
+                //TODO
+                break;
             }
             System.out.println("Unknown TAC: "+code.toString());
         }

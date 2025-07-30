@@ -1,6 +1,5 @@
 package io.silvicky.novel.compiler.parser;
 
-import io.silvicky.novel.compiler.code.AssignCode;
 import io.silvicky.novel.compiler.code.LabelCode;
 import io.silvicky.novel.compiler.code.UnconditionalGotoCode;
 import io.silvicky.novel.compiler.parser.expression.ExpressionRoot;

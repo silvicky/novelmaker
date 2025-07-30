@@ -1,5 +1,6 @@
 package io.silvicky.novel.compiler.parser;
 
+import io.silvicky.novel.compiler.parser.operation.AppendCodeSeqOperation;
 import io.silvicky.novel.compiler.tokens.*;
 
 import java.util.ArrayList;
@@ -11,11 +12,15 @@ public class Program extends NonTerminal
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
         List<AbstractToken> ret=new ArrayList<>();
-        if(next==null)return ret;
+        if(next==null||next instanceof EofToken)return ret;
         if(next instanceof KeywordToken keywordToken&&keywordToken.type== KeywordType.INT)
         {
-            ret.add(new Program());
-            ret.add(new Declaration());
+            Declaration declaration=new Declaration();
+            Program program=new Program();
+            ret.add(new AppendCodeSeqOperation(this,program));
+            ret.add(program);
+            ret.add(new AppendCodeSeqOperation(this,declaration));
+            ret.add(declaration);
             ret.add(new KeywordToken(KeywordType.INT));
             return ret;
         }
