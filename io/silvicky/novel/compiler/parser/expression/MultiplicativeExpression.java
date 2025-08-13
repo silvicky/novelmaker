@@ -8,15 +8,16 @@ import io.silvicky.novel.compiler.tokens.OperatorType;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.silvicky.novel.util.Util.getResultType;
+
 public class MultiplicativeExpression extends LTRExpression
 {
-    public OperatorType type=null;
+    public OperatorType op =null;
     @Override
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
         List<AbstractToken> ret=new ArrayList<>();
-        //TODO Cast
-        left=new UnaryExpression();
+        left=new CastExpression();
         MultiplicativeExpressionResidue residue=new MultiplicativeExpressionResidue(this);
         ret.add(new ResolveOperation(residue));
         ret.add(residue);
@@ -33,11 +34,16 @@ public class MultiplicativeExpression extends LTRExpression
         {
             right.travel();
             codes.addAll(right.codes);
-            codes.add(new AssignCode(resultId,left.resultId,right.resultId, type));
+            type=getResultType(left.type,right.type,op);
+            leftId=-1;
+            codes.add(new AssignCode(resultId,left.resultId,right.resultId,type,left.type,right.type, op));
         }
         else
         {
-            codes.add(new AssignCode(resultId,left.resultId,left.resultId,OperatorType.NOP));
+            type =left.type;
+            leftId=left.leftId;
+            isDirect=left.isDirect;
+            codes.add(new AssignCode(resultId,left.resultId,left.resultId,type,type,type,OperatorType.NOP));
         }
     }
 }

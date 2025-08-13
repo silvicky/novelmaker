@@ -34,6 +34,6 @@ public class EqualityExpressionResidue extends AbstractExpressionResidue<Equalit
     public void resolve()
     {
         root.right=child;
-        root.type=type;
+        root.op =type;
     }
 }

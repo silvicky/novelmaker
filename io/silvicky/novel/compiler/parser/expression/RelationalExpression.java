@@ -8,11 +8,12 @@ import io.silvicky.novel.compiler.tokens.OperatorType;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.silvicky.novel.compiler.parser.expression.Rotator.rotateLeft;
+import static io.silvicky.novel.util.Util.getResultType;
+import static io.silvicky.novel.util.Util.rotateLeft;
 
 public class RelationalExpression extends LTRExpression
 {
-    public OperatorType type=null;
+    public OperatorType op =null;
     @Override
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
@@ -37,11 +38,16 @@ public class RelationalExpression extends LTRExpression
             if(right2.right instanceof ShiftExpression)right= rotateLeft(right2);
             right.travel();
             codes.addAll(right.codes);
-            codes.add(new AssignCode(resultId,left.resultId,right.resultId, type));
+            type=getResultType(left.type,right.type,op);
+            leftId=-1;
+            codes.add(new AssignCode(resultId,left.resultId,right.resultId,type,left.type,right.type, op));
         }
         else
         {
-            codes.add(new AssignCode(resultId,left.resultId,left.resultId,OperatorType.NOP));
+            type=left.type;
+            leftId=left.leftId;
+            isDirect=left.isDirect;
+            codes.add(new AssignCode(resultId,left.resultId,left.resultId,type,type,type,OperatorType.NOP));
         }
     }
 }

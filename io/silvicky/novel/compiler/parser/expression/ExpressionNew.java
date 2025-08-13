@@ -8,6 +8,8 @@ import io.silvicky.novel.compiler.tokens.OperatorType;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.silvicky.novel.util.Util.getResultType;
+
 public class ExpressionNew extends LTRExpression
 {
     @Override
@@ -31,11 +33,16 @@ public class ExpressionNew extends LTRExpression
         {
             right.travel();
             codes.addAll(right.codes);
-            codes.add(new AssignCode(resultId,left.resultId,right.resultId,OperatorType.COMMA));
+            type=getResultType(left.type,right.type,OperatorType.COMMA);
+            leftId=-1;
+            codes.add(new AssignCode(resultId,left.resultId,right.resultId,type,left.type,right.type, OperatorType.COMMA));
         }
         else
         {
-            codes.add(new AssignCode(resultId,left.resultId,left.resultId,OperatorType.NOP));
+            type=left.type;
+            leftId=left.leftId;
+            isDirect=left.isDirect;
+            codes.add(new AssignCode(resultId,left.resultId,left.resultId,type,type,type,OperatorType.NOP));
         }
     }
 }

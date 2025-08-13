@@ -1,21 +1,26 @@
 package io.silvicky.novel.compiler.tokens;
 
-public class NumberToken extends Token
+import io.silvicky.novel.compiler.types.Type;
+
+public class NumberToken<T> extends Token
 {
-    public final long value;
-    public NumberToken(long value){super();this.value=value;}
-    public NumberToken(long value, String fileName, int line, int pos)
+    public final T value;
+    public final Type type;
+    public NumberToken(){this(null,null);}
+    public NumberToken(T value, Type type){super();this.value=value;this.type=type;}
+    public NumberToken(T value, Type type, String fileName, int line, int pos)
     {
         super(fileName,line,pos);
         this.value = value;
+        this.type=type;
     }
     @Override
     public String toString()
     {
         if(line==-1)
         {
-            return String.format("'%d'",value);
+            return String.format("'%s'",value.toString());
         }
-        return String.format("'%d'@(%s,%d,%d)",value,fileName,line,pos);
+        return String.format("'%s'@(%s,%d,%d)",value.toString(),fileName,line,pos);
     }
 }

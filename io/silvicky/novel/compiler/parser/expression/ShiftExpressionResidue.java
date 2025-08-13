@@ -34,6 +34,6 @@ public class ShiftExpressionResidue extends AbstractExpressionResidue<ShiftExpre
     public void resolve()
     {
         root.right=child;
-        root.type=type;
+        root.op =type;
     }
 }

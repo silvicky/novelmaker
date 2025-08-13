@@ -8,7 +8,7 @@ import io.silvicky.novel.compiler.tokens.OperatorType;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.silvicky.novel.compiler.parser.expression.Rotator.rotateLeft;
+import static io.silvicky.novel.util.Util.rotateLeft;
 
 public class ExpressionRoot extends AbstractExpression implements ASTNode
 {
@@ -29,6 +29,9 @@ public class ExpressionRoot extends AbstractExpression implements ASTNode
         if(child.right instanceof ExpressionNew)child= rotateLeft(child);
         child.travel();
         codes.addAll(child.codes);
-        codes.add(new AssignCode(resultId,child.resultId,child.resultId, OperatorType.NOP));
+        type=child.type;
+        leftId=child.leftId;
+        isDirect=child.isDirect;
+        codes.add(new AssignCode(resultId,child.resultId,child.resultId,type,type,type, OperatorType.NOP));
     }
 }

@@ -34,6 +34,6 @@ public class MultiplicativeExpressionResidue extends AbstractExpressionResidue<M
     public void resolve()
     {
         root.right=child;
-        root.type=type;
+        root.op =type;
     }
 }

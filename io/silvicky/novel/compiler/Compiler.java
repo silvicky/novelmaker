@@ -7,6 +7,8 @@ import io.silvicky.novel.compiler.parser.Program;
 import io.silvicky.novel.compiler.parser.operation.LocalVariableClearOperation;
 import io.silvicky.novel.compiler.parser.operation.Operation;
 import io.silvicky.novel.compiler.tokens.*;
+import io.silvicky.novel.compiler.types.Type;
+import io.silvicky.novel.util.Pair;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -14,6 +16,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 
+import static io.silvicky.novel.compiler.types.PrimitiveType.BOOL;
 import static io.silvicky.novel.util.Util.addNonNull;
 
 public class Compiler
@@ -25,27 +28,27 @@ public class Compiler
     private static final Map<String,Integer> labelMap=new HashMap<>();
     private static final Map<Integer,String> labelBackMap=new HashMap<>();
     private static final Map<Integer,Map<String,Integer>> localLabelMap=new HashMap<>();
-    private static final Map<String,Integer> variableMap=new HashMap<>();
-    private static final Map<Integer,String> variableBackMap=new HashMap<>();
-    private static final Map<Integer,Map<String,Stack<Integer>>> localVariableMap=new HashMap<>();
-    private static final Map<Integer,Map<Integer,String>> localVariableBackMap=new HashMap<>();
+    private static final Map<String, Pair<Integer, Type>> variableMap=new HashMap<>();
+    private static final Map<Integer, Pair<String, Type>> variableBackMap=new HashMap<>();
+    private static final Map<Integer,Map<String,Stack<Pair<Integer, Type>>>> localVariableMap=new HashMap<>();
+    private static final Map<Integer,Map<Integer, Pair<String, Type>>> localVariableBackMap=new HashMap<>();
     private static final Map<Integer,Integer> localVariableCount=new HashMap<>();
-    public static int registerVariable(String s)
+    public static int registerVariable(String s, Type type)
     {
         if(variableMap.containsKey(s))throw new DeclarationException("Repeated:"+s);
-        variableMap.put(s,variableCnt+dataSegmentBaseAddress);
-        variableBackMap.put(variableCnt+dataSegmentBaseAddress,s);
+        variableMap.put(s,new Pair<>(variableCnt+dataSegmentBaseAddress,type));
+        variableBackMap.put(variableCnt+dataSegmentBaseAddress,new Pair<>(s,type));
         return dataSegmentBaseAddress+variableCnt++;
     }
-    public static int registerLocalVariable(String s)
+    public static int registerLocalVariable(String s, Type type)
     {
         if(!localVariableMap.containsKey(ctx))localVariableMap.put(ctx,new HashMap<>());
         if(!localVariableMap.get(ctx).containsKey(s))localVariableMap.get(ctx).put(s,new Stack<>());
         if(!localVariableCount.containsKey(ctx))localVariableCount.put(ctx,1);
         final int cnt=localVariableCount.get(ctx);
-        localVariableMap.get(ctx).get(s).push(cnt);
+        localVariableMap.get(ctx).get(s).push(new Pair<>(cnt,type));
         if(!localVariableBackMap.containsKey(ctx))localVariableBackMap.put(ctx,new HashMap<>());
-        localVariableBackMap.get(ctx).put(cnt,String.format("%s(V%d)",s,cnt));
+        localVariableBackMap.get(ctx).put(cnt,new Pair<>(String.format("%s(V%d)",s,cnt),type));
         localVariableCount.put(ctx,cnt+1);
         return cnt;
     }
@@ -56,7 +59,7 @@ public class Compiler
         if(localVariableMap.get(ctx).get(s).empty())throw new DeclarationException("Undefined:"+s);
         localVariableMap.get(ctx).get(s).pop();
     }
-    public static int lookupVariable(String s)
+    public static Pair<Integer,Type> lookupVariable(String s)
     {
         if(localVariableMap.containsKey(ctx)&&localVariableMap.get(ctx).containsKey(s)&&!localVariableMap.get(ctx).get(s).empty())return localVariableMap.get(ctx).get(s).peek();
         if(variableMap.containsKey(s))return variableMap.get(s);
@@ -64,8 +67,8 @@ public class Compiler
     }
     public static String lookupVariableName(int l)
     {
-        if(localVariableBackMap.containsKey(ctx)&&localVariableBackMap.get(ctx).containsKey(l))return localVariableBackMap.get(ctx).get(l);
-        if(variableBackMap.containsKey(l))return variableBackMap.get(l);
+        if(localVariableBackMap.containsKey(ctx)&&localVariableBackMap.get(ctx).containsKey(l))return localVariableBackMap.get(ctx).get(l).first();
+        if(variableBackMap.containsKey(l))return variableBackMap.get(l).first();
         return "V"+l;
     }
     public static int requestInternalVariable()
@@ -148,12 +151,12 @@ public class Compiler
             AbstractToken abstractToken = abstractTokens.get(i);
             if(abstractToken instanceof KeywordToken keywordToken&&keywordToken.type==KeywordType.TRUE)
             {
-                abstractTokens.set(i,new NumberToken(1,keywordToken.fileName,keywordToken.line,keywordToken.pos));
+                abstractTokens.set(i,new NumberToken<>(1,BOOL,keywordToken.fileName,keywordToken.line,keywordToken.pos));
                 continue;
             }
             if(abstractToken instanceof KeywordToken keywordToken&&keywordToken.type==KeywordType.FALSE)
             {
-                abstractTokens.set(i,new NumberToken(0,keywordToken.fileName,keywordToken.line,keywordToken.pos));
+                abstractTokens.set(i,new NumberToken<>(0,BOOL,keywordToken.fileName,keywordToken.line,keywordToken.pos));
             }
         }
     }
@@ -163,7 +166,7 @@ public class Compiler
         if(a instanceof IdentifierToken)return ((IdentifierToken) a).id.equals(((IdentifierToken) b).id);
         if(a instanceof KeywordToken)return ((KeywordToken) a).type.equals(((KeywordToken) b).type);
         if(a instanceof OperatorToken)return ((OperatorToken) a).type.equals(((OperatorToken) b).type);
-        if(a instanceof NumberToken)return ((NumberToken) a).value==((NumberToken) b).value;
+        if(a instanceof NumberToken)return true;
         return false;
     }
     public static List<Code> parser(List<AbstractToken> abstractTokens)
@@ -222,6 +225,7 @@ public class Compiler
         {
             Code code=codes.get(ip++);
             if(code instanceof LabelCode)continue;
+            //TODO Fully rewrite
             if(code instanceof UnconditionalGotoCode unconditionalGotoCode)
             {
                 ip=labelPos.get(unconditionalGotoCode.id());
@@ -234,7 +238,7 @@ public class Compiler
             }
             if(code instanceof AssignNumberCode assignNumberCode)
             {
-                mem[addressTransformer(bp,assignNumberCode.target())]=assignNumberCode.left();
+                mem[addressTransformer(bp,assignNumberCode.target())]= (long) assignNumberCode.left();
                 continue;
             }
             if(code instanceof AssignCode assignCode)
@@ -244,7 +248,7 @@ public class Compiler
             }
             if(code instanceof AssignVariableNumberCode assignVariableNumberCode)
             {
-                mem[addressTransformer(bp,assignVariableNumberCode.target())]=assignVariableNumberCode.op().operation.cal(mem[addressTransformer(bp,assignVariableNumberCode.left())],assignVariableNumberCode.right(),0);
+                mem[addressTransformer(bp,assignVariableNumberCode.target())]=assignVariableNumberCode.op().operation.cal(mem[addressTransformer(bp,assignVariableNumberCode.left())], (Long) assignVariableNumberCode.right(),0);
                 continue;
             }
             if(code instanceof ReturnCode returnCode)
@@ -278,12 +282,16 @@ public class Compiler
             {
                 throw new DeclarationException("Placeholder should be erased");
             }
+            if(code instanceof DereferenceCode dereferenceCode)
+            {
+                mem[addressTransformer(bp,dereferenceCode.target())]=mem[(int) mem[addressTransformer(bp, dereferenceCode.left())]];
+            }
             System.out.println("Unknown TAC: "+code.toString());
         }
         System.out.println("RESULT:");
-        for(Map.Entry<String,Integer> entry:variableMap.entrySet())
+        for(Map.Entry<String,Pair<Integer,Type>> entry:variableMap.entrySet())
         {
-            System.out.println(entry.getKey()+"="+mem[entry.getValue()]);
+            System.out.println(entry.getKey()+"="+mem[entry.getValue().first()]);
         }
     }
     public static void printCodeList(List<Code> codeList)

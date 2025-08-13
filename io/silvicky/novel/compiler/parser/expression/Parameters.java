@@ -11,10 +11,10 @@ import java.util.List;
 
 public class Parameters extends AbstractExpression implements ASTNode
 {
-    private final PrimaryExpression func;
+    private final Postfix func;
     private AssignmentExpression left=null;
     public Parameters right=null;
-    public Parameters(PrimaryExpression func)
+    public Parameters(Postfix func)
     {
         this.func = func;
     }
@@ -38,7 +38,7 @@ public class Parameters extends AbstractExpression implements ASTNode
         if(left==null)return;
         left.travel();
         codes.addAll(left.codes);
-        func.parameterAddresses.add(left.resultId);
+        func.parameters.add(left.resultId);
         if(right!=null)
         {
             right.travel();

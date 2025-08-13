@@ -7,11 +7,11 @@ import io.silvicky.novel.compiler.tokens.OperatorType;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RelationalExpressionResidue extends AbstractExpressionResidue<RelationalExpression>
+public class AssignmentExpressionResidue extends AbstractExpressionResidue<AssignmentExpression>
 {
-    private RelationalExpression child=null;
+    private AssignmentExpression child=null;
     private OperatorType type=null;
-    protected RelationalExpressionResidue(RelationalExpression root)
+    protected AssignmentExpressionResidue(AssignmentExpression root)
     {
         super(root);
     }
@@ -20,9 +20,9 @@ public class RelationalExpressionResidue extends AbstractExpressionResidue<Relat
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
         List<AbstractToken> ret=new ArrayList<>();
-        if(next instanceof OperatorToken operatorToken&&(operatorToken.type==OperatorType.LESS||operatorToken.type==OperatorType.LESS_EQUAL||operatorToken.type==OperatorType.GREATER||operatorToken.type==OperatorType.GREATER_EQUAL))
+        if(next instanceof OperatorToken operatorToken&&operatorToken.type.properties== OperatorType.OperatorArgsProperties.BINARY_ASSIGN)
         {
-            child = new RelationalExpression();
+            child = new AssignmentExpression();
             type=operatorToken.type;
             ret.add(child);
             ret.add(new OperatorToken(type));

@@ -8,7 +8,8 @@ import io.silvicky.novel.compiler.tokens.OperatorType;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.silvicky.novel.compiler.parser.expression.Rotator.rotateLeft;
+import static io.silvicky.novel.util.Util.getResultType;
+import static io.silvicky.novel.util.Util.rotateLeft;
 
 public class LogicalOrExpression extends LTRExpression
 {
@@ -36,11 +37,16 @@ public class LogicalOrExpression extends LTRExpression
             if(right2.right instanceof LogicalAndExpression)right= rotateLeft(right2);
             right.travel();
             codes.addAll(right.codes);
-            codes.add(new AssignCode(resultId,left.resultId,right.resultId, OperatorType.OR_OR));
+            type=getResultType(left.type,right.type,OperatorType.OR_OR);
+            leftId=-1;
+            codes.add(new AssignCode(resultId,left.resultId,right.resultId,type,left.type,right.type, OperatorType.OR_OR));
         }
         else
         {
-            codes.add(new AssignCode(resultId,left.resultId,left.resultId,OperatorType.NOP));
+            type=left.type;
+            leftId=left.leftId;
+            isDirect=left.isDirect;
+            codes.add(new AssignCode(resultId,left.resultId,left.resultId,type,type,type,OperatorType.NOP));
         }
     }
 }

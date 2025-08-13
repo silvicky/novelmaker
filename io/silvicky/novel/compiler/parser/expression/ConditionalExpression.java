@@ -12,7 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static io.silvicky.novel.compiler.Compiler.requestInternalLabel;
-import static io.silvicky.novel.compiler.parser.expression.Rotator.rotateLeft;
+import static io.silvicky.novel.util.Util.getResultType;
+import static io.silvicky.novel.util.Util.rotateLeft;
 
 public class ConditionalExpression extends AbstractExpression
 {
@@ -43,19 +44,25 @@ public class ConditionalExpression extends AbstractExpression
             int lbEnd=requestInternalLabel();
             codes.add(new GotoCode(left.resultId,left.resultId, OperatorType.NOT,lbRight));
             if(middle.right instanceof ExpressionNew)middle= rotateLeft(middle);
+            leftId=-1;
+            //TODO any better way?
+            type=getResultType(middle.type,right.type,OperatorType.PLUS);
             middle.travel();
             codes.addAll(middle.codes);
-            codes.add(new AssignCode(resultId, middle.resultId, middle.resultId, OperatorType.NOP));
+            codes.add(new AssignCode(resultId, middle.resultId, middle.resultId, type,middle.type,middle.type,OperatorType.NOP));
             codes.add(new UnconditionalGotoCode(lbEnd));
             codes.add(new LabelCode(lbRight));
             right.travel();
             codes.addAll(right.codes);
-            codes.add(new AssignCode(resultId, right.resultId,right.resultId,OperatorType.NOP));
+            codes.add(new AssignCode(resultId, right.resultId,right.resultId,type,right.type,right.type,OperatorType.NOP));
             codes.add(new LabelCode(lbEnd));
         }
         else
         {
-            codes.add(new AssignCode(resultId, left.resultId,left.resultId,OperatorType.NOP));
+            type=left.type;
+            leftId=left.leftId;
+            isDirect=left.isDirect;
+            codes.add(new AssignCode(resultId,left.resultId,left.resultId,type,type,type,OperatorType.NOP));
         }
     }
 }

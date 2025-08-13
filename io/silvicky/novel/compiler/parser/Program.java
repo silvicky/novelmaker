@@ -13,17 +13,12 @@ public class Program extends NonTerminal
     {
         List<AbstractToken> ret=new ArrayList<>();
         if(next==null||next instanceof EofToken)return ret;
-        if(next instanceof KeywordToken keywordToken&&keywordToken.type== KeywordType.INT)
-        {
-            Declaration declaration=new Declaration();
-            Program program=new Program();
-            ret.add(new AppendCodeSeqOperation(this,program));
-            ret.add(program);
-            ret.add(new AppendCodeSeqOperation(this,declaration));
-            ret.add(declaration);
-            ret.add(new KeywordToken(KeywordType.INT));
-            return ret;
-        }
-        throw new GrammarException(this.getClass().getSimpleName()+next);
+        Declaration declaration=new Declaration();
+        Program program=new Program();
+        ret.add(new AppendCodeSeqOperation(this,program));
+        ret.add(program);
+        ret.add(new AppendCodeSeqOperation(this,declaration));
+        ret.add(declaration);
+        return ret;
     }
 }

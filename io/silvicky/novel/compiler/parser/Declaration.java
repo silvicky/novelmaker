@@ -14,6 +14,7 @@ public class Declaration extends NonTerminal
     @Override
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
+        //TODO type
         List<AbstractToken> ret=new ArrayList<>();
         if(!(next instanceof IdentifierToken))
         {

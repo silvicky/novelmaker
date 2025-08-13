@@ -10,9 +10,9 @@ import java.util.List;
 public class ParametersResidue extends AbstractExpressionResidue<Parameters>
 {
     private Parameters child=null;
-    private final PrimaryExpression func;
+    private final Postfix func;
 
-    protected ParametersResidue(Parameters root, PrimaryExpression func)
+    protected ParametersResidue(Parameters root, Postfix func)
     {
         super(root);
         this.func = func;
