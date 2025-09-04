@@ -45,9 +45,10 @@ public class ConditionalExpression extends AbstractExpression
             codes.add(new GotoCode(left.resultId,left.resultId, OperatorType.NOT,lbRight));
             if(middle.right instanceof ExpressionNew)middle= rotateLeft(middle);
             leftId=-1;
+            middle.travel();
+            right.travel();
             //TODO any better way?
             type=getResultType(middle.type,right.type,OperatorType.PLUS);
-            middle.travel();
             codes.addAll(middle.codes);
             codes.add(new AssignCode(resultId, middle.resultId, middle.resultId, type,middle.type,middle.type,OperatorType.NOP));
             codes.add(new UnconditionalGotoCode(lbEnd));

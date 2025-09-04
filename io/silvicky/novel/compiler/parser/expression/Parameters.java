@@ -5,6 +5,7 @@ import io.silvicky.novel.compiler.parser.operation.ResolveOperation;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
+import io.silvicky.novel.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +39,7 @@ public class Parameters extends AbstractExpression implements ASTNode
         if(left==null)return;
         left.travel();
         codes.addAll(left.codes);
-        func.parameters.add(left.resultId);
+        func.parameters.add(new Pair<>(left.type,left.resultId));
         if(right!=null)
         {
             right.travel();

@@ -13,18 +13,15 @@ import static io.silvicky.novel.util.Util.rotateLeft;
 public class PrimaryExpression extends AbstractExpression
 {
     private Object numericVal;
-    private int variable=-1;
     private ExpressionNew nextExpression=null;
+    private String variableName=null;
     @Override
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
         List<AbstractToken> ret=new ArrayList<>();
         if(next instanceof IdentifierToken identifierToken)
         {
-            variable= lookupVariable(identifierToken.id).first();
-            type= lookupVariable(identifierToken.id).second();
-            leftId=variable;
-            isDirect=true;
+            variableName=identifierToken.id;
             ret.add(new IdentifierToken(identifierToken.id));
             return ret;
         }
@@ -54,9 +51,12 @@ public class PrimaryExpression extends AbstractExpression
             leftId=nextExpression.leftId;
             codes.add(new AssignCode(resultId,nextExpression.resultId,nextExpression.resultId,type,type,type,OperatorType.NOP));
         }
-        else if(variable!=-1)
+        else if(variableName!=null)
         {
-            codes.add(new AssignCode(resultId,variable,variable,type,type,type,OperatorType.NOP));
+            type= lookupVariable(variableName).second();
+            leftId=lookupVariable(variableName).first();
+            isDirect=true;
+            codes.add(new AssignCode(resultId,leftId,leftId,type,type,type,OperatorType.NOP));
         }
         else
         {

@@ -1,6 +1,5 @@
 package io.silvicky.novel.compiler.parser.declaration;
 
-import io.silvicky.novel.compiler.parser.BaseTypeBuilderRoot;
 import io.silvicky.novel.compiler.parser.NonTerminal;
 import io.silvicky.novel.compiler.parser.expression.AbstractExpressionResidue;
 import io.silvicky.novel.compiler.tokens.AbstractToken;

@@ -5,7 +5,6 @@ import io.silvicky.novel.compiler.code.LabelCode;
 import io.silvicky.novel.compiler.code.ReturnCode;
 import io.silvicky.novel.compiler.code.UnconditionalGotoCode;
 import io.silvicky.novel.compiler.parser.ASTNode;
-import io.silvicky.novel.compiler.parser.BaseTypeBuilderRoot;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.NonTerminal;
 import io.silvicky.novel.compiler.parser.expression.AssignmentExpression;
@@ -42,7 +41,6 @@ public class AssignmentDeclaration extends NonTerminal implements ASTNode
         List<AbstractToken> ret=new ArrayList<>();
         unaryDeclaration=new UnaryDeclaration(baseTypeBuilderRoot);
         AssignmentDeclarationResidue assignmentDeclarationResidue =new AssignmentDeclarationResidue(this);
-        ret.add(new ResolveOperation(assignmentDeclarationResidue));
         ret.add(assignmentDeclarationResidue);
         ret.add(unaryDeclaration);
         return ret;
@@ -53,6 +51,16 @@ public class AssignmentDeclaration extends NonTerminal implements ASTNode
         unaryDeclaration.travel();
         if(unaryDeclaration.type instanceof FunctionType)
         {
+            if(directParent==null)
+            {
+                registerVariable(unaryDeclaration.name, unaryDeclaration.type);
+            }
+            else
+            {
+                //TODO how to even process this stuff??
+                registerLocalVariable(unaryDeclaration.name, unaryDeclaration.type);
+                directParent.revokedVariables.add(unaryDeclaration.name);
+            }
             if(assignmentExpression!=null)
             {
                 throw new GrammarException("function assigned as variable");
@@ -73,10 +81,9 @@ public class AssignmentDeclaration extends NonTerminal implements ASTNode
                 codes.add(new ReturnCode(-1));
                 codes.add(new LabelCode(endLabel));
                 ctx=-1;
-                return;
             }
             //fixme
-            throw new GrammarException("function not implemented");
+            else throw new GrammarException("function not implemented");
         }
         else
         {

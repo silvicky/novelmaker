@@ -206,6 +206,7 @@ public class Compiler
                 root.codes.set(i,new UnconditionalGotoCode(target));
             }
         }
+        root.travel();
         return root.codes;
     }
     public static int addressTransformer(int bp,int val)

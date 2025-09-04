@@ -1,7 +1,6 @@
 package io.silvicky.novel.compiler.parser.declaration;
 
 import io.silvicky.novel.compiler.parser.ASTNode;
-import io.silvicky.novel.compiler.parser.BaseTypeBuilderRoot;
 import io.silvicky.novel.compiler.parser.NonTerminal;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.IdentifierToken;

@@ -4,6 +4,7 @@ import io.silvicky.novel.compiler.parser.line.Block;
 import io.silvicky.novel.compiler.parser.Skip;
 import io.silvicky.novel.compiler.parser.expression.AbstractExpressionResidue;
 import io.silvicky.novel.compiler.parser.expression.AssignmentExpression;
+import io.silvicky.novel.compiler.parser.operation.ResolveOperation;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
@@ -29,6 +30,7 @@ public class AssignmentDeclarationResidue extends AbstractExpressionResidue<Assi
             if(operatorToken.type== OperatorType.EQUAL)
             {
                 assignmentExpression=new AssignmentExpression();
+                ret.add(new ResolveOperation(this));
                 ret.add(assignmentExpression);
                 ret.add(new OperatorToken(OperatorType.EQUAL));
                 return ret;
@@ -37,6 +39,7 @@ public class AssignmentDeclarationResidue extends AbstractExpressionResidue<Assi
             {
                 functionBody=new Block();
                 ret.add(new Skip());
+                ret.add(new ResolveOperation(this));
                 ret.add(new OperatorToken(OperatorType.R_BRACE));
                 ret.add(functionBody);
                 ret.add(new OperatorToken(OperatorType.L_BRACE));

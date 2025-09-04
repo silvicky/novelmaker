@@ -1,12 +1,12 @@
 package io.silvicky.novel.compiler.parser.expression;
 
-import io.silvicky.novel.compiler.code.AssignCode;
-import io.silvicky.novel.compiler.code.AssignVariableNumberCode;
-import io.silvicky.novel.compiler.code.DereferenceCode;
+import io.silvicky.novel.compiler.code.*;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
 import io.silvicky.novel.compiler.types.AbstractPointer;
+import io.silvicky.novel.compiler.types.FunctionType;
+import io.silvicky.novel.compiler.types.PointerType;
 import io.silvicky.novel.compiler.types.Type;
 
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ import static io.silvicky.novel.util.Util.getResultType;
 
 public class PostfixExpression extends AbstractExpression
 {
-    private PrimaryExpression nextExpression=null;
+    private PrimaryExpression nextExpression;
     public final List<Postfix> postfixes=new ArrayList<>();
     @Override
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
@@ -33,12 +33,14 @@ public class PostfixExpression extends AbstractExpression
     public void travel()
     {
         //TODO maybe rewrite?
+        nextExpression.travel();
         int curResult=nextExpression.resultId,nextResult;
         leftId= nextExpression.leftId;
         isDirect= nextExpression.isDirect;
         type= nextExpression.type;
         for(Postfix postfix:postfixes)
         {
+            postfix.travel();
             switch (postfix.operatorType)
             {
                 case PLUS_PLUS,MINUS_MINUS:
@@ -72,7 +74,31 @@ public class PostfixExpression extends AbstractExpression
                 }
                 case L_PARENTHESES:
                 {
-                    //TODO Function Call
+                    int tmp=curResult,tmp2;
+                    while(type instanceof PointerType pointerType)
+                    {
+                        type=pointerType.baseType();
+                        tmp2=requestInternalVariable();
+                        codes.add(new DereferenceCode(tmp2,tmp,pointerType.baseType()));
+                        tmp=tmp2;
+                    }
+                    if(!(type instanceof FunctionType functionType))throw new GrammarException("not a function");
+                    if(postfix.parameters.size()!=functionType.args().size())throw new GrammarException("parameters mismatch");
+                    List<Integer> castParameters=new ArrayList<>();
+                    for(int i=0;i<postfix.parameters.size();i++)
+                    {
+                        Type pType=postfix.parameters.get(i).first(),aType=functionType.args().get(i);
+                        if(pType.equals(aType))castParameters.add(postfix.parameters.get(i).second());
+                        int id=requestInternalVariable();
+                        codes.add(new AssignCode(id,postfix.parameters.get(i).second(),0,aType,pType,pType,OperatorType.NOP));
+                        castParameters.add(id);
+                    }
+                    codes.add(new CallCode(tmp,castParameters));
+                    curResult=requestInternalVariable();
+                    codes.add(new FetchReturnValueCode(curResult));
+                    type=functionType.returnType();
+                    leftId=-1;
+                    isDirect=false;
                 }
             }
         }

@@ -1,7 +1,6 @@
 package io.silvicky.novel.compiler.parser.declaration;
 
 import io.silvicky.novel.compiler.parser.ASTNode;
-import io.silvicky.novel.compiler.parser.BaseTypeBuilderRoot;
 import io.silvicky.novel.compiler.parser.NonTerminal;
 import io.silvicky.novel.compiler.parser.operation.ResolveOperation;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
@@ -38,8 +37,11 @@ public class Declaration extends NonTerminal implements ASTNode
     public void travel()
     {
         assignmentDeclaration.travel();
-        child.travel();
         codes.addAll(assignmentDeclaration.codes);
-        if(child!=null)codes.addAll(child.codes);
+        if(child!=null)
+        {
+            child.travel();
+            codes.addAll(child.codes);
+        }
     }
 }

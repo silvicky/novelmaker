@@ -1,7 +1,6 @@
 package io.silvicky.novel.compiler.parser.declaration;
 
 import io.silvicky.novel.compiler.parser.ASTNode;
-import io.silvicky.novel.compiler.parser.BaseTypeBuilderRoot;
 import io.silvicky.novel.compiler.parser.NonTerminal;
 import io.silvicky.novel.compiler.tokens.*;
 import io.silvicky.novel.compiler.types.ConstType;
@@ -49,6 +48,7 @@ public class UnaryDeclaration extends NonTerminal implements ASTNode
             return ret;
         }
         postfixDeclaration=new PostfixDeclaration(baseTypeBuilderRoot);
+        ret.add(postfixDeclaration);
         return ret;
     }
     @Override
@@ -61,6 +61,7 @@ public class UnaryDeclaration extends NonTerminal implements ASTNode
             postfixDeclaration=child.postfixDeclaration;
             child=child.child;
         }
+        postfixDeclaration.travel();
         name= postfixDeclaration.name;
         type= postfixDeclaration.type;
         parameters= postfixDeclaration.parameters;

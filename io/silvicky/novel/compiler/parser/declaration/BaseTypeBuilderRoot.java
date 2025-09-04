@@ -1,5 +1,8 @@
-package io.silvicky.novel.compiler.parser;
+package io.silvicky.novel.compiler.parser.declaration;
 
+import io.silvicky.novel.compiler.parser.ASTNode;
+import io.silvicky.novel.compiler.parser.GrammarException;
+import io.silvicky.novel.compiler.parser.NonTerminal;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.KeywordType;
 import io.silvicky.novel.compiler.types.ConstType;

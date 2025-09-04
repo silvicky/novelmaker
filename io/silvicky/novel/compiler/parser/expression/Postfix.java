@@ -5,6 +5,8 @@ import io.silvicky.novel.compiler.parser.NonTerminal;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
+import io.silvicky.novel.compiler.types.Type;
+import io.silvicky.novel.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +15,7 @@ public class Postfix extends NonTerminal implements ASTNode
 {
     public OperatorType operatorType;
     public ExpressionNew nextExpression;
-    public final List<Integer> parameters=new ArrayList<>();
+    public final List<Pair<Type,Integer>> parameters=new ArrayList<>();
     private Parameters pr;
     @Override
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
@@ -44,6 +46,7 @@ public class Postfix extends NonTerminal implements ASTNode
     @Override
     public void travel()
     {
-        //TODO
+        if(nextExpression!=null)nextExpression.travel();
+        if(pr!=null)pr.travel();
     }
 }

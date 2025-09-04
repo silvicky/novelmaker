@@ -49,6 +49,10 @@ public class CastExpression extends AbstractExpression
     @Override
     public void travel()
     {
+        nextExpression.travel();
+        type= nextExpression.type;
+        leftId= nextExpression.leftId;
+        isDirect= nextExpression.isDirect;
         //TODO
     }
 }
