@@ -4,23 +4,23 @@ import io.silvicky.novel.compiler.code.AssignCode;
 import io.silvicky.novel.compiler.code.LabelCode;
 import io.silvicky.novel.compiler.code.ReturnCode;
 import io.silvicky.novel.compiler.code.UnconditionalGotoCode;
-import io.silvicky.novel.compiler.parser.*;
+import io.silvicky.novel.compiler.parser.ASTNode;
+import io.silvicky.novel.compiler.parser.BaseTypeBuilderRoot;
+import io.silvicky.novel.compiler.parser.GrammarException;
+import io.silvicky.novel.compiler.parser.NonTerminal;
 import io.silvicky.novel.compiler.parser.expression.AssignmentExpression;
-import io.silvicky.novel.compiler.parser.operation.AppendCodeOperation;
-import io.silvicky.novel.compiler.parser.operation.AppendCodeSeqOperation;
-import io.silvicky.novel.compiler.parser.operation.ResetCtxOperation;
+import io.silvicky.novel.compiler.parser.line.Block;
 import io.silvicky.novel.compiler.parser.operation.ResolveOperation;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
-import io.silvicky.novel.compiler.tokens.IdentifierToken;
-import io.silvicky.novel.compiler.tokens.OperatorToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
 import io.silvicky.novel.compiler.types.FunctionType;
+import io.silvicky.novel.compiler.types.Type;
+import io.silvicky.novel.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static io.silvicky.novel.compiler.Compiler.*;
-import static io.silvicky.novel.compiler.Compiler.ctx;
 
 public class AssignmentDeclaration extends NonTerminal implements ASTNode
 {
@@ -59,12 +59,17 @@ public class AssignmentDeclaration extends NonTerminal implements ASTNode
             }
             if(functionBody!=null)
             {
-                //TODO Declare the args
                 ctx=registerLabel(unaryDeclaration.name);
+                for(Pair<Type,String> pair: unaryDeclaration.parameters)
+                {
+                    registerLocalVariable(pair.second(), pair.first());
+                    directParent.revokedVariables.add(pair.second());
+                    //todo all the "direct parent" should be changed
+                }
                 int endLabel=requestLabel();
                 codes.add(new UnconditionalGotoCode(endLabel));
                 codes.add(new LabelCode(ctx));
-                //TODO Fix the ctx
+                functionBody.travel();
                 codes.addAll(functionBody.codes);
                 codes.add(new ReturnCode(-1));
                 codes.add(new LabelCode(endLabel));
