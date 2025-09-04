@@ -9,6 +9,8 @@ import io.silvicky.novel.compiler.tokens.KeywordType;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.silvicky.novel.compiler.Compiler.revokeLocalVariable;
+
 public class Else extends NonTerminal implements ASTNode
 {
     public final int breakLabel,continueLabel;
@@ -20,7 +22,7 @@ public class Else extends NonTerminal implements ASTNode
         List<AbstractToken> ret=new ArrayList<>();
         if(next instanceof KeywordToken keywordToken&&keywordToken.type== KeywordType.ELSE)
         {
-            line=new Line(breakLabel,continueLabel,this);
+            line=new Line(breakLabel,continueLabel,null);
             ret.add(line);
             ret.add(new KeywordToken(KeywordType.ELSE));
         }

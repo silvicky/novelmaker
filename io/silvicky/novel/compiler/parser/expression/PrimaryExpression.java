@@ -2,14 +2,11 @@ package io.silvicky.novel.compiler.parser.expression;
 
 import io.silvicky.novel.compiler.code.AssignCode;
 import io.silvicky.novel.compiler.code.AssignVariableNumberCode;
-import io.silvicky.novel.compiler.code.CallCode;
-import io.silvicky.novel.compiler.code.FetchReturnValueCode;
 import io.silvicky.novel.compiler.tokens.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.silvicky.novel.compiler.Compiler.lookupLabel;
 import static io.silvicky.novel.compiler.Compiler.lookupVariable;
 import static io.silvicky.novel.util.Util.rotateLeft;
 

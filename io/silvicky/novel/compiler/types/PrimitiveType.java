@@ -1,7 +1,5 @@
 package io.silvicky.novel.compiler.types;
 
-import io.silvicky.novel.compiler.tokens.KeywordToken;
-
 public enum PrimitiveType implements Type
 {
     BOOL(1, Boolean.class, "bool"),

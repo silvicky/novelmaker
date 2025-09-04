@@ -4,7 +4,6 @@ import io.silvicky.novel.compiler.parser.ASTNode;
 import io.silvicky.novel.compiler.parser.NonTerminal;
 import io.silvicky.novel.compiler.parser.declaration.DeclarationRoot;
 import io.silvicky.novel.compiler.parser.expression.ExpressionRoot;
-import io.silvicky.novel.compiler.parser.operation.AppendCodeSeqOperation;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.KeywordToken;
 import io.silvicky.novel.compiler.tokens.OperatorToken;

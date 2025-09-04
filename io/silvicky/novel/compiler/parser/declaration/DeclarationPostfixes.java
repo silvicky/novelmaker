@@ -1,9 +1,6 @@
 package io.silvicky.novel.compiler.parser.declaration;
 
 import io.silvicky.novel.compiler.parser.NonTerminal;
-import io.silvicky.novel.compiler.parser.expression.Postfix;
-import io.silvicky.novel.compiler.parser.expression.PostfixExpression;
-import io.silvicky.novel.compiler.parser.expression.Postfixes;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;

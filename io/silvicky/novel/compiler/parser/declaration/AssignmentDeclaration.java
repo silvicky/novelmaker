@@ -63,8 +63,7 @@ public class AssignmentDeclaration extends NonTerminal implements ASTNode
                 for(Pair<Type,String> pair: unaryDeclaration.parameters)
                 {
                     registerLocalVariable(pair.second(), pair.first());
-                    directParent.revokedVariables.add(pair.second());
-                    //todo all the "direct parent" should be changed
+                    functionBody.revokedVariables.add(pair.second());
                 }
                 int endLabel=requestLabel();
                 codes.add(new UnconditionalGotoCode(endLabel));

@@ -10,7 +10,6 @@ import java.util.List;
 
 public class ArgumentsResidue extends AbstractExpressionResidue<Arguments>
 {
-    private Arguments child;
     private final DeclarationPostfix postfix;
     protected ArgumentsResidue(Arguments root, DeclarationPostfix postfix)
     {
@@ -23,14 +22,13 @@ public class ArgumentsResidue extends AbstractExpressionResidue<Arguments>
     {
         List<AbstractToken> ret=new ArrayList<>();
         if(next instanceof OperatorToken operatorToken&&operatorToken.type==OperatorType.R_PARENTHESES)return ret;
-        child=new Arguments(postfix);
-        ret.add(child);
+        ret.add(new Arguments(postfix));
         ret.add(new OperatorToken(OperatorType.COMMA));
         return ret;
     }
     @Override
     public void resolve()
     {
-        root.nextExpression=child;
+
     }
 }

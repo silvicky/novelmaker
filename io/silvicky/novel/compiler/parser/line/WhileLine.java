@@ -11,6 +11,8 @@ import io.silvicky.novel.compiler.tokens.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.silvicky.novel.compiler.Compiler.revokeLocalVariable;
+
 public class WhileLine extends NonTerminal implements ASTNode
 {
     LabelCode head;
@@ -44,5 +46,6 @@ public class WhileLine extends NonTerminal implements ASTNode
         codes.addAll(line.codes);
         codes.add(new UnconditionalGotoCode(head.id()));
         codes.add(end);
+        for(String s:revokedVariables)revokeLocalVariable(s);
     }
 }

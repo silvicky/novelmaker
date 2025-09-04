@@ -3,7 +3,6 @@ package io.silvicky.novel.compiler.parser;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.KeywordToken;
 import io.silvicky.novel.compiler.tokens.KeywordType;
-import io.silvicky.novel.compiler.types.Type;
 
 import java.util.ArrayList;
 import java.util.List;

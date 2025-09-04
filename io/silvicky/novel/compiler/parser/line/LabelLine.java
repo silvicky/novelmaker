@@ -3,7 +3,6 @@ package io.silvicky.novel.compiler.parser.line;
 import io.silvicky.novel.compiler.code.LabelCode;
 import io.silvicky.novel.compiler.parser.ASTNode;
 import io.silvicky.novel.compiler.parser.NonTerminal;
-import io.silvicky.novel.compiler.parser.operation.AppendCodeOperation;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.IdentifierToken;
 import io.silvicky.novel.compiler.tokens.OperatorToken;

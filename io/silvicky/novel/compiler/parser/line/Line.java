@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static io.silvicky.novel.compiler.Compiler.revokeLocalVariable;
+
 public class Line extends NonTerminal implements ASTNode
 {
     public final int breakLabel,continueLabel;
@@ -111,5 +113,6 @@ public class Line extends NonTerminal implements ASTNode
     {
         if(content instanceof ASTNode astNode)astNode.travel();
         if(content!=null)codes.addAll(content.codes);
+        for(String s:revokedVariables)revokeLocalVariable(s);
     }
 }

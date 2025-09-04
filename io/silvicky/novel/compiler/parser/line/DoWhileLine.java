@@ -5,13 +5,12 @@ import io.silvicky.novel.compiler.code.LabelCode;
 import io.silvicky.novel.compiler.parser.ASTNode;
 import io.silvicky.novel.compiler.parser.NonTerminal;
 import io.silvicky.novel.compiler.parser.expression.ExpressionRoot;
-import io.silvicky.novel.compiler.parser.operation.AppendCodeOperation;
-import io.silvicky.novel.compiler.parser.operation.AppendCodeSeqOperation;
-import io.silvicky.novel.compiler.parser.operation.AppendExpressionGotoCodeOperation;
 import io.silvicky.novel.compiler.tokens.*;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static io.silvicky.novel.compiler.Compiler.revokeLocalVariable;
 
 public class DoWhileLine extends NonTerminal implements ASTNode
 {
@@ -50,5 +49,6 @@ public class DoWhileLine extends NonTerminal implements ASTNode
         codes.addAll(expression.codes);
         codes.add(new GotoCode(expression.resultId,0,OperatorType.NOP,head.id()));
         codes.add(end);
+        for(String s:revokedVariables)revokeLocalVariable(s);
     }
 }

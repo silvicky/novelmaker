@@ -1,6 +1,5 @@
 package io.silvicky.novel.compiler.parser;
 
-import io.silvicky.novel.compiler.parser.expression.CastExpression;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 
 import java.util.List;

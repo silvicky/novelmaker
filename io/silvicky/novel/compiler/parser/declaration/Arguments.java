@@ -12,7 +12,6 @@ import java.util.List;
 public class Arguments extends NonTerminal
 {
     private final DeclarationPostfix postfix;
-    public Arguments nextExpression;
 
     public Arguments(DeclarationPostfix postfix)
     {

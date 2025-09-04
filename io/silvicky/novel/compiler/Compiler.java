@@ -5,7 +5,6 @@ import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.NonTerminal;
 import io.silvicky.novel.compiler.parser.Program;
 import io.silvicky.novel.compiler.parser.Skip;
-import io.silvicky.novel.compiler.parser.operation.LocalVariableClearOperation;
 import io.silvicky.novel.compiler.parser.operation.Operation;
 import io.silvicky.novel.compiler.tokens.*;
 import io.silvicky.novel.compiler.types.Type;
@@ -167,8 +166,7 @@ public class Compiler
         if(a instanceof IdentifierToken)return ((IdentifierToken) a).id.equals(((IdentifierToken) b).id);
         if(a instanceof KeywordToken)return ((KeywordToken) a).type.equals(((KeywordToken) b).type);
         if(a instanceof OperatorToken)return ((OperatorToken) a).type.equals(((OperatorToken) b).type);
-        if(a instanceof NumberToken)return true;
-        return false;
+        return a instanceof NumberToken;
     }
     public static List<Code> parser(List<AbstractToken> abstractTokens)
     {
@@ -198,7 +196,6 @@ public class Compiler
                 continue;
             }
             List<AbstractToken> list=nonTerminal.lookup(next,second);
-            stack.push(new LocalVariableClearOperation(nonTerminal));
             for(AbstractToken abstractToken :list)stack.push(abstractToken);
         }
         for(int i=0;i<root.codes.size();i++)
