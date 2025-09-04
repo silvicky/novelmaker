@@ -10,6 +10,7 @@ import java.util.List;
 public class CastExpression extends AbstractExpression
 {
     public Type castType;
+    private TypeBuilder typeBuilder;
     private CastExpression child=null;
     private UnaryExpression nextExpression=null;
     @Override
@@ -31,7 +32,8 @@ public class CastExpression extends AbstractExpression
                     ||keywordToken.type==KeywordType.SIGNED))
         {
             child=new CastExpression();
-            TypeBuilder typeBuilder=new TypeBuilder(this);
+            //TODO this is wrong
+            typeBuilder=new TypeBuilder();
             ret.add(child);
             ret.add(new OperatorToken(OperatorType.R_PARENTHESES));
             ret.add(typeBuilder);

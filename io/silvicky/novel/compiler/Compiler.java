@@ -4,6 +4,7 @@ import io.silvicky.novel.compiler.code.*;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.NonTerminal;
 import io.silvicky.novel.compiler.parser.Program;
+import io.silvicky.novel.compiler.parser.Skip;
 import io.silvicky.novel.compiler.parser.operation.LocalVariableClearOperation;
 import io.silvicky.novel.compiler.parser.operation.Operation;
 import io.silvicky.novel.compiler.tokens.*;
@@ -178,9 +179,14 @@ public class Compiler
         while(!stack.empty())
         {
             AbstractToken top=stack.pop();
-            if(top instanceof Operation)
+            if(top instanceof Operation operation)
             {
-                ((Operation) top).execute();
+                operation.execute();
+                continue;
+            }
+            if(top instanceof Skip)
+            {
+                stack.pop();
                 continue;
             }
             AbstractToken next= abstractTokens.get(rul);
@@ -220,7 +226,7 @@ public class Compiler
         int ip=0;
         int bp=dataSegmentBaseAddress-1;
         int sp=bp;
-        long ret=0;
+        int ret=0;
         while(ip<codes.size())
         {
             Code code=codes.get(ip++);
@@ -253,7 +259,7 @@ public class Compiler
             }
             if(code instanceof ReturnCode returnCode)
             {
-                ret=mem[addressTransformer(bp,returnCode.val())];
+                ret=addressTransformer(bp,returnCode.val());
                 sp=bp+2;
                 ip=(int)mem[bp+1];
                 bp=(int)mem[bp];
@@ -275,7 +281,7 @@ public class Compiler
             }
             if(code instanceof FetchReturnValueCode fetchReturnValueCode)
             {
-                mem[addressTransformer(bp,fetchReturnValueCode.target())]=ret;
+                mem[addressTransformer(bp,fetchReturnValueCode.target())]=mem[ret];
                 continue;
             }
             if(code instanceof PlaceholderUnconditionalGotoCode)

@@ -4,6 +4,7 @@ import io.silvicky.novel.compiler.code.LabelCode;
 import io.silvicky.novel.compiler.code.PlaceholderUnconditionalGotoCode;
 import io.silvicky.novel.compiler.code.ReturnCode;
 import io.silvicky.novel.compiler.code.UnconditionalGotoCode;
+import io.silvicky.novel.compiler.parser.declaration.DeclarationRoot;
 import io.silvicky.novel.compiler.parser.expression.ExpressionRoot;
 import io.silvicky.novel.compiler.parser.operation.AppendCodeOperation;
 import io.silvicky.novel.compiler.parser.operation.AppendCodeSeqOperation;
@@ -14,7 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static io.silvicky.novel.compiler.Compiler.*;
+import static io.silvicky.novel.compiler.Compiler.ctx;
+import static io.silvicky.novel.compiler.Compiler.registerLocalLabel;
 
 public class Line extends NonTerminal
 {
@@ -60,7 +62,6 @@ public class Line extends NonTerminal
                 ret.add(third);
                 ret.add(new OperatorToken(OperatorType.SEMICOLON));
                 ret.add(expression);
-                ret.add(new OperatorToken(OperatorType.SEMICOLON));
                 ret.add(first);
                 ret.add(new OperatorToken(OperatorType.L_PARENTHESES));
                 ret.add(new KeywordToken(KeywordType.FOR));
@@ -105,15 +106,6 @@ public class Line extends NonTerminal
                 ret.add(new KeywordToken(KeywordType.WHILE));
                 ret.add(line);
                 ret.add(new KeywordToken(KeywordType.DO));
-                return ret;
-            }
-            if(type == KeywordType.INT)
-            {
-                VariableDeclaration declaration=new VariableDeclaration(Objects.requireNonNullElse(this.directParent, this));
-                ret.add(new OperatorToken(OperatorType.SEMICOLON));
-                ret.add(new AppendCodeSeqOperation(this,declaration));
-                ret.add(declaration);
-                ret.add(new KeywordToken(KeywordType.INT));
                 return ret;
             }
             if(type==KeywordType.IF)
@@ -170,6 +162,7 @@ public class Line extends NonTerminal
             {
                 ExpressionRoot expressionRoot=new ExpressionRoot();
                 ret.add(new AppendCodeOperation(this,new ReturnCode(expressionRoot.resultId)));
+                //TODO Cast
                 ret.add(new AppendCodeSeqOperation(this,expressionRoot));
                 ret.add(new OperatorToken(OperatorType.SEMICOLON));
                 ret.add(expressionRoot);
@@ -177,7 +170,10 @@ public class Line extends NonTerminal
                 return ret;
             }
             //TODO idk
-            return null;
+            DeclarationRoot declaration=new DeclarationRoot(Objects.requireNonNullElse(this.directParent, this),false);
+            ret.add(new AppendCodeSeqOperation(this,declaration));
+            ret.add(declaration);
+            return ret;
         }
         else if(second instanceof OperatorToken operatorToken&&operatorToken.type==OperatorType.LABEL)
         {

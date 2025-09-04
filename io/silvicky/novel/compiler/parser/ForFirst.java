@@ -1,8 +1,12 @@
 package io.silvicky.novel.compiler.parser;
 
+import io.silvicky.novel.compiler.parser.declaration.DeclarationRoot;
 import io.silvicky.novel.compiler.parser.expression.ExpressionRoot;
 import io.silvicky.novel.compiler.parser.operation.AppendCodeSeqOperation;
-import io.silvicky.novel.compiler.tokens.*;
+import io.silvicky.novel.compiler.tokens.AbstractToken;
+import io.silvicky.novel.compiler.tokens.KeywordToken;
+import io.silvicky.novel.compiler.tokens.OperatorToken;
+import io.silvicky.novel.compiler.tokens.OperatorType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,20 +25,19 @@ public class ForFirst extends NonTerminal
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
         List<AbstractToken> ret=new ArrayList<>();
-        if(next instanceof KeywordToken keywordToken&&keywordToken.type== KeywordType.INT)
+        if(next instanceof KeywordToken)
         {
-            VariableDeclaration declaration=new VariableDeclaration(Objects.requireNonNullElse(this.directParent, this));
+            DeclarationRoot declaration=new DeclarationRoot(Objects.requireNonNullElse(this.directParent, this),false);
             ret.add(new AppendCodeSeqOperation(this,declaration));
             ret.add(declaration);
-            ret.add(new KeywordToken(KeywordType.INT));
-            return ret;
         }
         else
         {
             ExpressionRoot expressionRoot=new ExpressionRoot();
             ret.add(new AppendCodeSeqOperation(this,expressionRoot));
+            ret.add(new OperatorToken(OperatorType.SEMICOLON));
             ret.add(expressionRoot);
-            return ret;
         }
+        return ret;
     }
 }
