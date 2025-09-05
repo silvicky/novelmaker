@@ -2,7 +2,6 @@ package io.silvicky.novel.compiler.parser.expression;
 
 import io.silvicky.novel.compiler.code.AssignCode;
 import io.silvicky.novel.compiler.code.AssignNumberCode;
-import io.silvicky.novel.compiler.code.AssignVariableNumberCode;
 import io.silvicky.novel.compiler.code.ReferenceCode;
 import io.silvicky.novel.compiler.tokens.*;
 import io.silvicky.novel.compiler.types.ArrayType;
@@ -66,7 +65,7 @@ public class PrimaryExpression extends AbstractExpression
         }
         else
         {
-            codes.add(new AssignVariableNumberCode(resultId,0,numericVal,type,type,type,OperatorType.COMMA));
+            codes.add(new AssignNumberCode(resultId,numericVal,type,type));
         }
     }
 }

@@ -20,6 +20,7 @@ public class UnaryDeclaration extends NonTerminal implements ASTNode
     private final BaseTypeBuilderRoot baseTypeBuilderRoot;
     public List<Pair<Type,String>> parameters;
     public String name;
+    public Type receivedType;
     public Type type;
 
     public UnaryDeclaration(BaseTypeBuilderRoot baseTypeBuilderRoot)
@@ -61,14 +62,15 @@ public class UnaryDeclaration extends NonTerminal implements ASTNode
             postfixDeclaration=child.postfixDeclaration;
             child=child.child;
         }
+        if(isPointer)
+        {
+            receivedType=new PointerType(receivedType);
+            if(isConst)receivedType=new ConstType(receivedType);
+        }
+        postfixDeclaration.receivedType=receivedType;
         postfixDeclaration.travel();
         name= postfixDeclaration.name;
         type= postfixDeclaration.type;
         parameters= postfixDeclaration.parameters;
-        if(isPointer)
-        {
-            type=new PointerType(type);
-            if(isConst)type=new ConstType(type);
-        }
     }
 }

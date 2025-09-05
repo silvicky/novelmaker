@@ -9,8 +9,6 @@ import io.silvicky.novel.compiler.tokens.KeywordType;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.silvicky.novel.compiler.Compiler.revokeLocalVariable;
-
 public class Else extends NonTerminal implements ASTNode
 {
     public final int breakLabel,continueLabel;

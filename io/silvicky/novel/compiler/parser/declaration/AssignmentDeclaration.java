@@ -6,7 +6,6 @@ import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.NonTerminal;
 import io.silvicky.novel.compiler.parser.expression.AssignmentExpression;
 import io.silvicky.novel.compiler.parser.line.Block;
-import io.silvicky.novel.compiler.parser.operation.ResolveOperation;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
 import io.silvicky.novel.compiler.types.FunctionType;
@@ -46,6 +45,7 @@ public class AssignmentDeclaration extends NonTerminal implements ASTNode
     @Override
     public void travel()
     {
+        unaryDeclaration.receivedType= baseTypeBuilderRoot.type;
         unaryDeclaration.travel();
         if(unaryDeclaration.type instanceof FunctionType)
         {

@@ -39,6 +39,7 @@ public class Argument extends NonTerminal implements ASTNode
     public void travel()
     {
         baseTypeBuilderRoot.travel();
+        declaration.receivedType= baseTypeBuilderRoot.type;
         declaration.travel();
         name= declaration.name;
         type= declaration.type;

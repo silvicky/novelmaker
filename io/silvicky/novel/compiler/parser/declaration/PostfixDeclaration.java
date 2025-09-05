@@ -20,6 +20,7 @@ public class PostfixDeclaration extends NonTerminal implements ASTNode
     private PrimaryDeclaration nextExpression;
     public List<Pair<Type,String>> parameters;
     public String name;
+    public Type receivedType;
     public Type type;
 
     public PostfixDeclaration(BaseTypeBuilderRoot baseTypeBuilderRoot)
@@ -39,20 +40,21 @@ public class PostfixDeclaration extends NonTerminal implements ASTNode
     @Override
     public void travel()
     {
-        nextExpression.travel();
-        name=nextExpression.name;
-        type= nextExpression.type;
         for(DeclarationPostfix postfix:postfixes.reversed())
         {
             if(postfix.operatorType==OperatorType.L_PARENTHESES)
             {
                 parameters=postfix.parameters;
-                type=new FunctionType(type,postfix.parameters.stream().map(Pair::first).toList());
+                receivedType=new FunctionType(receivedType,postfix.parameters.stream().map(Pair::first).toList());
             }
             else
             {
-                type=new ArrayType(type,postfix.size);
+                receivedType=new ArrayType(receivedType,postfix.size);
             }
         }
+        nextExpression.receivedType=receivedType;
+        nextExpression.travel();
+        name=nextExpression.name;
+        type= nextExpression.type;
     }
 }

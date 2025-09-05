@@ -15,6 +15,7 @@ public class PrimaryDeclaration extends NonTerminal implements ASTNode
 {
     private final BaseTypeBuilderRoot baseTypeBuilderRoot;
     public String name;
+    public Type receivedType;
     public Type type;
     private UnaryDeclaration nextExpression=null;
 
@@ -45,11 +46,12 @@ public class PrimaryDeclaration extends NonTerminal implements ASTNode
     {
         if(nextExpression!=null)
         {
+            nextExpression.receivedType=receivedType;
             nextExpression.travel();
             name=nextExpression.name;
             type= nextExpression.type;
             return;
         }
-        type= baseTypeBuilderRoot.type;
+        type= receivedType;
     }
 }
