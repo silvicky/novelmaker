@@ -32,6 +32,7 @@ public class PostfixExpression extends AbstractExpression
     @Override
     public void travel()
     {
+        resultId=requestInternalVariable();
         //TODO maybe rewrite?
         nextExpression.travel();
         codes.addAll(nextExpression.codes);
@@ -45,7 +46,7 @@ public class PostfixExpression extends AbstractExpression
             codes.addAll(postfix.codes);
             switch (postfix.operatorType)
             {
-                case PLUS_PLUS,MINUS_MINUS:
+                case PLUS_PLUS,MINUS_MINUS->
                 {
                     if(leftId==-1)throw new GrammarException("not lvalue");
                     int realLeft;
@@ -61,7 +62,7 @@ public class PostfixExpression extends AbstractExpression
                     curResult=nextResult;
                     leftId=-1;
                 }
-                case L_BRACKET:
+                case L_BRACKET->
                 {
                     int tmp1=requestInternalVariable();
                     Type resultType=getResultType(type,postfix.nextExpression.type,OperatorType.PLUS);
@@ -74,7 +75,7 @@ public class PostfixExpression extends AbstractExpression
                     isDirect=false;
                     type= abstractPointer.baseType();
                 }
-                case L_PARENTHESES:
+                case L_PARENTHESES->
                 {
                     int tmp=curResult,tmp2;
                     while(type instanceof PointerType pointerType)

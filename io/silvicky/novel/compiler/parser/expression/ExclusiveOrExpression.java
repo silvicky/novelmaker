@@ -8,6 +8,7 @@ import io.silvicky.novel.compiler.tokens.OperatorType;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.silvicky.novel.compiler.Compiler.requestInternalVariable;
 import static io.silvicky.novel.util.Util.getResultType;
 import static io.silvicky.novel.util.Util.rotateLeft;
 
@@ -28,6 +29,7 @@ public class ExclusiveOrExpression extends LTRExpression
     @Override
     public void travel()
     {
+        resultId=requestInternalVariable();
         if(left instanceof AndExpression left2&&left2.right instanceof AndExpression)left= rotateLeft(left2);
         left.travel();
         codes.addAll(left.codes);

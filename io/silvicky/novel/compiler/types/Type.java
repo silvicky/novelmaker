@@ -2,6 +2,7 @@ package io.silvicky.novel.compiler.types;
 
 public interface Type
 {
-    int ADDRESS_WIDTH=8;
+    //TODO
+    int ADDRESS_WIDTH=1;
     int getSize();
 }

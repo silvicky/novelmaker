@@ -10,6 +10,8 @@ import io.silvicky.novel.util.Pair;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.silvicky.novel.compiler.Compiler.requestInternalVariable;
+
 public class Parameters extends AbstractExpression implements ASTNode
 {
     private final Postfix func;
@@ -36,6 +38,7 @@ public class Parameters extends AbstractExpression implements ASTNode
     @Override
     public void travel()
     {
+        resultId=requestInternalVariable();
         if(left==null)return;
         left.travel();
         codes.addAll(left.codes);

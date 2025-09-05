@@ -1,13 +1,16 @@
 package io.silvicky.novel.compiler.parser.expression;
 
 import io.silvicky.novel.compiler.code.AssignCode;
+import io.silvicky.novel.compiler.code.AssignNumberCode;
 import io.silvicky.novel.compiler.code.AssignVariableNumberCode;
 import io.silvicky.novel.compiler.tokens.*;
+import io.silvicky.novel.compiler.types.ArrayType;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static io.silvicky.novel.compiler.Compiler.lookupVariable;
+import static io.silvicky.novel.compiler.Compiler.requestInternalVariable;
 import static io.silvicky.novel.util.Util.rotateLeft;
 
 public class PrimaryExpression extends AbstractExpression
@@ -42,6 +45,7 @@ public class PrimaryExpression extends AbstractExpression
     @Override
     public void travel()
     {
+        resultId=requestInternalVariable();
         if(nextExpression!=null)
         {
             if(nextExpression.right instanceof ExpressionNew)nextExpression= rotateLeft(nextExpression);
@@ -56,7 +60,8 @@ public class PrimaryExpression extends AbstractExpression
             type= lookupVariable(variableName).second();
             leftId=lookupVariable(variableName).first();
             isDirect=true;
-            codes.add(new AssignCode(resultId,leftId,leftId,type,type,type,OperatorType.NOP));
+            if(type instanceof ArrayType)codes.add(new AssignNumberCode(resultId,leftId,type,type));
+            else codes.add(new AssignCode(resultId,leftId,leftId,type,type,type,OperatorType.NOP));
         }
         else
         {

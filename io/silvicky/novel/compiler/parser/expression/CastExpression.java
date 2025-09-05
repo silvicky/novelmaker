@@ -8,6 +8,8 @@ import io.silvicky.novel.compiler.types.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.silvicky.novel.compiler.Compiler.requestInternalVariable;
+
 public class CastExpression extends AbstractExpression
 {
     public Type castType;
@@ -50,6 +52,7 @@ public class CastExpression extends AbstractExpression
     @Override
     public void travel()
     {
+        resultId=requestInternalVariable();
         nextExpression.travel();
         type= nextExpression.type;
         leftId= nextExpression.leftId;

@@ -44,7 +44,15 @@ public class ForFirst extends NonTerminal implements ASTNode
     @Override
     public void travel()
     {
-        if(declaration!=null)codes.addAll(declaration.codes);
-        if(expressionRoot!=null)codes.addAll(expressionRoot.codes);
+        if(declaration!=null)
+        {
+            declaration.travel();
+            codes.addAll(declaration.codes);
+        }
+        if(expressionRoot!=null)
+        {
+            expressionRoot.travel();
+            codes.addAll(expressionRoot.codes);
+        }
     }
 }

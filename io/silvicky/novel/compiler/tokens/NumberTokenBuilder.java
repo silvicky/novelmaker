@@ -52,12 +52,12 @@ public class NumberTokenBuilder extends TokenBuilder
             case "":
             {
                 if(isDotted)return new NumberToken<>(abs + tail, DOUBLE,fileName, line, pos);
-                else return new NumberToken<>(abs,INT,fileName,line,pos);
+                else return new NumberToken<>((int)abs,INT,fileName,line,pos);
             }
             case "u":
             {
                 if(isDotted)throw new InvalidTokenException("\"u\" cannot be applied to double");
-                else return new NumberToken<>(abs,UNSIGNED_INT,fileName,line,pos);
+                else return new NumberToken<>((int)abs,UNSIGNED_INT,fileName,line,pos);
             }
             case "l":
             {
@@ -81,7 +81,7 @@ public class NumberTokenBuilder extends TokenBuilder
             }
             case "f":
             {
-                return new NumberToken<>(abs+tail,FLOAT,fileName,line,pos);
+                return new NumberToken<>((float)(abs+tail),FLOAT,fileName,line,pos);
             }
             default:
             {

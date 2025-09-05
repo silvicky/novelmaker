@@ -26,7 +26,7 @@ public class DeclarationPostfix extends NonTerminal
         operatorType=((OperatorToken) next).type;
         if(operatorType==OperatorType.L_BRACKET)
         {
-            size=((NumberToken<Integer>)second).value;
+            size=(((NumberToken<Integer>)second).value);
             //TODO Allow constant expression
             ret.add(new OperatorToken(OperatorType.R_BRACKET));
             ret.add(new NumberToken<>(size, PrimitiveType.INT));

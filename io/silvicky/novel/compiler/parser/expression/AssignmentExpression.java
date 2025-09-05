@@ -2,6 +2,7 @@ package io.silvicky.novel.compiler.parser.expression;
 
 import io.silvicky.novel.compiler.code.AssignCode;
 import io.silvicky.novel.compiler.code.DereferenceCode;
+import io.silvicky.novel.compiler.code.IndirectAssignCode;
 import io.silvicky.novel.compiler.parser.ASTNode;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.operation.ResolveOperation;
@@ -33,6 +34,7 @@ public class AssignmentExpression extends AbstractExpression implements ASTNode
     @Override
     public void travel()
     {
+        resultId=requestInternalVariable();
         left.travel();
         codes.addAll(left.codes);
         if(right!=null)
@@ -43,14 +45,18 @@ public class AssignmentExpression extends AbstractExpression implements ASTNode
             type= left.type;
             leftId=-1;
             int realLeft;
-            if(left.isDirect)realLeft=left.leftId;
+            if(left.isDirect)
+            {
+                codes.add(new AssignCode(left.leftId,left.leftId,right.resultId,type,type,right.type,op.baseType));
+                codes.add(new AssignCode(resultId,left.leftId,left.leftId,type,type,type,OperatorType.NOP));
+            }
             else
             {
                 realLeft=requestInternalVariable();
                 codes.add(new DereferenceCode(realLeft,left.leftId,type));
+                codes.add(new IndirectAssignCode(left.leftId,right.resultId,type,right.type));
+                codes.add(new AssignCode(resultId,realLeft,realLeft,type,type,type,OperatorType.NOP));
             }
-            codes.add(new AssignCode(realLeft,realLeft,right.resultId,type,type,right.type,op.baseType));
-            codes.add(new AssignCode(resultId,realLeft,realLeft,type,type,type,OperatorType.NOP));
         }
         else
         {

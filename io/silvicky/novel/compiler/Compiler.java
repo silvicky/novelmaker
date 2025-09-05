@@ -7,6 +7,7 @@ import io.silvicky.novel.compiler.parser.Program;
 import io.silvicky.novel.compiler.parser.Skip;
 import io.silvicky.novel.compiler.parser.operation.Operation;
 import io.silvicky.novel.compiler.tokens.*;
+import io.silvicky.novel.compiler.types.ArrayType;
 import io.silvicky.novel.compiler.types.Type;
 import io.silvicky.novel.util.Pair;
 
@@ -17,6 +18,7 @@ import java.nio.file.Path;
 import java.util.*;
 
 import static io.silvicky.novel.compiler.types.PrimitiveType.BOOL;
+import static io.silvicky.novel.compiler.types.PrimitiveType.INT;
 import static io.silvicky.novel.util.Util.addNonNull;
 
 public class Compiler
@@ -36,9 +38,11 @@ public class Compiler
     public static int registerVariable(String s, Type type)
     {
         if(variableMap.containsKey(s))throw new DeclarationException("Repeated:"+s);
-        variableMap.put(s,new Pair<>(variableCnt+dataSegmentBaseAddress,type));
-        variableBackMap.put(variableCnt+dataSegmentBaseAddress,new Pair<>(s,type));
-        return dataSegmentBaseAddress+variableCnt++;
+        int ret=variableCnt+dataSegmentBaseAddress;
+        variableMap.put(s,new Pair<>(ret,type));
+        variableBackMap.put(ret,new Pair<>(s,type));
+        variableCnt+=type.getSize();
+        return ret;
     }
     public static int registerLocalVariable(String s, Type type)
     {
@@ -49,7 +53,7 @@ public class Compiler
         localVariableMap.get(ctx).get(s).push(new Pair<>(cnt,type));
         if(!localVariableBackMap.containsKey(ctx))localVariableBackMap.put(ctx,new HashMap<>());
         localVariableBackMap.get(ctx).put(cnt,new Pair<>(String.format("%s(V%d)",s,cnt),type));
-        localVariableCount.put(ctx,cnt+1);
+        localVariableCount.put(ctx,cnt+type.getSize());
         return cnt;
     }
     public static void revokeLocalVariable(String s)
@@ -238,7 +242,8 @@ public class Compiler
             }
             if(code instanceof GotoCode gotoCode)
             {
-                if(gotoCode.op().operation.cal(mem[addressTransformer(bp,gotoCode.left())],mem[addressTransformer(bp,gotoCode.right())],0)!=0)ip=labelPos.get(gotoCode.id());
+                //TODO all below
+                if(gotoCode.op().operation.cal(mem[addressTransformer(bp,gotoCode.left())],mem[addressTransformer(bp,gotoCode.right())],INT,INT).second()!=0)ip=labelPos.get(gotoCode.id());
                 continue;
             }
             if(code instanceof AssignNumberCode assignNumberCode)
@@ -246,14 +251,19 @@ public class Compiler
                 mem[addressTransformer(bp,assignNumberCode.target())]= (long)(int) assignNumberCode.left();
                 continue;
             }
+            if(code instanceof IndirectAssignCode indirectAssignCode)
+            {
+                mem[(int)mem[addressTransformer(bp,indirectAssignCode.target())]]=mem[addressTransformer(bp,indirectAssignCode.left())];
+                continue;
+            }
             if(code instanceof AssignCode assignCode)
             {
-                mem[addressTransformer(bp,assignCode.target())]=assignCode.op().operation.cal(mem[addressTransformer(bp,assignCode.left())],mem[addressTransformer(bp,assignCode.right())],0);
+                mem[addressTransformer(bp,assignCode.target())]=assignCode.op().operation.cal(mem[addressTransformer(bp,assignCode.left())],mem[addressTransformer(bp,assignCode.right())],assignCode.leftType(),assignCode.rightType()).second();
                 continue;
             }
             if(code instanceof AssignVariableNumberCode assignVariableNumberCode)
             {
-                mem[addressTransformer(bp,assignVariableNumberCode.target())]=assignVariableNumberCode.op().operation.cal(mem[addressTransformer(bp,assignVariableNumberCode.left())], (Long) assignVariableNumberCode.right(),0);
+                mem[addressTransformer(bp,assignVariableNumberCode.target())]=assignVariableNumberCode.op().operation.cal(mem[addressTransformer(bp,assignVariableNumberCode.left())], (Integer) assignVariableNumberCode.right(),assignVariableNumberCode.leftType(),assignVariableNumberCode.rightType()).second();
                 continue;
             }
             if(code instanceof ReturnCode returnCode)
@@ -291,13 +301,28 @@ public class Compiler
             if(code instanceof DereferenceCode dereferenceCode)
             {
                 mem[addressTransformer(bp,dereferenceCode.target())]=mem[(int) mem[addressTransformer(bp, dereferenceCode.left())]];
+                continue;
             }
             System.out.println("Unknown TAC: "+code.toString());
         }
         System.out.println("RESULT:");
         for(Map.Entry<String,Pair<Integer,Type>> entry:variableMap.entrySet())
         {
-            System.out.println(entry.getKey()+"="+mem[entry.getValue().first()]);
+            System.out.print(entry.getKey()+"=");
+            if(entry.getValue().second() instanceof ArrayType arrayType)
+            {
+                System.out.print('{');
+                for(int i=0;i<arrayType.size();i++)
+                {
+                    System.out.print(mem[entry.getValue().first()+i]);
+                    if(i!=arrayType.size()-1)System.out.print(',');
+                }
+                System.out.println("}");
+            }
+            else
+            {
+                System.out.println(mem[entry.getValue().first()]);
+            }
         }
     }
     public static void printCodeList(List<Code> codeList)

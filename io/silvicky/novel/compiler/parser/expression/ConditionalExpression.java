@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static io.silvicky.novel.compiler.Compiler.requestInternalLabel;
+import static io.silvicky.novel.compiler.Compiler.requestInternalVariable;
 import static io.silvicky.novel.util.Util.getResultType;
 import static io.silvicky.novel.util.Util.rotateLeft;
 
@@ -35,6 +36,7 @@ public class ConditionalExpression extends AbstractExpression
     @Override
     public void travel()
     {
+        resultId=requestInternalVariable();
         if(left.right instanceof LogicalOrExpression)left= rotateLeft(left);
         left.travel();
         codes.addAll(left.codes);
@@ -53,7 +55,6 @@ public class ConditionalExpression extends AbstractExpression
             codes.add(new AssignCode(resultId, middle.resultId, middle.resultId, type,middle.type,middle.type,OperatorType.NOP));
             codes.add(new UnconditionalGotoCode(lbEnd));
             codes.add(new LabelCode(lbRight));
-            right.travel();
             codes.addAll(right.codes);
             codes.add(new AssignCode(resultId, right.resultId,right.resultId,type,right.type,right.type,OperatorType.NOP));
             codes.add(new LabelCode(lbEnd));

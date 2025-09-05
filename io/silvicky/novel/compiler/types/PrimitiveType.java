@@ -25,10 +25,15 @@ public enum PrimitiveType implements Type
         this.javaType = javaType;
         this.symbol=symbol;
     }
-
+    public boolean isInteger()
+    {
+        return !(javaType.equals(Float.class)||javaType.equals(Double.class));
+    }
     @Override
     public int getSize()
     {
-        return size;
+        //TODO
+        return 1;
+        //return size;
     }
 }

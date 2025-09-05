@@ -8,6 +8,7 @@ import io.silvicky.novel.compiler.tokens.OperatorType;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.silvicky.novel.compiler.Compiler.requestInternalVariable;
 import static io.silvicky.novel.util.Util.getResultType;
 
 public class ExpressionNew extends LTRExpression
@@ -27,6 +28,7 @@ public class ExpressionNew extends LTRExpression
     @Override
     public void travel()
     {
+        resultId=requestInternalVariable();
         left.travel();
         codes.addAll(left.codes);
         if(right!=null)

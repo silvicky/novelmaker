@@ -63,7 +63,7 @@ public class UnaryExpression extends AbstractExpression
     @Override
     public void travel()
     {
-        //TODO
+        resultId=requestInternalVariable();
         if (nextExpression != null)
         {
             nextExpression.travel();

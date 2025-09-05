@@ -9,6 +9,7 @@ import io.silvicky.novel.compiler.tokens.OperatorType;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.silvicky.novel.compiler.Compiler.requestInternalVariable;
 import static io.silvicky.novel.util.Util.rotateLeft;
 
 public class ExpressionRoot extends AbstractExpression implements ASTNode
@@ -28,6 +29,7 @@ public class ExpressionRoot extends AbstractExpression implements ASTNode
     @Override
     public void travel()
     {
+        resultId=requestInternalVariable();
         if(child==null)return;
         if(child.right instanceof ExpressionNew)child= rotateLeft(child);
         child.travel();
