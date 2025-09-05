@@ -1,9 +1,6 @@
 package io.silvicky.novel.compiler.parser.declaration;
 
-import io.silvicky.novel.compiler.code.AssignCode;
-import io.silvicky.novel.compiler.code.LabelCode;
-import io.silvicky.novel.compiler.code.ReturnCode;
-import io.silvicky.novel.compiler.code.UnconditionalGotoCode;
+import io.silvicky.novel.compiler.code.*;
 import io.silvicky.novel.compiler.parser.ASTNode;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.NonTerminal;
@@ -13,6 +10,7 @@ import io.silvicky.novel.compiler.parser.operation.ResolveOperation;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
 import io.silvicky.novel.compiler.types.FunctionType;
+import io.silvicky.novel.compiler.types.PrimitiveType;
 import io.silvicky.novel.compiler.types.Type;
 import io.silvicky.novel.util.Pair;
 
@@ -51,14 +49,15 @@ public class AssignmentDeclaration extends NonTerminal implements ASTNode
         unaryDeclaration.travel();
         if(unaryDeclaration.type instanceof FunctionType)
         {
+            int nid;
             if(directParent==null)
             {
-                registerVariable(unaryDeclaration.name, unaryDeclaration.type);
+                nid=registerVariable(unaryDeclaration.name, unaryDeclaration.type);
             }
             else
             {
                 //TODO how to even process this stuff??
-                registerLocalVariable(unaryDeclaration.name, unaryDeclaration.type);
+                nid=registerLocalVariable(unaryDeclaration.name, unaryDeclaration.type);
                 directParent.revokedVariables.add(unaryDeclaration.name);
             }
             if(assignmentExpression!=null)
@@ -67,7 +66,8 @@ public class AssignmentDeclaration extends NonTerminal implements ASTNode
             }
             if(functionBody!=null)
             {
-                ctx=registerLabel(unaryDeclaration.name);
+                ctx= registerLabel(unaryDeclaration.name);
+                codes.add(new AssignNumberCode(nid,ctx, PrimitiveType.INT,PrimitiveType.INT));
                 for(Pair<Type,String> pair: unaryDeclaration.parameters)
                 {
                     registerLocalVariable(pair.second(), pair.first());

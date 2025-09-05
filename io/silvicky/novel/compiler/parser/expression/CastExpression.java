@@ -1,5 +1,6 @@
 package io.silvicky.novel.compiler.parser.expression;
 
+import io.silvicky.novel.compiler.code.AssignCode;
 import io.silvicky.novel.compiler.parser.TypeBuilder;
 import io.silvicky.novel.compiler.tokens.*;
 import io.silvicky.novel.compiler.types.Type;
@@ -53,6 +54,8 @@ public class CastExpression extends AbstractExpression
         type= nextExpression.type;
         leftId= nextExpression.leftId;
         isDirect= nextExpression.isDirect;
+        codes.addAll(nextExpression.codes);
+        codes.add(new AssignCode(resultId, nextExpression.resultId, 0,type,type,type,OperatorType.NOP));
         //TODO
     }
 }

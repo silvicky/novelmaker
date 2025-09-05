@@ -46,7 +46,15 @@ public class Postfix extends NonTerminal implements ASTNode
     @Override
     public void travel()
     {
-        if(nextExpression!=null)nextExpression.travel();
-        if(pr!=null)pr.travel();
+        if(nextExpression!=null)
+        {
+            nextExpression.travel();
+            codes.addAll(nextExpression.codes);
+        }
+        if(pr!=null)
+        {
+            pr.travel();
+            codes.addAll(pr.codes);
+        }
     }
 }

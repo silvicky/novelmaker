@@ -34,6 +34,7 @@ public class PostfixExpression extends AbstractExpression
     {
         //TODO maybe rewrite?
         nextExpression.travel();
+        codes.addAll(nextExpression.codes);
         int curResult=nextExpression.resultId,nextResult;
         leftId= nextExpression.leftId;
         isDirect= nextExpression.isDirect;
@@ -41,6 +42,7 @@ public class PostfixExpression extends AbstractExpression
         for(Postfix postfix:postfixes)
         {
             postfix.travel();
+            codes.addAll(postfix.codes);
             switch (postfix.operatorType)
             {
                 case PLUS_PLUS,MINUS_MINUS:
@@ -88,7 +90,11 @@ public class PostfixExpression extends AbstractExpression
                     for(int i=0;i<postfix.parameters.size();i++)
                     {
                         Type pType=postfix.parameters.get(i).first(),aType=functionType.args().get(i);
-                        if(pType.equals(aType))castParameters.add(postfix.parameters.get(i).second());
+                        if(pType.equals(aType))
+                        {
+                            castParameters.add(postfix.parameters.get(i).second());
+                            continue;
+                        }
                         int id=requestInternalVariable();
                         codes.add(new AssignCode(id,postfix.parameters.get(i).second(),0,aType,pType,pType,OperatorType.NOP));
                         castParameters.add(id);

@@ -219,8 +219,9 @@ public class Compiler
         Map<Integer,Integer> labelPos=new HashMap<>();
         long[] mem=new long[1048576];
         for(int i=0;i<codes.size();i++)if(codes.get(i) instanceof LabelCode labelCode)labelPos.put(labelCode.id(),i);
-        if(!labelMap.containsKey("main"))throw new DeclarationException("no main function defined");
-        codes.add(new CallCode(labelMap.get("main"),new ArrayList<>()));
+        if(!variableMap.containsKey("main"))throw new DeclarationException("no main function defined");
+        codes.add(new CallCode(variableMap.get("main").first(),new ArrayList<>()));
+        printCodeList(codes);
         int ip=0;
         int bp=dataSegmentBaseAddress-1;
         int sp=bp;
@@ -242,7 +243,7 @@ public class Compiler
             }
             if(code instanceof AssignNumberCode assignNumberCode)
             {
-                mem[addressTransformer(bp,assignNumberCode.target())]= (long) assignNumberCode.left();
+                mem[addressTransformer(bp,assignNumberCode.target())]= (long)(int) assignNumberCode.left();
                 continue;
             }
             if(code instanceof AssignCode assignCode)
@@ -265,16 +266,17 @@ public class Compiler
             }
             if(code instanceof CallCode callCode)
             {
+                int callTarget= (int) mem[addressTransformer(bp,callCode.target())];
                 mem[--sp]=ip;
                 mem[--sp]=bp;
                 int oldBP=bp;
                 bp=sp;
-                sp=bp-localVariableCount.get(callCode.target());
+                sp=bp-localVariableCount.get(callTarget);
                 for(int i=0;i<callCode.parameters().size();i++)
                 {
                     mem[bp-i-1]=mem[addressTransformer(oldBP,callCode.parameters().get(i))];
                 }
-                ip=labelPos.get(callCode.target());
+                ip=labelPos.get(callTarget);
                 continue;
             }
             if(code instanceof FetchReturnValueCode fetchReturnValueCode)
@@ -312,7 +314,6 @@ public class Compiler
         List<AbstractToken> abstractTokenList =lexer(Path.of(args[0]));
         tokenParser(abstractTokenList);
         List<Code> codeList=parser(abstractTokenList);
-        printCodeList(codeList);
         emulateTAC(codeList);
     }
 }
