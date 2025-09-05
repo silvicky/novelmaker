@@ -13,7 +13,7 @@ import java.util.List;
 
 public class PrimaryDeclaration extends NonTerminal implements ASTNode
 {
-    public String name;
+    public String name=null;
     public Type receivedType;
     public Type type;
     private UnaryDeclaration nextExpression=null;
@@ -29,10 +29,14 @@ public class PrimaryDeclaration extends NonTerminal implements ASTNode
             ret.add(new IdentifierToken(identifierToken.id));
             return ret;
         }
-        nextExpression=new UnaryDeclaration();
-        ret.add(new OperatorToken(OperatorType.R_PARENTHESES));
-        ret.add(nextExpression);
-        ret.add(new OperatorToken(OperatorType.L_PARENTHESES));
+        if(next instanceof OperatorToken operatorToken&&operatorToken.type==OperatorType.L_PARENTHESES)
+        {
+            nextExpression = new UnaryDeclaration();
+            ret.add(new OperatorToken(OperatorType.R_PARENTHESES));
+            ret.add(nextExpression);
+            ret.add(new OperatorToken(OperatorType.L_PARENTHESES));
+            return ret;
+        }
         return ret;
     }
 

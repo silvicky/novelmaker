@@ -29,7 +29,7 @@ public class ForFirst extends NonTerminal implements ASTNode
         List<AbstractToken> ret=new ArrayList<>();
         if(next instanceof KeywordToken)
         {
-            declaration=new DeclarationRoot(Objects.requireNonNullElse(this.directParent, this),false);
+            declaration=new DeclarationRoot(Objects.requireNonNullElse(this.directParent, this));
             ret.add(declaration);
         }
         else

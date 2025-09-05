@@ -85,7 +85,7 @@ public class Line extends NonTerminal implements ASTNode
                 return ret;
             }
             //TODO idk
-            content=new DeclarationRoot(Objects.requireNonNullElse(this.directParent, this),false);
+            content=new DeclarationRoot(Objects.requireNonNullElse(this.directParent, this));
             ret.add(content);
             return ret;
         }

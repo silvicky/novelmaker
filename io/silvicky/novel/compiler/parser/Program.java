@@ -16,7 +16,7 @@ public class Program extends NonTerminal implements ASTNode
     {
         List<AbstractToken> ret=new ArrayList<>();
         if(next==null||next instanceof EofToken)return ret;
-        declarationRoot =new DeclarationRoot(null,false);
+        declarationRoot =new DeclarationRoot(null);
         program=new Program();
         ret.add(program);
         ret.add(declarationRoot);

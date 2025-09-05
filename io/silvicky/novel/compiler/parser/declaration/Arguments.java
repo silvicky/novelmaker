@@ -25,7 +25,7 @@ public class Arguments extends NonTerminal
         List<AbstractToken> ret=new ArrayList<>();
         if(next instanceof OperatorToken operatorToken&&operatorToken.type==OperatorType.R_PARENTHESES)return ret;
         ret.add(new ArgumentsResidue(this,postfix));
-        Argument argument=new Argument(postfix, false);
+        Argument argument=new Argument(postfix);
         ret.add(new TravelASTOperation(argument));
         ret.add(argument);
         return ret;

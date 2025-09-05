@@ -14,14 +14,12 @@ public class Argument extends NonTerminal implements ASTNode
     private BaseTypeBuilderRoot baseTypeBuilderRoot;
     private UnaryDeclaration declaration;
     public final DeclarationPostfix directParent;
-    private final boolean isAbstract;
     public String name;
     public Type type;
 
-    public Argument(DeclarationPostfix directParent, boolean isAbstract)
+    public Argument(DeclarationPostfix directParent)
     {
         this.directParent = directParent;
-        this.isAbstract = isAbstract;
     }
 
     @Override

@@ -47,6 +47,7 @@ public class AssignmentDeclaration extends NonTerminal implements ASTNode
     {
         unaryDeclaration.receivedType= baseTypeBuilderRoot.type;
         unaryDeclaration.travel();
+        if(unaryDeclaration.name==null)throw new GrammarException("bare anonymous variable");
         if(unaryDeclaration.type instanceof FunctionType)
         {
             int nid;

@@ -12,12 +12,10 @@ public class DeclarationRoot extends NonTerminal implements ASTNode
     private BaseTypeBuilderRoot baseTypeBuilderRoot;
     private Declaration declaration;
     public final NonTerminal directParent;
-    private final boolean isAbstract;
 
-    public DeclarationRoot(NonTerminal directParent, boolean isAbstract)
+    public DeclarationRoot(NonTerminal directParent)
     {
         this.directParent = directParent;
-        this.isAbstract = isAbstract;
     }
 
     @Override
