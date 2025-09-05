@@ -14,8 +14,6 @@ import java.util.List;
 
 public class PostfixDeclaration extends NonTerminal implements ASTNode
 {
-
-    private final BaseTypeBuilderRoot baseTypeBuilderRoot;
     public final List<DeclarationPostfix> postfixes=new ArrayList<>();
     private PrimaryDeclaration nextExpression;
     public List<Pair<Type,String>> parameters;
@@ -23,16 +21,11 @@ public class PostfixDeclaration extends NonTerminal implements ASTNode
     public Type receivedType;
     public Type type;
 
-    public PostfixDeclaration(BaseTypeBuilderRoot baseTypeBuilderRoot)
-    {
-        this.baseTypeBuilderRoot = baseTypeBuilderRoot;
-    }
-
     @Override
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
         List<AbstractToken> ret=new ArrayList<>();
-        nextExpression=new PrimaryDeclaration(baseTypeBuilderRoot);
+        nextExpression=new PrimaryDeclaration();
         ret.add(new DeclarationPostfixes(this));
         ret.add(nextExpression);
         return ret;

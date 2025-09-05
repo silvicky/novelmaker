@@ -36,7 +36,7 @@ public class AssignmentDeclaration extends NonTerminal implements ASTNode
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
         List<AbstractToken> ret=new ArrayList<>();
-        unaryDeclaration=new UnaryDeclaration(baseTypeBuilderRoot);
+        unaryDeclaration=new UnaryDeclaration();
         AssignmentDeclarationResidue assignmentDeclarationResidue =new AssignmentDeclarationResidue(this);
         ret.add(assignmentDeclarationResidue);
         ret.add(unaryDeclaration);

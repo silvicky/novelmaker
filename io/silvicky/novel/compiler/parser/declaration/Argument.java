@@ -29,7 +29,7 @@ public class Argument extends NonTerminal implements ASTNode
     {
         List<AbstractToken> ret=new ArrayList<>();
         baseTypeBuilderRoot = new BaseTypeBuilderRoot();
-        declaration =new UnaryDeclaration(baseTypeBuilderRoot);
+        declaration =new UnaryDeclaration();
         ret.add(declaration);
         ret.add(baseTypeBuilderRoot);
         return ret;

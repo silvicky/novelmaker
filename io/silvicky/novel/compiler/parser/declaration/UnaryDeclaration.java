@@ -17,24 +17,17 @@ public class UnaryDeclaration extends NonTerminal implements ASTNode
     private boolean isPointer=false;
     private boolean isConst=false;
     private PostfixDeclaration postfixDeclaration=null;
-    private final BaseTypeBuilderRoot baseTypeBuilderRoot;
     public List<Pair<Type,String>> parameters;
     public String name;
     public Type receivedType;
     public Type type;
-
-    public UnaryDeclaration(BaseTypeBuilderRoot baseTypeBuilderRoot)
-    {
-        this.baseTypeBuilderRoot = baseTypeBuilderRoot;
-    }
-
     @Override
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
         List<AbstractToken> ret=new ArrayList<>();
         if(next instanceof OperatorToken operatorToken&&operatorToken.type== OperatorType.MULTIPLY)
         {
-            child=new UnaryDeclaration(baseTypeBuilderRoot);
+            child=new UnaryDeclaration();
             isPointer=true;
             ret.add(child);
             ret.add(new OperatorToken(OperatorType.MULTIPLY));
@@ -42,13 +35,13 @@ public class UnaryDeclaration extends NonTerminal implements ASTNode
         }
         if(next instanceof KeywordToken keywordToken&&keywordToken.type== KeywordType.CONST)
         {
-            child=new UnaryDeclaration(baseTypeBuilderRoot);
+            child=new UnaryDeclaration();
             isConst=true;
             ret.add(child);
             ret.add(new KeywordToken(KeywordType.CONST));
             return ret;
         }
-        postfixDeclaration=new PostfixDeclaration(baseTypeBuilderRoot);
+        postfixDeclaration=new PostfixDeclaration();
         ret.add(postfixDeclaration);
         return ret;
     }
