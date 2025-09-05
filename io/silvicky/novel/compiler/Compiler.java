@@ -8,6 +8,7 @@ import io.silvicky.novel.compiler.parser.Skip;
 import io.silvicky.novel.compiler.parser.operation.Operation;
 import io.silvicky.novel.compiler.tokens.*;
 import io.silvicky.novel.compiler.types.ArrayType;
+import io.silvicky.novel.compiler.types.FunctionType;
 import io.silvicky.novel.compiler.types.Type;
 import io.silvicky.novel.util.Pair;
 
@@ -26,6 +27,7 @@ public class Compiler
     private static int labelCnt=0;
     private static int variableCnt=0;
     public static int ctx=-1;
+    private static final long[] mem=new long[1048576];
     public static final int dataSegmentBaseAddress=0xF0000;
     private static final Map<String,Integer> labelMap=new HashMap<>();
     private static final Map<Integer,String> labelBackMap=new HashMap<>();
@@ -221,7 +223,6 @@ public class Compiler
     public static void emulateTAC(List<Code> codes)
     {
         Map<Integer,Integer> labelPos=new HashMap<>();
-        long[] mem=new long[1048576];
         for(int i=0;i<codes.size();i++)if(codes.get(i) instanceof LabelCode labelCode)labelPos.put(labelCode.id(),i);
         if(!variableMap.containsKey("main"))throw new DeclarationException("no main function defined");
         codes.add(new CallCode(variableMap.get("main").first(),new ArrayList<>()));
@@ -311,24 +312,34 @@ public class Compiler
             }
             System.out.println("Unknown TAC: "+code.toString());
         }
+        printResult();
+    }
+    private static void printVariable(int id,Type type)
+    {
+        if(type instanceof ArrayType arrayType)
+        {
+            System.out.print('{');
+            for(int i=0;i<arrayType.size();i++)
+            {
+                printVariable(id+i*arrayType.baseType().getSize(),arrayType.baseType());
+                if(i!=arrayType.size()-1)System.out.print(',');
+            }
+            System.out.print("}");
+        }
+        else
+        {
+            System.out.print(mem[id]);
+        }
+    }
+    private static void printResult()
+    {
         System.out.println("RESULT:");
         for(Map.Entry<String,Pair<Integer,Type>> entry:variableMap.entrySet())
         {
+            if(entry.getValue().second() instanceof FunctionType)continue;
             System.out.print(entry.getKey()+"=");
-            if(entry.getValue().second() instanceof ArrayType arrayType)
-            {
-                System.out.print('{');
-                for(int i=0;i<arrayType.size();i++)
-                {
-                    System.out.print(mem[entry.getValue().first()+i]);
-                    if(i!=arrayType.size()-1)System.out.print(',');
-                }
-                System.out.println("}");
-            }
-            else
-            {
-                System.out.println(mem[entry.getValue().first()]);
-            }
+            printVariable(entry.getValue().first(),entry.getValue().second());
+            System.out.println();
         }
     }
     public static void printCodeList(List<Code> codeList)

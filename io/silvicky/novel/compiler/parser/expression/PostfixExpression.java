@@ -4,10 +4,7 @@ import io.silvicky.novel.compiler.code.*;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
-import io.silvicky.novel.compiler.types.AbstractPointer;
-import io.silvicky.novel.compiler.types.FunctionType;
-import io.silvicky.novel.compiler.types.PointerType;
-import io.silvicky.novel.compiler.types.Type;
+import io.silvicky.novel.compiler.types.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,11 +66,13 @@ public class PostfixExpression extends AbstractExpression
                     if(!(resultType instanceof AbstractPointer abstractPointer))throw new GrammarException("not a pointer/array");
                     codes.add(new AssignCode(tmp1,curResult,postfix.nextExpression.resultId,resultType,type,postfix.nextExpression.type, OperatorType.PLUS));
                     int tmp2=requestInternalVariable();
-                    codes.add(new DereferenceCode(tmp2,tmp1,abstractPointer.baseType()));
+                    type= abstractPointer.baseType();
+                    if(abstractPointer.baseType() instanceof ArrayType) codes.add(new AssignCode(tmp2,tmp1,tmp1,type,type,type,OperatorType.NOP));
+                    else codes.add(new DereferenceCode(tmp2,tmp1,type));
                     curResult=tmp2;
                     leftId=tmp1;
                     isDirect=false;
-                    type= abstractPointer.baseType();
+
                 }
                 case L_PARENTHESES->
                 {

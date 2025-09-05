@@ -1,10 +1,7 @@
 package io.silvicky.novel.compiler.tokens;
 
 import io.silvicky.novel.compiler.parser.GrammarException;
-import io.silvicky.novel.compiler.types.ConstType;
-import io.silvicky.novel.compiler.types.FunctionType;
-import io.silvicky.novel.compiler.types.PrimitiveType;
-import io.silvicky.novel.compiler.types.Type;
+import io.silvicky.novel.compiler.types.*;
 import io.silvicky.novel.util.Pair;
 
 public enum OperatorType
@@ -67,21 +64,63 @@ public enum OperatorType
     MULTIPLY_EQUAL("*=",OperatorArgsProperties.BINARY_ASSIGN,MULTIPLY),
     PLUS("+",OperatorArgsProperties.BINARY,(a,b,ta,tb)->
     {
-        //TODO
         while(ta instanceof ConstType ca)ta=ca.baseType();
         while(tb instanceof ConstType cb)tb=cb.baseType();
-        long ans=a+b;
-        return new Pair<>(PrimitiveType.INT,ans);
+        if(ta instanceof ArrayType aa)ta=new PointerType(aa.baseType());
+        if(tb instanceof ArrayType ab)tb=new PointerType(ab.baseType());
+        Type type;
+        long ans;
+        if(ta instanceof PointerType&&tb instanceof PointerType)throw new GrammarException("addition between pointers");
+        else if(tb instanceof PointerType pb)
+        {
+            type=tb;
+            ans=b+a*pb.baseType().getSize();
+        }
+        else if(ta instanceof PointerType pa)
+        {
+            type=ta;
+            ans=a+b*pa.baseType().getSize();
+        }
+        else
+        {
+            if(!(ta instanceof PrimitiveType pa&&tb instanceof PrimitiveType pb))throw new GrammarException("not number");
+            type=PrimitiveType.values()[Math.max(pa.ordinal(),pb.ordinal())];
+            ans=a+b;
+        }
+        return new Pair<>(type,ans);
     }),
     PLUS_EQUAL("+=",OperatorArgsProperties.BINARY_ASSIGN,PLUS),
     PLUS_PLUS("++",OperatorArgsProperties.UNARY,PLUS),
     MINUS("-",OperatorArgsProperties.BINARY,(a,b,ta,tb)->
     {
-        //TODO
         while(ta instanceof ConstType ca)ta=ca.baseType();
         while(tb instanceof ConstType cb)tb=cb.baseType();
-        long ans=a-b;
-        return new Pair<>(PrimitiveType.INT,ans);
+        if(ta instanceof ArrayType aa)ta=new PointerType(aa.baseType());
+        if(tb instanceof ArrayType ab)tb=new PointerType(ab.baseType());
+        Type type;
+        long ans;
+        if(ta instanceof PointerType pa&&tb instanceof PointerType pb)
+        {
+            if(!pa.equals(pb))throw new GrammarException("minus between different pointers");
+            type=PrimitiveType.INT;
+            ans=(b-a)/pb.baseType().getSize();
+        }
+        else if(tb instanceof PointerType)
+        {
+            throw new GrammarException("number minus pointer");
+        }
+        else if(ta instanceof PointerType pa)
+        {
+            type=ta;
+            ans=a-b*pa.baseType().getSize();
+        }
+        else
+        {
+            if(!(ta instanceof PrimitiveType pa&&tb instanceof PrimitiveType pb))throw new GrammarException("not number");
+            type=PrimitiveType.values()[Math.max(pa.ordinal(),pb.ordinal())];
+            ans=a-b;
+        }
+        return new Pair<>(type,ans);
     }),
     MINUS_EQUAL("-=",OperatorArgsProperties.BINARY_ASSIGN,MINUS),
     MINUS_MINUS("--",OperatorArgsProperties.UNARY,MINUS),
