@@ -253,7 +253,13 @@ public class Compiler
             }
             if(code instanceof IndirectAssignCode indirectAssignCode)
             {
+                //mem[addressTransformer(bp,(int)mem[addressTransformer(bp,indirectAssignCode.target())])]=mem[addressTransformer(bp,indirectAssignCode.left())];
                 mem[(int)mem[addressTransformer(bp,indirectAssignCode.target())]]=mem[addressTransformer(bp,indirectAssignCode.left())];
+                continue;
+            }
+            if(code instanceof ReferenceCode referenceCode)
+            {
+                mem[addressTransformer(bp,referenceCode.target())]=addressTransformer(bp,referenceCode.left());
                 continue;
             }
             if(code instanceof AssignCode assignCode)
