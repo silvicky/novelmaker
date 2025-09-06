@@ -19,7 +19,6 @@ public class CastExpression extends AbstractExpression
     @Override
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
-        //TODO
         List<AbstractToken> ret=new ArrayList<>();
         if (next instanceof OperatorToken operatorToken && operatorToken.type == OperatorType.L_PARENTHESES && second instanceof KeywordToken keywordToken
                 && (keywordToken.type== KeywordType.UNSIGNED
