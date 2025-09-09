@@ -1,7 +1,7 @@
 package io.silvicky.novel.compiler.parser.declaration;
 
 import io.silvicky.novel.compiler.parser.line.Block;
-import io.silvicky.novel.compiler.parser.Skip;
+import io.silvicky.novel.compiler.parser.operation.Skip;
 import io.silvicky.novel.compiler.parser.expression.AbstractExpressionResidue;
 import io.silvicky.novel.compiler.parser.expression.AssignmentExpression;
 import io.silvicky.novel.compiler.parser.operation.ResolveOperation;

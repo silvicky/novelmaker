@@ -4,7 +4,7 @@ import io.silvicky.novel.compiler.code.*;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.NonTerminal;
 import io.silvicky.novel.compiler.parser.Program;
-import io.silvicky.novel.compiler.parser.Skip;
+import io.silvicky.novel.compiler.parser.operation.Skip;
 import io.silvicky.novel.compiler.parser.operation.Operation;
 import io.silvicky.novel.compiler.tokens.*;
 import io.silvicky.novel.compiler.types.ArrayType;
@@ -103,12 +103,6 @@ public class Compiler
     {
         return labelCnt++;
     }
-    public static int lookupLabel(String s)
-    {
-        if(localLabelMap.containsKey(ctx)&&localLabelMap.get(ctx).containsKey(s))return localLabelMap.get(ctx).get(s);
-        if(labelMap.containsKey(s))return labelMap.get(s);
-        throw new DeclarationException("Undefined:"+s);
-    }
     public static String lookupLabelName(int l)
     {
         if(!labelBackMap.containsKey(l))return "L"+l;
@@ -204,6 +198,7 @@ public class Compiler
             List<AbstractToken> list=nonTerminal.lookup(next,second);
             for(AbstractToken abstractToken :list)stack.push(abstractToken);
         }
+        root.travel();
         for(int i=0;i<root.codes.size();i++)
         {
             if(root.codes.get(i) instanceof PlaceholderUnconditionalGotoCode tmp)
@@ -212,7 +207,6 @@ public class Compiler
                 root.codes.set(i,new UnconditionalGotoCode(target));
             }
         }
-        root.travel();
         return root.codes;
     }
     public static int addressTransformer(int bp,int val)
