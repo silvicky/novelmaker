@@ -307,7 +307,8 @@ public class Compiler
             }
             if(code instanceof DereferenceCode dereferenceCode)
             {
-                mem[addressTransformer(bp,dereferenceCode.target())]=mem[(int) mem[addressTransformer(bp, dereferenceCode.left())]];
+                if(dereferenceCode.type() instanceof FunctionType)mem[addressTransformer(bp,dereferenceCode.target())]=mem[addressTransformer(bp, dereferenceCode.left())];
+                else mem[addressTransformer(bp,dereferenceCode.target())]=mem[(int) mem[addressTransformer(bp, dereferenceCode.left())]];
                 continue;
             }
             System.out.println("Unknown TAC: "+code.toString());

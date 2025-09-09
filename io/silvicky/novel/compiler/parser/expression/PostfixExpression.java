@@ -51,7 +51,7 @@ public class PostfixExpression extends AbstractExpression
                     else
                     {
                         realLeft=requestInternalVariable();
-                        codes.add(new DereferenceCode(realLeft,leftId,type));
+                        codes.add(new DereferenceCode(realLeft,leftId,new PointerType(new PointerType(new VoidType()))));
                     }
                     nextResult=requestInternalVariable();
                     codes.add(new AssignCode(nextResult,realLeft,realLeft,type,type,type,OperatorType.NOP));
@@ -68,7 +68,7 @@ public class PostfixExpression extends AbstractExpression
                     int tmp2=requestInternalVariable();
                     type= abstractPointer.baseType();
                     if(abstractPointer.baseType() instanceof ArrayType) codes.add(new AssignCode(tmp2,tmp1,tmp1,type,type,type,OperatorType.NOP));
-                    else codes.add(new DereferenceCode(tmp2,tmp1,type));
+                    else codes.add(new DereferenceCode(tmp2,tmp1,resultType));
                     curResult=tmp2;
                     leftId=tmp1;
                     isDirect=false;
@@ -81,7 +81,7 @@ public class PostfixExpression extends AbstractExpression
                     {
                         type=pointerType.baseType();
                         tmp2=requestInternalVariable();
-                        codes.add(new DereferenceCode(tmp2,tmp,pointerType.baseType()));
+                        codes.add(new DereferenceCode(tmp2,tmp,pointerType));
                         tmp=tmp2;
                     }
                     if(!(type instanceof FunctionType functionType))throw new GrammarException("not a function");

@@ -8,6 +8,8 @@ import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.operation.ResolveOperation;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
+import io.silvicky.novel.compiler.types.PointerType;
+import io.silvicky.novel.compiler.types.VoidType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +55,7 @@ public class AssignmentExpression extends AbstractExpression implements ASTNode
             else
             {
                 realLeft=requestInternalVariable();
-                codes.add(new DereferenceCode(realLeft,left.leftId,type));
+                codes.add(new DereferenceCode(realLeft,left.leftId,new PointerType(new PointerType(new VoidType()))));
                 codes.add(new IndirectAssignCode(left.leftId,right.resultId,type,right.type));
                 codes.add(new AssignCode(resultId,realLeft,realLeft,type,type,type,OperatorType.NOP));
             }

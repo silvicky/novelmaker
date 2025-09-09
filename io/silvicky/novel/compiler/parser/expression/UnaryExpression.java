@@ -8,6 +8,7 @@ import io.silvicky.novel.compiler.tokens.OperatorType;
 import io.silvicky.novel.compiler.types.AbstractPointer;
 import io.silvicky.novel.compiler.types.PointerType;
 import io.silvicky.novel.compiler.types.PrimitiveType;
+import io.silvicky.novel.compiler.types.VoidType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -82,7 +83,7 @@ public class UnaryExpression extends AbstractExpression
             else
             {
                 realLeft=requestInternalVariable();
-                codes.add(new DereferenceCode(realLeft,leftId,type));
+                codes.add(new DereferenceCode(realLeft,leftId,new PointerType(new PointerType(new VoidType()))));
             }
             codes.add(new AssignVariableNumberCode(realLeft,realLeft,1,type,type,type,op.baseType));
             codes.add(new AssignCode(resultId,realLeft,realLeft,type,type,type,OperatorType.NOP));
@@ -98,7 +99,7 @@ public class UnaryExpression extends AbstractExpression
                 leftId=castExpression.resultId;
                 isDirect=false;
                 type= abstractPointer.baseType();
-                codes.add(new DereferenceCode(resultId,leftId,type));
+                codes.add(new DereferenceCode(resultId,leftId, castExpression.type));
             }
             else if(op==OperatorType.AND)
             {
