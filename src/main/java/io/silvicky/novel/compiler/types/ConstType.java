@@ -7,4 +7,9 @@ public record ConstType(Type baseType) implements Type
     {
         return baseType.getSize();
     }
+    @Override
+    public boolean equals(Object o)
+    {
+        return o instanceof ConstType constType&&baseType.equals(constType.baseType);
+    }
 }

@@ -15,4 +15,9 @@ public record FunctionType(Type returnType, List<Type> args) implements Type,Abs
     {
         return this;
     }
+    @Override
+    public boolean equals(Object o)
+    {
+        return o instanceof FunctionType functionType&& args.equals(functionType.args)&&returnType.equals(functionType.returnType);
+    }
 }

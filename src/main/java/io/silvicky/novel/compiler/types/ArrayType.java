@@ -7,4 +7,9 @@ public record ArrayType(Type baseType,int size) implements Type,AbstractPointer
     {
         return baseType.getSize()*size;
     }
+    @Override
+    public boolean equals(Object o)
+    {
+        return o instanceof ArrayType arrayType&& baseType.equals(arrayType.baseType);
+    }
 }

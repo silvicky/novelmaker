@@ -7,4 +7,9 @@ public record PointerType(Type baseType) implements Type,AbstractPointer
     {
         return Type.ADDRESS_WIDTH;
     }
+    @Override
+    public boolean equals(Object o)
+    {
+        return o instanceof PointerType pointerType&& baseType.equals(pointerType.baseType);
+    }
 }
