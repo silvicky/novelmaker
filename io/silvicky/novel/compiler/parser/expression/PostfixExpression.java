@@ -67,7 +67,7 @@ public class PostfixExpression extends AbstractExpression
                     codes.add(new AssignCode(tmp1,curResult,postfix.nextExpression.resultId,resultType,type,postfix.nextExpression.type, OperatorType.PLUS));
                     int tmp2=requestInternalVariable();
                     type= abstractPointer.baseType();
-                    if(abstractPointer.baseType() instanceof ArrayType||abstractPointer.baseType() instanceof FunctionType) codes.add(new AssignCode(tmp2,tmp1,tmp1,type,type,type,OperatorType.NOP));
+                    if(abstractPointer.baseType() instanceof ArrayType) codes.add(new AssignCode(tmp2,tmp1,tmp1,type,type,type,OperatorType.NOP));
                     else codes.add(new DereferenceCode(tmp2,tmp1,type));
                     curResult=tmp2;
                     leftId=tmp1;

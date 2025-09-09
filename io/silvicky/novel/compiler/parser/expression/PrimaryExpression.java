@@ -5,7 +5,6 @@ import io.silvicky.novel.compiler.code.AssignNumberCode;
 import io.silvicky.novel.compiler.code.ReferenceCode;
 import io.silvicky.novel.compiler.tokens.*;
 import io.silvicky.novel.compiler.types.ArrayType;
-import io.silvicky.novel.compiler.types.FunctionType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,7 +60,7 @@ public class PrimaryExpression extends AbstractExpression
             type= lookupVariable(variableName).second();
             leftId=lookupVariable(variableName).first();
             isDirect=true;
-            if(type instanceof ArrayType||type instanceof FunctionType)codes.add(new ReferenceCode(resultId,leftId,type));
+            if(type instanceof ArrayType)codes.add(new ReferenceCode(resultId,leftId,type));
             else codes.add(new AssignCode(resultId,leftId,leftId,type,type,type,OperatorType.NOP));
         }
         else
