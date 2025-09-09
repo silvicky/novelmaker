@@ -15,21 +15,4 @@
             <version>2.13.1</version>
         </dependency>
     </dependencies>
-    <build>
-        <directory>target</directory>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>21</source>
-                    <target>21</target>
-                    <excludes>
-                        <exclude>**/target/**</exclude>
-                        <exclude>**/out/**</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>
