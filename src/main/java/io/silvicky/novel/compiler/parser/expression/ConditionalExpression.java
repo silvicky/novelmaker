@@ -11,7 +11,7 @@ import io.silvicky.novel.compiler.tokens.OperatorType;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.silvicky.novel.compiler.Compiler.requestInternalLabel;
+import static io.silvicky.novel.compiler.Compiler.requestLabel;
 import static io.silvicky.novel.compiler.Compiler.requestInternalVariable;
 import static io.silvicky.novel.util.Util.getResultType;
 import static io.silvicky.novel.util.Util.rotateLeft;
@@ -42,8 +42,8 @@ public class ConditionalExpression extends AbstractExpression
         if(middle!=null)
         {
             resultId=requestInternalVariable();
-            int lbRight=requestInternalLabel();
-            int lbEnd=requestInternalLabel();
+            int lbRight= requestLabel();
+            int lbEnd= requestLabel();
             codes.add(new GotoCode(left.resultId,left.resultId, OperatorType.NOT,lbRight));
             if(middle.right instanceof ExpressionNew)middle= rotateLeft(middle);
             leftId=-1;

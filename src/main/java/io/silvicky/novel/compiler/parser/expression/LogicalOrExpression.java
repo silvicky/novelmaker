@@ -1,15 +1,15 @@
 package io.silvicky.novel.compiler.parser.expression;
 
-import io.silvicky.novel.compiler.code.AssignCode;
+import io.silvicky.novel.compiler.code.*;
 import io.silvicky.novel.compiler.parser.operation.ResolveOperation;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
+import io.silvicky.novel.compiler.types.PrimitiveType;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static io.silvicky.novel.compiler.Compiler.requestInternalVariable;
-import static io.silvicky.novel.util.Util.getResultType;
 import static io.silvicky.novel.util.Util.rotateLeft;
 
 public class LogicalOrExpression extends LTRExpression
@@ -35,13 +35,20 @@ public class LogicalOrExpression extends LTRExpression
         if(right!=null)
         {
             resultId=requestInternalVariable();
+            leftId=-1;
+            type= PrimitiveType.BOOL;
+            LabelCode second=new LabelCode();
+            LabelCode end=new LabelCode();
             LogicalAndExpression right2=(LogicalAndExpression) right;
             if(right2.right instanceof LogicalAndExpression)right= rotateLeft(right2);
+            codes.add(new GotoCode(left.resultId,0,OperatorType.NOT,second.id()));
+            codes.add(new AssignNumberCode(resultId,true,type,type));
+            codes.add(new UnconditionalGotoCode(end.id()));
+            codes.add(second);
             right.travel();
             codes.addAll(right.codes);
-            type=getResultType(left.type,right.type,OperatorType.OR_OR);
-            leftId=-1;
-            codes.add(new AssignCode(resultId,left.resultId,right.resultId,type,left.type,right.type, OperatorType.OR_OR));
+            codes.add(new AssignCode(resultId,right.resultId,0,type,right.type,right.type, OperatorType.NOP));
+            codes.add(end);
         }
         else
         {

@@ -74,7 +74,7 @@ public class AssignmentDeclaration extends NonTerminal implements ASTNode
                     registerLocalVariable(pair.second(), pair.first());
                     functionBody.revokedVariables.add(pair.second());
                 }
-                int endLabel=requestLabel();
+                int endLabel= requestLabel();
                 codes.add(new UnconditionalGotoCode(endLabel));
                 codes.add(new LabelCode(ctx));
                 functionBody.travel();

@@ -99,16 +99,12 @@ public class Compiler
         labelBackMap.put(labelCnt,String.format("%s(L%d)",s,labelCnt));
         return labelCnt++;
     }
-    public static int requestLabel()
-    {
-        return labelCnt++;
-    }
     public static String lookupLabelName(int l)
     {
         if(!labelBackMap.containsKey(l))return "L"+l;
         return labelBackMap.get(l);
     }
-    public static int requestInternalLabel(){return labelCnt++;}
+    public static int requestLabel(){return labelCnt++;}
     public static List<AbstractToken> lexer(Path input) throws IOException
     {
         List<AbstractToken> ret=new ArrayList<>();

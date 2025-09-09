@@ -1,11 +1,11 @@
 package io.silvicky.novel.compiler.code;
 
 import static io.silvicky.novel.compiler.Compiler.lookupLabelName;
-import static io.silvicky.novel.compiler.Compiler.requestInternalLabel;
+import static io.silvicky.novel.compiler.Compiler.requestLabel;
 
 public record LabelCode(int id) implements Code
 {
-    public LabelCode(){this(requestInternalLabel());}
+    public LabelCode(){this(requestLabel());}
 
     @Override
     public String toString()
