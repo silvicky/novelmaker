@@ -210,6 +210,16 @@ public class Compiler
         if(val>=dataSegmentBaseAddress)return val;
         return bp-val;
     }
+    public static long toLong(Object o)
+    {
+        //TODO Remove this
+        if(o instanceof Integer integer)return integer;
+        if(o instanceof Long lon)return lon;
+        if(o instanceof Boolean bool)return bool?1:0;
+        if(o instanceof Character cha)return cha;
+        if(o instanceof Short sho)return sho;
+        throw new RuntimeException();
+    }
     public static void emulateTAC(List<Code> codes)
     {
         Map<Integer,Integer> labelPos=new HashMap<>();
@@ -239,7 +249,7 @@ public class Compiler
             }
             if(code instanceof AssignNumberCode assignNumberCode)
             {
-                mem[addressTransformer(bp,assignNumberCode.target())]= (long)(int) assignNumberCode.left();
+                mem[addressTransformer(bp,assignNumberCode.target())]= toLong(assignNumberCode.left());
                 continue;
             }
             if(code instanceof IndirectAssignCode indirectAssignCode)
