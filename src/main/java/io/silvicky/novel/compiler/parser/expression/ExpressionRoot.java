@@ -29,7 +29,6 @@ public class ExpressionRoot extends AbstractExpression implements ASTNode
     @Override
     public void travel()
     {
-        resultId=requestInternalVariable();
         if(child==null)return;
         if(child.right instanceof ExpressionNew)child= rotateLeft(child);
         child.travel();
@@ -37,6 +36,6 @@ public class ExpressionRoot extends AbstractExpression implements ASTNode
         type=child.type;
         leftId=child.leftId;
         isDirect=child.isDirect;
-        codes.add(new AssignCode(resultId,child.resultId,child.resultId,type,type,type, OperatorType.NOP));
+        resultId=child.resultId;
     }
 }

@@ -28,11 +28,11 @@ public class ExpressionNew extends LTRExpression
     @Override
     public void travel()
     {
-        resultId=requestInternalVariable();
         left.travel();
         codes.addAll(left.codes);
         if(right!=null)
         {
+            resultId=requestInternalVariable();
             right.travel();
             codes.addAll(right.codes);
             type=getResultType(left.type,right.type,OperatorType.COMMA);
@@ -44,7 +44,7 @@ public class ExpressionNew extends LTRExpression
             type=left.type;
             leftId=left.leftId;
             isDirect=left.isDirect;
-            codes.add(new AssignCode(resultId,left.resultId,left.resultId,type,type,type,OperatorType.NOP));
+            resultId=left.resultId;
         }
     }
 }

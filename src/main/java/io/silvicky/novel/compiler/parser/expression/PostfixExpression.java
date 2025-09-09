@@ -29,7 +29,6 @@ public class PostfixExpression extends AbstractExpression
     @Override
     public void travel()
     {
-        resultId=requestInternalVariable();
         //TODO maybe rewrite?
         nextExpression.travel();
         codes.addAll(nextExpression.codes);
@@ -108,6 +107,6 @@ public class PostfixExpression extends AbstractExpression
                 }
             }
         }
-        codes.add(new AssignCode(resultId,curResult,curResult,type,type,type,OperatorType.NOP));
+        resultId=curResult;
     }
 }

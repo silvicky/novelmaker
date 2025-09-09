@@ -36,12 +36,12 @@ public class ConditionalExpression extends AbstractExpression
     @Override
     public void travel()
     {
-        resultId=requestInternalVariable();
         if(left.right instanceof LogicalOrExpression)left= rotateLeft(left);
         left.travel();
         codes.addAll(left.codes);
         if(middle!=null)
         {
+            resultId=requestInternalVariable();
             int lbRight=requestInternalLabel();
             int lbEnd=requestInternalLabel();
             codes.add(new GotoCode(left.resultId,left.resultId, OperatorType.NOT,lbRight));
@@ -64,7 +64,7 @@ public class ConditionalExpression extends AbstractExpression
             type=left.type;
             leftId=left.leftId;
             isDirect=left.isDirect;
-            codes.add(new AssignCode(resultId,left.resultId,left.resultId,type,type,type,OperatorType.NOP));
+            resultId=left.resultId;
         }
     }
 }

@@ -30,12 +30,12 @@ public class EqualityExpression extends LTRExpression
     @Override
     public void travel()
     {
-        resultId=requestInternalVariable();
         if(left instanceof RelationalExpression left2&&left2.right instanceof RelationalExpression)left= rotateLeft(left2);
         left.travel();
         codes.addAll(left.codes);
         if(right!=null)
         {
+            resultId=requestInternalVariable();
             RelationalExpression right2=(RelationalExpression) right;
             if(right2.right instanceof RelationalExpression)right= rotateLeft(right2);
             right.travel();
@@ -49,7 +49,7 @@ public class EqualityExpression extends LTRExpression
             type=left.type;
             leftId=left.leftId;
             isDirect=left.isDirect;
-            codes.add(new AssignCode(resultId,left.resultId,left.resultId,type,type,type,OperatorType.NOP));
+            resultId=left.resultId;
         }
     }
 }

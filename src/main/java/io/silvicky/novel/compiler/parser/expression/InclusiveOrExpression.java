@@ -29,12 +29,12 @@ public class InclusiveOrExpression extends LTRExpression
     @Override
     public void travel()
     {
-        resultId=requestInternalVariable();
         if(left instanceof ExclusiveOrExpression left2&&left2.right instanceof ExclusiveOrExpression)left= rotateLeft(left2);
         left.travel();
         codes.addAll(left.codes);
         if(right!=null)
         {
+            resultId=requestInternalVariable();
             ExclusiveOrExpression right2=(ExclusiveOrExpression) right;
             if(right2.right instanceof ExclusiveOrExpression)right= rotateLeft(right2);
             right.travel();
@@ -48,7 +48,7 @@ public class InclusiveOrExpression extends LTRExpression
             type=left.type;
             leftId=left.leftId;
             isDirect=left.isDirect;
-            codes.add(new AssignCode(resultId,left.resultId,left.resultId,type,type,type,OperatorType.NOP));
+            resultId=left.resultId;
         }
     }
 }

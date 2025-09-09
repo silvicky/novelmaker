@@ -30,12 +30,12 @@ public class AdditiveExpression extends LTRExpression
     @Override
     public void travel()
     {
-        resultId=requestInternalVariable();
         if(left instanceof MultiplicativeExpression left2&&left2.right instanceof MultiplicativeExpression)left= rotateLeft(left2);
         left.travel();
         codes.addAll(left.codes);
         if(right!=null)
         {
+            resultId=requestInternalVariable();
             MultiplicativeExpression right2=(MultiplicativeExpression) right;
             if(right2.right instanceof MultiplicativeExpression)right= rotateLeft(right2);
             right.travel();
@@ -49,7 +49,7 @@ public class AdditiveExpression extends LTRExpression
             type=left.type;
             leftId=left.leftId;
             isDirect=left.isDirect;
-            codes.add(new AssignCode(resultId,left.resultId,left.resultId,type,type,type,OperatorType.NOP));
+            resultId=left.resultId;
         }
     }
 }

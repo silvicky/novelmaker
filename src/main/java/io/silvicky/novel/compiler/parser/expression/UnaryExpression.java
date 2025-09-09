@@ -61,7 +61,6 @@ public class UnaryExpression extends AbstractExpression
     @Override
     public void travel()
     {
-        resultId=requestInternalVariable();
         if (nextExpression != null)
         {
             nextExpression.travel();
@@ -69,10 +68,11 @@ public class UnaryExpression extends AbstractExpression
             leftId=nextExpression.leftId;
             isDirect= nextExpression.isDirect;
             codes.addAll(nextExpression.codes);
-            codes.add(new AssignCode(resultId,nextExpression.resultId,nextExpression.resultId,type,type,type,OperatorType.NOP));
+            resultId= nextExpression.resultId;
         }
         else if(child!=null)
         {
+            resultId=requestInternalVariable();
             child.travel();
             type= child.type;
             if(child.leftId==-1)throw new GrammarException("not lvalue");
@@ -91,6 +91,7 @@ public class UnaryExpression extends AbstractExpression
         }
         else
         {
+            resultId=requestInternalVariable();
             castExpression.travel();
             codes.addAll(castExpression.codes);
             if(op==OperatorType.MULTIPLY)

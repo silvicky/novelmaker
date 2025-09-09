@@ -53,7 +53,6 @@ public class CastExpression extends AbstractExpression
     @Override
     public void travel()
     {
-        resultId=requestInternalVariable();
         if(nextExpression!=null)
         {
             nextExpression.travel();
@@ -61,9 +60,10 @@ public class CastExpression extends AbstractExpression
             leftId = nextExpression.leftId;
             isDirect = nextExpression.isDirect;
             codes.addAll(nextExpression.codes);
-            codes.add(new AssignCode(resultId, nextExpression.resultId, 0, type, type, type, OperatorType.NOP));
+            resultId=nextExpression.resultId;
             return;
         }
+        resultId=requestInternalVariable();
         baseTypeBuilderRoot.travel();
         unaryDeclaration.receivedType= baseTypeBuilderRoot.type;
         unaryDeclaration.travel();

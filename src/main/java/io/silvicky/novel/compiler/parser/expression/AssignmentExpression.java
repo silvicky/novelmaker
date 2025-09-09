@@ -36,11 +36,11 @@ public class AssignmentExpression extends AbstractExpression implements ASTNode
     @Override
     public void travel()
     {
-        resultId=requestInternalVariable();
         left.travel();
         codes.addAll(left.codes);
         if(right!=null)
         {
+            resultId=requestInternalVariable();
             right.travel();
             codes.addAll(right.codes);
             if(left.leftId==-1)throw new GrammarException("not lvalue");
@@ -65,7 +65,7 @@ public class AssignmentExpression extends AbstractExpression implements ASTNode
             type=left.type;
             leftId=left.leftId;
             isDirect=left.isDirect;
-            codes.add(new AssignCode(resultId,left.resultId,left.resultId,type,type,type,OperatorType.NOP));
+            resultId=left.resultId;
         }
     }
 }

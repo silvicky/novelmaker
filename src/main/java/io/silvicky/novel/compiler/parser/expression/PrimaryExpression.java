@@ -45,7 +45,6 @@ public class PrimaryExpression extends AbstractExpression
     @Override
     public void travel()
     {
-        resultId=requestInternalVariable();
         if(nextExpression!=null)
         {
             if(nextExpression.right instanceof ExpressionNew)nextExpression= rotateLeft(nextExpression);
@@ -53,10 +52,11 @@ public class PrimaryExpression extends AbstractExpression
             codes.addAll(nextExpression.codes);
             type=nextExpression.type;
             leftId=nextExpression.leftId;
-            codes.add(new AssignCode(resultId,nextExpression.resultId,nextExpression.resultId,type,type,type,OperatorType.NOP));
+            resultId=nextExpression.resultId;
         }
         else if(variableName!=null)
         {
+            resultId=requestInternalVariable();
             type= lookupVariable(variableName).second();
             leftId=lookupVariable(variableName).first();
             isDirect=true;
@@ -65,6 +65,7 @@ public class PrimaryExpression extends AbstractExpression
         }
         else
         {
+            resultId=requestInternalVariable();
             codes.add(new AssignNumberCode(resultId,numericVal,type,type));
         }
     }

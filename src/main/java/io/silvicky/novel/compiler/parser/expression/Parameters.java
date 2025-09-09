@@ -38,7 +38,6 @@ public class Parameters extends AbstractExpression implements ASTNode
     @Override
     public void travel()
     {
-        resultId=requestInternalVariable();
         if(left==null)return;
         left.travel();
         codes.addAll(left.codes);
