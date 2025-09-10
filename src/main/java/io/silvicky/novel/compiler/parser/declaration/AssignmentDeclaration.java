@@ -1,6 +1,8 @@
 package io.silvicky.novel.compiler.parser.declaration;
 
 import io.silvicky.novel.compiler.code.*;
+import io.silvicky.novel.compiler.code.raw.AssignCode;
+import io.silvicky.novel.compiler.code.raw.ReturnCode;
 import io.silvicky.novel.compiler.parser.ASTNode;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.NonTerminal;
@@ -74,7 +76,7 @@ public class AssignmentDeclaration extends NonTerminal implements ASTNode
                     registerLocalVariable(pair.second(), pair.first());
                     functionBody.revokedVariables.add(pair.second());
                 }
-                int endLabel= requestLabel();
+                int endLabel= registerLabel("0"+unaryDeclaration.name);
                 codes.add(new UnconditionalGotoCode(endLabel));
                 codes.add(new LabelCode(ctx));
                 functionBody.travel();

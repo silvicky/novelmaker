@@ -1,6 +1,6 @@
 package io.silvicky.novel.compiler.parser.line;
 
-import io.silvicky.novel.compiler.code.PlaceholderUnconditionalGotoCode;
+import io.silvicky.novel.compiler.code.raw.PlaceholderUnconditionalGotoCode;
 import io.silvicky.novel.compiler.parser.ASTNode;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.NonTerminal;
@@ -8,8 +8,6 @@ import io.silvicky.novel.compiler.tokens.*;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static io.silvicky.novel.compiler.Compiler.ctx;
 
 public class GotoLine extends NonTerminal implements ASTNode
 {
@@ -32,6 +30,6 @@ public class GotoLine extends NonTerminal implements ASTNode
     @Override
     public void travel()
     {
-        codes.add(new PlaceholderUnconditionalGotoCode(ctx,id));
+        codes.add(new PlaceholderUnconditionalGotoCode(id));
     }
 }

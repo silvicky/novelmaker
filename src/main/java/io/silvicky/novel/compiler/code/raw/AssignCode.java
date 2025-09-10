@@ -1,5 +1,6 @@
-package io.silvicky.novel.compiler.code;
+package io.silvicky.novel.compiler.code.raw;
 
+import io.silvicky.novel.compiler.code.Code;
 import io.silvicky.novel.compiler.tokens.OperatorType;
 import io.silvicky.novel.compiler.types.Type;
 

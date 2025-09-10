@@ -1,6 +1,6 @@
 package io.silvicky.novel.compiler.parser.expression;
 
-import io.silvicky.novel.compiler.code.AssignCode;
+import io.silvicky.novel.compiler.code.raw.AssignCode;
 import io.silvicky.novel.compiler.parser.declaration.BaseTypeBuilderRoot;
 import io.silvicky.novel.compiler.parser.declaration.UnaryDeclaration;
 import io.silvicky.novel.compiler.tokens.*;

@@ -1,4 +1,6 @@
-package io.silvicky.novel.compiler.code;
+package io.silvicky.novel.compiler.code.raw;
+
+import io.silvicky.novel.compiler.code.Code;
 
 import static io.silvicky.novel.compiler.Compiler.lookupVariableName;
 

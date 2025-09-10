@@ -1,4 +1,6 @@
-package io.silvicky.novel.compiler.code;
+package io.silvicky.novel.compiler.code.raw;
+
+import io.silvicky.novel.compiler.code.Code;
 
 import java.util.List;
 

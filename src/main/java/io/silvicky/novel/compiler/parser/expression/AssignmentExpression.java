@@ -1,6 +1,6 @@
 package io.silvicky.novel.compiler.parser.expression;
 
-import io.silvicky.novel.compiler.code.AssignCode;
+import io.silvicky.novel.compiler.code.raw.AssignCode;
 import io.silvicky.novel.compiler.code.DereferenceCode;
 import io.silvicky.novel.compiler.code.IndirectAssignCode;
 import io.silvicky.novel.compiler.parser.ASTNode;

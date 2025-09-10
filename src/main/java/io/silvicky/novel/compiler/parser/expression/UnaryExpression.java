@@ -1,6 +1,8 @@
 package io.silvicky.novel.compiler.parser.expression;
 
 import io.silvicky.novel.compiler.code.*;
+import io.silvicky.novel.compiler.code.raw.AssignCode;
+import io.silvicky.novel.compiler.code.raw.AssignVariableNumberCode;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorToken;
@@ -108,7 +110,7 @@ public class UnaryExpression extends AbstractExpression
                 type=new PointerType(castExpression.type);
                 if(castExpression.isDirect)
                 {
-                    codes.add(new ReferenceCode(resultId,castExpression.leftId,PrimitiveType.INT));
+                    codes.add(new ReferenceCode(resultId,castExpression.leftId));
                 }
                 else
                 {

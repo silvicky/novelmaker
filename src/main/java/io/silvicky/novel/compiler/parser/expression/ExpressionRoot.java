@@ -1,6 +1,5 @@
 package io.silvicky.novel.compiler.parser.expression;
 
-import io.silvicky.novel.compiler.code.AssignCode;
 import io.silvicky.novel.compiler.parser.ASTNode;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorToken;
@@ -9,7 +8,6 @@ import io.silvicky.novel.compiler.tokens.OperatorType;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.silvicky.novel.compiler.Compiler.requestInternalVariable;
 import static io.silvicky.novel.util.Util.rotateLeft;
 
 public class ExpressionRoot extends AbstractExpression implements ASTNode

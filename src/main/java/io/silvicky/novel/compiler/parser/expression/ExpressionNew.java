@@ -1,15 +1,10 @@
 package io.silvicky.novel.compiler.parser.expression;
 
-import io.silvicky.novel.compiler.code.AssignCode;
 import io.silvicky.novel.compiler.parser.operation.ResolveOperation;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
-import io.silvicky.novel.compiler.tokens.OperatorType;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static io.silvicky.novel.compiler.Compiler.requestInternalVariable;
-import static io.silvicky.novel.util.Util.getResultType;
 
 public class ExpressionNew extends LTRExpression
 {
@@ -32,12 +27,12 @@ public class ExpressionNew extends LTRExpression
         codes.addAll(left.codes);
         if(right!=null)
         {
-            resultId=requestInternalVariable();
             right.travel();
             codes.addAll(right.codes);
-            type=getResultType(left.type,right.type,OperatorType.COMMA);
-            leftId=-1;
-            codes.add(new AssignCode(resultId,left.resultId,right.resultId,type,left.type,right.type, OperatorType.COMMA));
+            type=right.type;
+            leftId=right.leftId;
+            isDirect= right.isDirect;
+            resultId=right.resultId;
         }
         else
         {

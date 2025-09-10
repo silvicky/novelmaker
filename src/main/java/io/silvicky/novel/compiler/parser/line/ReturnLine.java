@@ -1,6 +1,6 @@
 package io.silvicky.novel.compiler.parser.line;
 
-import io.silvicky.novel.compiler.code.ReturnCode;
+import io.silvicky.novel.compiler.code.raw.ReturnCode;
 import io.silvicky.novel.compiler.parser.ASTNode;
 import io.silvicky.novel.compiler.parser.NonTerminal;
 import io.silvicky.novel.compiler.parser.expression.ExpressionRoot;

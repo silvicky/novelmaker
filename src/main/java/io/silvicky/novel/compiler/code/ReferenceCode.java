@@ -1,10 +1,8 @@
 package io.silvicky.novel.compiler.code;
 
-import io.silvicky.novel.compiler.types.Type;
-
 import static io.silvicky.novel.compiler.Compiler.lookupVariableName;
 
-public record ReferenceCode(int target, int left, Type leftType) implements Code
+public record ReferenceCode(int target, int left) implements Code
 {
     @Override
     public String toString()

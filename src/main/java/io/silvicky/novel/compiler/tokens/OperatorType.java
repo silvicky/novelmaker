@@ -165,7 +165,7 @@ public enum OperatorType
         return new Pair<>(ret,ans);
     }),
     OR_EQUAL("|=",OperatorArgsProperties.BINARY_ASSIGN,OR),
-    OR_OR("||",OperatorArgsProperties.BINARY,(a,b,ta,tb)->new Pair<>(PrimitiveType.BOOL,((a!=0)||(b!=0))?1L:0L)),
+    OR_OR("||"),
     AND("&",OperatorArgsProperties.BINARY,(a,b,ta,tb)->
     {
         while(ta instanceof ConstType ca)ta=ca.baseType();
@@ -177,7 +177,7 @@ public enum OperatorType
         return new Pair<>(ret,ans);
     }),
     AND_EQUAL("&=",OperatorArgsProperties.BINARY_ASSIGN,AND),
-    AND_AND("&&",OperatorArgsProperties.BINARY,(a,b,ta,tb)->new Pair<>(PrimitiveType.BOOL,((a!=0)&&(b!=0))?1L:0L)),
+    AND_AND("&&"),
     XOR("^",OperatorArgsProperties.BINARY,(a,b,ta,tb)->
     {
         while(ta instanceof ConstType ca)ta=ca.baseType();
