@@ -248,9 +248,11 @@ public class Compiler
         {
             if(code instanceof LabelCode labelCode)
             {
-                if(!labelBackMap.containsKey(labelCode.id()))continue;
-                if(labelBackMap.get(labelCode.id()).charAt(0)=='0')ctx=-1;
-                else ctx=labelCode.id();
+                if(labelBackMap.containsKey(labelCode.id()))
+                {
+                    if (labelBackMap.get(labelCode.id()).charAt(0) == '0') ctx = -1;
+                    else ctx = labelCode.id();
+                }
             }
             if(code instanceof AssignCode assignCode)
             {
@@ -542,9 +544,20 @@ public class Compiler
                 mem[addressTransformer(bp,referenceCode.target())]=addressTransformer(bp,referenceCode.left());
                 continue;
             }
-            if(code instanceof AssignCode assignCode)
+            if(code instanceof AssignMMCodeP assignMMCodeP)
             {
-                mem[addressTransformer(bp,assignCode.target())]=assignCode.op().operation.cal(mem[addressTransformer(bp,assignCode.left())],mem[addressTransformer(bp,assignCode.right())],assignCode.leftType(),assignCode.rightType()).second();
+                mem[addressTransformer(bp,assignMMCodeP.target())]=assignMMCodeP.op().operation.cal(mem[addressTransformer(bp,assignMMCodeP.left())],mem[addressTransformer(bp,assignMMCodeP.right())],assignMMCodeP.type(),assignMMCodeP.type()).second();
+                continue;
+            }
+            if(code instanceof AssignMICodeP assignMICodeP)
+            {
+                mem[addressTransformer(bp,assignMICodeP.target())]=assignMICodeP.op().operation.cal(mem[addressTransformer(bp,assignMICodeP.left())], (int)assignMICodeP.right(),assignMICodeP.type(),assignMICodeP.type()).second();
+                continue;
+            }
+            if(code instanceof CastMMCodeP castMMCodeP)
+            {
+                //TODO
+                mem[addressTransformer(bp,castMMCodeP.target())]=mem[addressTransformer(bp, castMMCodeP.source())];
                 continue;
             }
             if(code instanceof AssignVariableNumberCode assignVariableNumberCode)
@@ -632,7 +645,7 @@ public class Compiler
         List<AbstractToken> abstractTokenList =lexer(Path.of(args[0]));
         tokenParser(abstractTokenList);
         List<Code> codeList=parser(abstractTokenList);
-        List<Code> erasedCodeList=typeEraser(codeList);
-        emulateTAC(erasedCodeList);
+        codeList=typeEraser(codeList);
+        emulateTAC(codeList);
     }
 }
