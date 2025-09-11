@@ -2,9 +2,9 @@ package io.silvicky.novel.compiler.types;
 
 public enum PrimitiveType implements Type
 {
-    BOOL(1, Boolean.class, "bool"),
-    CHAR(1, Character.class, "char"),
-    UNSIGNED_CHAR(1, Character.class, "unsigned char"),
+    BOOL(1, Boolean.class, "bool"),//bool is int in C but not here
+    CHAR(1, Byte.class, "char"),
+    UNSIGNED_CHAR(1, Byte.class, "unsigned char"),
     SHORT(2, Short.class, "short"),
     UNSIGNED_SHORT(2, Short.class, "unsigned short"),
     INT(4, Integer.class, "int"),
