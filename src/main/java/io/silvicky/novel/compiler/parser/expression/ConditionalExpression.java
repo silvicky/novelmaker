@@ -44,7 +44,7 @@ public class ConditionalExpression extends AbstractExpression
             resultId=requestInternalVariable();
             int lbRight= requestLabel();
             int lbEnd= requestLabel();
-            codes.add(new GotoCode(left.resultId,left.resultId, OperatorType.NOT,lbRight));
+            codes.add(new GotoCode(left.resultId,left.type, true,lbRight));
             if(middle.right instanceof ExpressionNew)middle= rotateLeft(middle);
             leftId=-1;
             middle.travel();

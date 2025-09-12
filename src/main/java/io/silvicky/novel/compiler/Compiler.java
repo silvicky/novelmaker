@@ -4,12 +4,13 @@ import io.silvicky.novel.compiler.code.*;
 import io.silvicky.novel.compiler.code.primitive.AssignMICodeP;
 import io.silvicky.novel.compiler.code.primitive.AssignMMCodeP;
 import io.silvicky.novel.compiler.code.primitive.CastMMCodeP;
+import io.silvicky.novel.compiler.code.primitive.GotoCodeP;
 import io.silvicky.novel.compiler.code.raw.*;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.NonTerminal;
 import io.silvicky.novel.compiler.parser.Program;
-import io.silvicky.novel.compiler.parser.operation.Skip;
 import io.silvicky.novel.compiler.parser.operation.Operation;
+import io.silvicky.novel.compiler.parser.operation.Skip;
 import io.silvicky.novel.compiler.tokens.*;
 import io.silvicky.novel.compiler.types.*;
 import io.silvicky.novel.util.Pair;
@@ -21,7 +22,6 @@ import java.nio.file.Path;
 import java.util.*;
 
 import static io.silvicky.novel.compiler.types.PrimitiveType.BOOL;
-import static io.silvicky.novel.compiler.types.PrimitiveType.INT;
 import static io.silvicky.novel.compiler.types.Type.ADDRESS_TYPE;
 import static io.silvicky.novel.util.Util.addNonNull;
 
@@ -262,6 +262,10 @@ public class Compiler
             {
                 ret.addAll(assignCode.analyze());
             }
+            else if(code instanceof GotoCode gotoCode)
+            {
+                ret.addAll(gotoCode.analyze());
+            }
             else
             {
                 ret.add(code);
@@ -332,16 +336,14 @@ public class Compiler
         {
             Code code=codes.get(ip++);
             if(code instanceof LabelCode)continue;
-            //TODO Fully rewrite
             if(code instanceof UnconditionalGotoCode unconditionalGotoCode)
             {
                 ip=labelPos.get(unconditionalGotoCode.id());
                 continue;
             }
-            if(code instanceof GotoCode gotoCode)
+            if(code instanceof GotoCodeP gotoCode)
             {
-                //TODO all below
-                if(gotoCode.op().operation.cal(mem[addressTransformer(bp,gotoCode.left())],mem[addressTransformer(bp,gotoCode.right())],INT,INT).second()!=0)ip=labelPos.get(gotoCode.id());
+                if(mem[addressTransformer(bp,gotoCode.left())]!=0)ip=labelPos.get(gotoCode.id());
                 continue;
             }
             if(code instanceof AssignNumberCode assignNumberCode)
@@ -373,7 +375,7 @@ public class Compiler
             if(code instanceof CastMMCodeP castMMCodeP)
             {
                 //TODO
-                mem[addressTransformer(bp,castMMCodeP.target())]=mem[addressTransformer(bp, castMMCodeP.source())];
+                mem[addressTransformer(bp,castMMCodeP.target())]=toLong(castPrimitiveType(mem[addressTransformer(bp, castMMCodeP.source())], castMMCodeP.targetType(), castMMCodeP.sourceType()));
                 continue;
             }
             if(code instanceof ReturnCode returnCode)

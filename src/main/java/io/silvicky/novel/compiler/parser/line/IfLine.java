@@ -49,7 +49,7 @@ public class IfLine extends NonTerminal implements ASTNode
     {
         expression.travel();
         codes.addAll(expression.codes);
-        codes.add(new GotoCode(expression.resultId,0,OperatorType.NOT,elseLabel.id()));
+        codes.add(new GotoCode(expression.resultId,expression.type,true,elseLabel.id()));
         line.travel();
         codes.addAll(line.codes);
         codes.add(new UnconditionalGotoCode(end.id()));

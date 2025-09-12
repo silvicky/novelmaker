@@ -51,7 +51,7 @@ public class ForLine extends NonTerminal implements ASTNode
         codes.add(head);
         expression.travel();
         codes.addAll(expression.codes);
-        codes.add(new GotoCode(expression.resultId,0,OperatorType.NOT, end.id()));
+        codes.add(new GotoCode(expression.resultId,expression.type,true, end.id()));
         line.travel();
         codes.addAll(line.codes);
         codes.add(cont);

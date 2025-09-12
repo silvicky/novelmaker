@@ -42,7 +42,7 @@ public class LogicalOrExpression extends LTRExpression
             LabelCode end=new LabelCode();
             LogicalAndExpression right2=(LogicalAndExpression) right;
             if(right2.right instanceof LogicalAndExpression)right= rotateLeft(right2);
-            codes.add(new GotoCode(left.resultId,0,OperatorType.NOT,second.id()));
+            codes.add(new GotoCode(left.resultId,left.type,true,second.id()));
             codes.add(new AssignNumberCode(resultId,true,type,type));
             codes.add(new UnconditionalGotoCode(end.id()));
             codes.add(second);

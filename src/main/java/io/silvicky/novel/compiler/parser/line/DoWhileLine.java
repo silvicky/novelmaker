@@ -47,7 +47,7 @@ public class DoWhileLine extends NonTerminal implements ASTNode
         codes.add(cont);
         expression.travel();
         codes.addAll(expression.codes);
-        codes.add(new GotoCode(expression.resultId,0,OperatorType.NOP,head.id()));
+        codes.add(new GotoCode(expression.resultId,expression.type,false,head.id()));
         codes.add(end);
         for(String s:revokedVariables)revokeLocalVariable(s);
     }

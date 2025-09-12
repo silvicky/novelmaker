@@ -1,23 +1,46 @@
 package io.silvicky.novel.compiler.code;
 
+import io.silvicky.novel.compiler.code.primitive.AssignMMCodeP;
+import io.silvicky.novel.compiler.code.primitive.CastMMCodeP;
+import io.silvicky.novel.compiler.code.primitive.GotoCodeP;
+import io.silvicky.novel.compiler.code.raw.RawCode;
 import io.silvicky.novel.compiler.tokens.OperatorType;
+import io.silvicky.novel.compiler.types.PrimitiveType;
+import io.silvicky.novel.compiler.types.Type;
 
-import static io.silvicky.novel.compiler.Compiler.lookupLabelName;
-import static io.silvicky.novel.compiler.Compiler.lookupVariableName;
+import java.util.ArrayList;
+import java.util.List;
 
-public record GotoCode(int left, int right, OperatorType op, int id) implements Code
+import static io.silvicky.novel.compiler.Compiler.*;
+
+public record GotoCode(int left, Type type, boolean isReversed, int id) implements RawCode
 {
     @Override
     public String toString()
     {
-        if(op.properties== OperatorType.OperatorArgsProperties.BINARY)return String.format("if %s %s %s goto %s",
-                lookupVariableName(left),
-                op.symbol,
-                lookupVariableName(right),
-                lookupLabelName(id));
-        else return String.format("if %s %s goto %s",
-                op.symbol,
+        if(isReversed)return String.format("if !%s goto %s",
                 lookupVariableName(left),
                 lookupLabelName(id));
+        else return String.format("if %s goto %s",
+                lookupVariableName(left),
+                lookupLabelName(id));
+    }
+
+    @Override
+    public List<Code> analyze()
+    {
+        List<Code> ret=new ArrayList<>();
+        PrimitiveType primitiveType=getPrimitiveType(type);
+        int t1=requestInternalVariable();
+        if(isReversed)
+        {
+            ret.add(new AssignMMCodeP(t1,left,left,primitiveType, OperatorType.NOT));
+        }
+        else
+        {
+            ret.add(new CastMMCodeP(t1,left,PrimitiveType.BOOL,primitiveType));
+        }
+        ret.add(new GotoCodeP(t1,id));
+        return ret;
     }
 }
