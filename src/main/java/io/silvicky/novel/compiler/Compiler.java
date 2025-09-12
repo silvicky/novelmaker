@@ -362,19 +362,19 @@ public class Compiler
                 mem[addressTransformer(bp,referenceCode.target())]=addressTransformer(bp,referenceCode.left());
                 continue;
             }
+            //TODO Write to bytes(requires correct memory layout)
             if(code instanceof AssignMMCodeP assignMMCodeP)
             {
-                mem[addressTransformer(bp,assignMMCodeP.target())]=assignMMCodeP.op().operation.cal(mem[addressTransformer(bp,assignMMCodeP.left())],mem[addressTransformer(bp,assignMMCodeP.right())],assignMMCodeP.type(),assignMMCodeP.type()).second();
+                mem[addressTransformer(bp,assignMMCodeP.target())]=toLong(assignMMCodeP.op().operation.cal(mem[addressTransformer(bp,assignMMCodeP.left())],mem[addressTransformer(bp,assignMMCodeP.right())],assignMMCodeP.type()));
                 continue;
             }
             if(code instanceof AssignMICodeP assignMICodeP)
             {
-                mem[addressTransformer(bp,assignMICodeP.target())]=assignMICodeP.op().operation.cal(mem[addressTransformer(bp,assignMICodeP.left())], (int)assignMICodeP.right(),assignMICodeP.type(),assignMICodeP.type()).second();
+                mem[addressTransformer(bp,assignMICodeP.target())]=toLong(assignMICodeP.op().operation.cal(mem[addressTransformer(bp,assignMICodeP.left())], assignMICodeP.right(),assignMICodeP.type()));
                 continue;
             }
             if(code instanceof CastMMCodeP castMMCodeP)
             {
-                //TODO
                 mem[addressTransformer(bp,castMMCodeP.target())]=toLong(castPrimitiveType(mem[addressTransformer(bp, castMMCodeP.source())], castMMCodeP.targetType(), castMMCodeP.sourceType()));
                 continue;
             }

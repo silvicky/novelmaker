@@ -1,9 +1,8 @@
 package io.silvicky.novel.compiler.tokens;
 
-import io.silvicky.novel.compiler.types.Type;
-import io.silvicky.novel.util.Pair;
+import io.silvicky.novel.compiler.types.PrimitiveType;
 
 public interface OperatorOperation
 {
-    Pair<Type,Long> cal(long a, long b, Type aType, Type bType);
+    Object cal(Object a, Object b, PrimitiveType type);
 }

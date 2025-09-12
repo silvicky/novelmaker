@@ -1,9 +1,5 @@
 package io.silvicky.novel.compiler.tokens;
 
-import io.silvicky.novel.compiler.parser.GrammarException;
-import io.silvicky.novel.compiler.types.*;
-import io.silvicky.novel.util.Pair;
-
 public enum OperatorType
 {
     //TODO everything here
@@ -13,183 +9,475 @@ public enum OperatorType
     R_BRACKET("]"),
     L_BRACE("{"),
     R_BRACE("}"),
-    LESS("<",OperatorArgsProperties.BINARY,(a,b,ta,tb)->new Pair<>(PrimitiveType.BOOL,(a<b)?1L:0L)),
-    GREATER(">",OperatorArgsProperties.BINARY,(a,b,ta,tb)->LESS.operation.cal(b,a,tb,ta)),
-    LESS_EQUAL("<=",OperatorArgsProperties.BINARY,(a,b,ta,tb)->
-            new Pair<>(PrimitiveType.BOOL,1L-LESS.operation.cal(b,a,tb,ta).second())),
-    GREATER_EQUAL(">=",OperatorArgsProperties.BINARY,(a,b,ta,tb)->
-            new Pair<>(PrimitiveType.BOOL,1L-LESS.operation.cal(a,b,ta,tb).second())),
-    NOT_EQUAL("!=",OperatorArgsProperties.BINARY,(a,b,ta,tb)->
-            new Pair<>(PrimitiveType.BOOL,(LESS.operation.cal(a,b,ta,tb).second()+LESS.operation.cal(b,a,tb,ta).second())==0L?0L:1L)),
-    EQUAL_EQUAL("==",OperatorArgsProperties.BINARY,(a,b,ta,tb)->
-            new Pair<>(PrimitiveType.BOOL,(LESS.operation.cal(a,b,ta,tb).second()+LESS.operation.cal(b,a,tb,ta).second())==0L?1L:0L)),
-    L_SHIFT("<<",OperatorArgsProperties.BINARY,(a,b,ta,tb)->
+    LESS("<",OperatorArgsProperties.BINARY,(a,b,t)->
     {
-        while(ta instanceof ConstType ca)ta=ca.baseType();
-        while(tb instanceof ConstType cb)tb=cb.baseType();
-        if(!(ta instanceof PrimitiveType pa&&tb instanceof PrimitiveType pb))throw new GrammarException("not number");
-        if(!(pa.isInteger()&&pb.isInteger()))throw new GrammarException("not integer");
-        PrimitiveType ret=PrimitiveType.values()[Math.max(pa.ordinal(),pb.ordinal())];
-        long ans=a<<b;
-        return new Pair<>(ret,ans);
+        switch (t)
+        {
+            case BOOL ->
+            {
+                return (!(boolean)a)&&(boolean)b;
+            }
+            case CHAR ->
+            {
+                return (byte) a < (byte) b;
+            }
+            case UNSIGNED_CHAR ->
+            {
+                return Byte.compareUnsigned((byte)a,(byte)b)<0;
+            }
+            case SHORT ->
+            {
+                return (short)a<(short) b;
+            }
+            case UNSIGNED_SHORT ->
+            {
+                return Short.compareUnsigned((short) a,(short) b)<0;
+            }
+            case INT,LONG ->
+            {
+                return (int)a<(int) b;
+            }
+            case UNSIGNED_INT,UNSIGNED_LONG ->
+            {
+                return Integer.compareUnsigned((int) a,(int) b)<0;
+            }
+            case LONG_LONG ->
+            {
+                return (long)a<(long) b;
+            }
+            case UNSIGNED_LONG_LONG ->
+            {
+                return Long.compareUnsigned((long)a,(long)b)<0;
+            }
+            case FLOAT ->
+            {
+                return (float)a<(float) b;
+            }
+            case DOUBLE,LONG_DOUBLE ->
+            {
+                return (double)a<(double) b;
+            }
+            default ->
+            {
+                return null;
+            }
+        }
     }),
-    R_SHIFT(">>",OperatorArgsProperties.BINARY,(a,b,ta,tb)->
+    GREATER(">",OperatorArgsProperties.BINARY,(a,b,t)->LESS.operation.cal(b,a,t)),
+    LESS_EQUAL("<=",OperatorArgsProperties.BINARY,(a,b,t)-> !(boolean)(LESS.operation.cal(b,a,t))),
+    GREATER_EQUAL(">=",OperatorArgsProperties.BINARY,(a,b,t)-> !(boolean)(LESS.operation.cal(a,b,t))),
+    NOT_EQUAL("!=",OperatorArgsProperties.BINARY,(a,b,t)->(boolean)(LESS.operation.cal(a,b,t))||(boolean)(LESS.operation.cal(b,a,t))),
+    EQUAL_EQUAL("==",OperatorArgsProperties.BINARY,(a,b,t)->!((boolean)(LESS.operation.cal(a,b,t))||(boolean)(LESS.operation.cal(b,a,t)))),
+    L_SHIFT("<<",OperatorArgsProperties.BINARY,(a,b,t)->
     {
-        while(ta instanceof ConstType ca)ta=ca.baseType();
-        while(tb instanceof ConstType cb)tb=cb.baseType();
-        if(!(ta instanceof PrimitiveType pa&&tb instanceof PrimitiveType pb))throw new GrammarException("not number");
-        if(!(pa.isInteger()&&pb.isInteger()))throw new GrammarException("not integer");
-        PrimitiveType ret=PrimitiveType.values()[Math.max(pa.ordinal(),pb.ordinal())];
-        long ans=a>>b;
-        return new Pair<>(ret,ans);
+        switch (t)
+        {
+            case CHAR,UNSIGNED_CHAR ->
+            {
+                return (byte) a << (byte) b;
+            }
+            case SHORT,UNSIGNED_SHORT ->
+            {
+                return (short)a<<(short) b;
+            }
+            case INT,LONG,UNSIGNED_INT,UNSIGNED_LONG ->
+            {
+                return (int)a<<(int) b;
+            }
+            case LONG_LONG,UNSIGNED_LONG_LONG ->
+            {
+                return (long)a<<(long) b;
+            }
+            default ->
+            {
+                return null;
+            }
+        }
+    }),
+    R_SHIFT(">>",OperatorArgsProperties.BINARY,(a,b,t)->
+    {
+        switch (t)
+        {
+            case CHAR,UNSIGNED_CHAR ->
+            {
+                return (byte) a >> (byte) b;
+            }
+            case SHORT,UNSIGNED_SHORT ->
+            {
+                return (short)a>>(short) b;
+            }
+            case INT,LONG,UNSIGNED_INT,UNSIGNED_LONG ->
+            {
+                return (int)a>>(int) b;
+            }
+            case LONG_LONG,UNSIGNED_LONG_LONG ->
+            {
+                return (long)a>>(long) b;
+            }
+            default ->
+            {
+                return null;
+            }
+        }
     }),
     L_SHIFT_EQUAL("<<=",OperatorArgsProperties.BINARY_ASSIGN,L_SHIFT),
     R_SHIFT_EQUAL(">>=",OperatorArgsProperties.BINARY_ASSIGN,R_SHIFT),
-    NOT("!",OperatorArgsProperties.UNARY_R,(a,b,ta,tb)->new Pair<>(PrimitiveType.BOOL,(a==0)?1L:0L)),
+    NOT("!",OperatorArgsProperties.UNARY_R,(a,b,t)->
+    {
+        switch (t)
+        {
+            case BOOL ->
+            {
+                return !(boolean) a;
+            }
+            case CHAR,UNSIGNED_CHAR ->
+            {
+                return (byte) a !=0;
+            }
+            case SHORT,UNSIGNED_SHORT ->
+            {
+                return (short)a!=0;
+            }
+            case INT,LONG,UNSIGNED_INT,UNSIGNED_LONG ->
+            {
+                return (int)a!=0;
+            }
+            case LONG_LONG,UNSIGNED_LONG_LONG ->
+            {
+                return (long)a!=0;
+            }
+            case FLOAT ->
+            {
+                return (float)a!=0;
+            }
+            case DOUBLE,LONG_DOUBLE ->
+            {
+                return (double)a!=0;
+            }
+            default ->
+            {
+                return null;
+            }
+        }
+    }),
     COLON(":"),
     QUESTION("?"),
     LABEL(":;"),
     SEMICOLON(";"),
-    COMMA(",",OperatorArgsProperties.BINARY,(a,b,ta,tb)->new Pair<>(tb,b)),
+    COMMA(",",OperatorArgsProperties.BINARY,(a,b,t)->b),
     DOT("."),
-    MULTIPLY("*",OperatorArgsProperties.BINARY,(a,b,ta,tb)->
+    MULTIPLY("*",OperatorArgsProperties.BINARY,(a,b,t)->
     {
-        while(ta instanceof ConstType ca)ta=ca.baseType();
-        while(tb instanceof ConstType cb)tb=cb.baseType();
-        if(!(ta instanceof PrimitiveType pa&&tb instanceof PrimitiveType pb))throw new GrammarException("not number");
-        PrimitiveType ret=PrimitiveType.values()[Math.max(pa.ordinal(),pb.ordinal())];
-        long ans=a*b;
-        return new Pair<>(ret,ans);
+        switch (t)
+        {
+            case CHAR,UNSIGNED_CHAR ->
+            {
+                return (byte) a * (byte) b;
+            }
+            case SHORT,UNSIGNED_SHORT ->
+            {
+                return (short)a*(short) b;
+            }
+            case INT,LONG,UNSIGNED_INT,UNSIGNED_LONG ->
+            {
+                return (int)a*(int) b;
+            }
+            case LONG_LONG,UNSIGNED_LONG_LONG ->
+            {
+                return (long)a*(long) b;
+            }
+            case FLOAT ->
+            {
+                return (float)a*(float) b;
+            }
+            case DOUBLE,LONG_DOUBLE ->
+            {
+                return (double)a*(double) b;
+            }
+            default ->
+            {
+                return null;
+            }
+        }
     }),
     MULTIPLY_EQUAL("*=",OperatorArgsProperties.BINARY_ASSIGN,MULTIPLY),
-    PLUS("+",OperatorArgsProperties.BINARY,(a,b,ta,tb)->
+    PLUS("+",OperatorArgsProperties.BINARY,(a,b,t)->
     {
-        while(ta instanceof ConstType ca)ta=ca.baseType();
-        while(tb instanceof ConstType cb)tb=cb.baseType();
-        if(ta instanceof ArrayType aa)ta=new PointerType(aa.baseType());
-        if(tb instanceof ArrayType ab)tb=new PointerType(ab.baseType());
-        Type type;
-        long ans;
-        if(ta instanceof PointerType&&tb instanceof PointerType)throw new GrammarException("addition between pointers");
-        else if(tb instanceof PointerType pb)
+        switch (t)
         {
-            type=tb;
-            ans=b+a*pb.baseType().getSize();
+            case CHAR,UNSIGNED_CHAR ->
+            {
+                return (byte) a + (byte) b;
+            }
+            case SHORT,UNSIGNED_SHORT ->
+            {
+                return (short)a+(short) b;
+            }
+            case INT,LONG,UNSIGNED_INT,UNSIGNED_LONG ->
+            {
+                return (int)a+(int) b;
+            }
+            case LONG_LONG,UNSIGNED_LONG_LONG ->
+            {
+                return (long)a+(long) b;
+            }
+            case FLOAT ->
+            {
+                return (float)a+(float) b;
+            }
+            case DOUBLE,LONG_DOUBLE ->
+            {
+                return (double)a+(double) b;
+            }
+            default ->
+            {
+                return null;
+            }
         }
-        else if(ta instanceof PointerType pa)
-        {
-            type=ta;
-            ans=a+b*pa.baseType().getSize();
-        }
-        else
-        {
-            if(!(ta instanceof PrimitiveType pa&&tb instanceof PrimitiveType pb))throw new GrammarException("not number");
-            type=PrimitiveType.values()[Math.max(pa.ordinal(),pb.ordinal())];
-            ans=a+b;
-        }
-        return new Pair<>(type,ans);
     }),
     PLUS_EQUAL("+=",OperatorArgsProperties.BINARY_ASSIGN,PLUS),
     PLUS_PLUS("++",OperatorArgsProperties.UNARY,PLUS),
-    MINUS("-",OperatorArgsProperties.BINARY,(a,b,ta,tb)->
+    MINUS("-",OperatorArgsProperties.BINARY,(a,b,t)->
     {
-        while(ta instanceof ConstType ca)ta=ca.baseType();
-        while(tb instanceof ConstType cb)tb=cb.baseType();
-        if(ta instanceof ArrayType aa)ta=new PointerType(aa.baseType());
-        if(tb instanceof ArrayType ab)tb=new PointerType(ab.baseType());
-        Type type;
-        long ans;
-        if(ta instanceof PointerType pa&&tb instanceof PointerType pb)
+        switch (t)
         {
-            if(!pa.equals(pb))throw new GrammarException("minus between different pointers");
-            type=PrimitiveType.INT;
-            ans=(b-a)/pb.baseType().getSize();
+            case CHAR,UNSIGNED_CHAR ->
+            {
+                return (byte) a - (byte) b;
+            }
+            case SHORT,UNSIGNED_SHORT ->
+            {
+                return (short)a-(short) b;
+            }
+            case INT,LONG,UNSIGNED_INT,UNSIGNED_LONG ->
+            {
+                return (int)a-(int) b;
+            }
+            case LONG_LONG,UNSIGNED_LONG_LONG ->
+            {
+                return (long)a-(long) b;
+            }
+            case FLOAT ->
+            {
+                return (float)a-(float) b;
+            }
+            case DOUBLE,LONG_DOUBLE ->
+            {
+                return (double)a-(double) b;
+            }
+            default ->
+            {
+                return null;
+            }
         }
-        else if(tb instanceof PointerType)
-        {
-            throw new GrammarException("number minus pointer");
-        }
-        else if(ta instanceof PointerType pa)
-        {
-            type=ta;
-            ans=a-b*pa.baseType().getSize();
-        }
-        else
-        {
-            if(!(ta instanceof PrimitiveType pa&&tb instanceof PrimitiveType pb))throw new GrammarException("not number");
-            type=PrimitiveType.values()[Math.max(pa.ordinal(),pb.ordinal())];
-            ans=a-b;
-        }
-        return new Pair<>(type,ans);
     }),
     MINUS_EQUAL("-=",OperatorArgsProperties.BINARY_ASSIGN,MINUS),
     MINUS_MINUS("--",OperatorArgsProperties.UNARY,MINUS),
-    DIVIDE("/",OperatorArgsProperties.BINARY,(a,b,ta,tb)->
+    DIVIDE("/",OperatorArgsProperties.BINARY,(a,b,t)->
     {
-        while(ta instanceof ConstType ca)ta=ca.baseType();
-        while(tb instanceof ConstType cb)tb=cb.baseType();
-        if(!(ta instanceof PrimitiveType pa&&tb instanceof PrimitiveType pb))throw new GrammarException("not number");
-        PrimitiveType ret=PrimitiveType.values()[Math.max(pa.ordinal(),pb.ordinal())];
-        long ans=a/b;
-        return new Pair<>(ret,ans);
+        switch (t)
+        {
+            case CHAR ->
+            {
+                return (byte) a / (byte) b;
+            }
+            case SHORT ->
+            {
+                return (short)a/(short) b;
+            }
+            case INT,LONG ->
+            {
+                return (int)a/(int) b;
+            }
+            case UNSIGNED_INT,UNSIGNED_LONG ->
+            {
+                return Integer.divideUnsigned((int) a,(int) b);
+            }
+            case LONG_LONG ->
+            {
+                return (long)a/(long) b;
+            }
+            case UNSIGNED_LONG_LONG ->
+            {
+                return Long.divideUnsigned((long)a,(long)b);
+            }
+            case FLOAT ->
+            {
+                return (float)a/(float) b;
+            }
+            case DOUBLE,LONG_DOUBLE ->
+            {
+                return (double)a/(double) b;
+            }
+            default ->
+            {
+                return null;
+            }
+        }
     }),
     DIVIDE_EQUAL("/=",OperatorArgsProperties.BINARY_ASSIGN,DIVIDE),
-    MOD("%",OperatorArgsProperties.BINARY,(a,b,ta,tb)->
+    MOD("%",OperatorArgsProperties.BINARY,(a,b,t)->
     {
-        while(ta instanceof ConstType ca)ta=ca.baseType();
-        while(tb instanceof ConstType cb)tb=cb.baseType();
-        if(!(ta instanceof PrimitiveType pa&&tb instanceof PrimitiveType pb))throw new GrammarException("not number");
-        if(!(pa.isInteger()&&pb.isInteger()))throw new GrammarException("not integer");
-        PrimitiveType ret=PrimitiveType.values()[Math.max(pa.ordinal(),pb.ordinal())];
-        long ans=a%b;
-        return new Pair<>(ret,ans);
+        switch (t)
+        {
+            case CHAR ->
+            {
+                return (byte) a % (byte) b;
+            }
+            case SHORT ->
+            {
+                return (short)a%(short) b;
+            }
+            case INT,LONG ->
+            {
+                return (int)a%(int) b;
+            }
+            case UNSIGNED_INT,UNSIGNED_LONG->
+            {
+                return Integer.remainderUnsigned((int)a,(int)b);
+            }
+            case LONG_LONG ->
+            {
+                return (long)a%(long) b;
+            }
+            case UNSIGNED_LONG_LONG->
+            {
+                return Long.remainderUnsigned((long)a,(long)b);
+            }
+            default ->
+            {
+                return null;
+            }
+        }
     }),
     MOD_EQUAL("%=",OperatorArgsProperties.BINARY_ASSIGN,MOD),
     BACKSLASH("\\"),
-    REVERSE("~",OperatorArgsProperties.UNARY_R,(a,b,ta,tb)->
+    REVERSE("~",OperatorArgsProperties.UNARY_R,(a,b,t)->
     {
-        while(ta instanceof ConstType ca)ta=ca.baseType();
-        if(!(ta instanceof PrimitiveType pa))throw new GrammarException("not number");
-        if(!(pa.isInteger()))throw new GrammarException("not integer");
-        long ans=~a;
-        return new Pair<>(pa,ans);
+        switch (t)
+        {
+            case BOOL ->
+            {
+                return !(boolean)a;
+            }
+            case CHAR,UNSIGNED_CHAR ->
+            {
+                return ~(byte) a;
+            }
+            case SHORT,UNSIGNED_SHORT ->
+            {
+                return ~(short)a;
+            }
+            case INT,LONG,UNSIGNED_INT,UNSIGNED_LONG ->
+            {
+                return ~(int)a;
+            }
+            case LONG_LONG,UNSIGNED_LONG_LONG ->
+            {
+                return ~(long)a;
+            }
+            default ->
+            {
+                return null;
+            }
+        }
     }),
-    OR("|",OperatorArgsProperties.BINARY,(a,b,ta,tb)->
+    OR("|",OperatorArgsProperties.BINARY,(a,b,t)->
     {
-        while(ta instanceof ConstType ca)ta=ca.baseType();
-        while(tb instanceof ConstType cb)tb=cb.baseType();
-        if(!(ta instanceof PrimitiveType pa&&tb instanceof PrimitiveType pb))throw new GrammarException("not number");
-        if(!(pa.isInteger()&&pb.isInteger()))throw new GrammarException("not integer");
-        PrimitiveType ret=PrimitiveType.values()[Math.max(pa.ordinal(),pb.ordinal())];
-        long ans=a|b;
-        return new Pair<>(ret,ans);
+        switch (t)
+        {
+            case BOOL ->
+            {
+                return (boolean)a||(boolean)b;
+            }
+            case CHAR,UNSIGNED_CHAR ->
+            {
+                return (byte) a | (byte) b;
+            }
+            case SHORT,UNSIGNED_SHORT ->
+            {
+                return (short)a|(short) b;
+            }
+            case INT,LONG,UNSIGNED_INT,UNSIGNED_LONG ->
+            {
+                return (int)a|(int) b;
+            }
+            case LONG_LONG,UNSIGNED_LONG_LONG ->
+            {
+                return (long)a|(long) b;
+            }
+            default ->
+            {
+                return null;
+            }
+        }
     }),
     OR_EQUAL("|=",OperatorArgsProperties.BINARY_ASSIGN,OR),
     OR_OR("||"),
-    AND("&",OperatorArgsProperties.BINARY,(a,b,ta,tb)->
+    AND("&",OperatorArgsProperties.BINARY,(a,b,t)->
     {
-        while(ta instanceof ConstType ca)ta=ca.baseType();
-        while(tb instanceof ConstType cb)tb=cb.baseType();
-        if(!(ta instanceof PrimitiveType pa&&tb instanceof PrimitiveType pb))throw new GrammarException("not number");
-        if(!(pa.isInteger()&&pb.isInteger()))throw new GrammarException("not integer");
-        PrimitiveType ret=PrimitiveType.values()[Math.max(pa.ordinal(),pb.ordinal())];
-        long ans=a&b;
-        return new Pair<>(ret,ans);
+        switch (t)
+        {
+            case BOOL ->
+            {
+                return (boolean)a&&(boolean)b;
+            }
+            case CHAR,UNSIGNED_CHAR ->
+            {
+                return (byte) a & (byte) b;
+            }
+            case SHORT,UNSIGNED_SHORT ->
+            {
+                return (short)a&(short) b;
+            }
+            case INT,LONG,UNSIGNED_INT,UNSIGNED_LONG ->
+            {
+                return (int)a&(int) b;
+            }
+            case LONG_LONG,UNSIGNED_LONG_LONG ->
+            {
+                return (long)a&(long) b;
+            }
+            default ->
+            {
+                return null;
+            }
+        }
     }),
     AND_EQUAL("&=",OperatorArgsProperties.BINARY_ASSIGN,AND),
     AND_AND("&&"),
-    XOR("^",OperatorArgsProperties.BINARY,(a,b,ta,tb)->
+    XOR("^",OperatorArgsProperties.BINARY,(a,b,t)->
     {
-        while(ta instanceof ConstType ca)ta=ca.baseType();
-        while(tb instanceof ConstType cb)tb=cb.baseType();
-        if(!(ta instanceof PrimitiveType pa&&tb instanceof PrimitiveType pb))throw new GrammarException("not number");
-        if(!(pa.isInteger()&&pb.isInteger()))throw new GrammarException("not integer");
-        PrimitiveType ret=PrimitiveType.values()[Math.max(pa.ordinal(),pb.ordinal())];
-        long ans=a^b;
-        return new Pair<>(ret,ans);
+        switch (t)
+        {
+            case BOOL ->
+            {
+                return (boolean)a^(boolean)b;
+            }
+            case CHAR,UNSIGNED_CHAR ->
+            {
+                return (byte) a ^ (byte) b;
+            }
+            case SHORT,UNSIGNED_SHORT ->
+            {
+                return (short)a^(short) b;
+            }
+            case INT,LONG,UNSIGNED_INT,UNSIGNED_LONG ->
+            {
+                return (int)a^(int) b;
+            }
+            case LONG_LONG,UNSIGNED_LONG_LONG ->
+            {
+                return (long)a^(long) b;
+            }
+            default ->
+            {
+                return null;
+            }
+        }
     }),
     XOR_EQUAL("^=",OperatorArgsProperties.BINARY_ASSIGN,XOR),
-    NOP("",OperatorArgsProperties.UNARY_R,(a,b,ta,tb)->new Pair<>(ta,a)),
+    NOP("",OperatorArgsProperties.UNARY_R,(a,b,t)->a),
     EQUAL("=",OperatorArgsProperties.BINARY_ASSIGN,COMMA)
     ;
     public enum OperatorArgsProperties
