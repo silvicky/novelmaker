@@ -220,7 +220,7 @@ public class Compiler
         if(val>=dataSegmentBaseAddress)return val;
         return bp-val;
     }
-    public static long toLong(Object o)
+    public static long writeToMemory(Object o)
     {
         //TODO Remove this
         if(o instanceof Integer integer)return integer;
@@ -229,6 +229,37 @@ public class Compiler
         if(o instanceof Character cha)return cha;
         if(o instanceof Short sho)return sho;
         throw new RuntimeException();
+    }
+    public static Object readFromMemory(int address,PrimitiveType type)
+    {
+        //TODO this is also wrong
+        switch (type)
+        {
+            case BOOL ->
+            {
+                return mem[address]!=0;
+            }
+            case CHAR,UNSIGNED_CHAR ->
+            {
+                return (byte)mem[address];
+            }
+            case SHORT,UNSIGNED_SHORT ->
+            {
+                return (short)mem[address];
+            }
+            case INT,LONG,UNSIGNED_INT,UNSIGNED_LONG ->
+            {
+                return (int)mem[address];
+            }
+            case LONG_LONG,UNSIGNED_LONG_LONG ->
+            {
+                return mem[address];
+            }
+            default ->
+            {
+                return null;
+            }
+        }
     }
     public static PrimitiveType getPrimitiveType(Type type)
     {
@@ -348,7 +379,7 @@ public class Compiler
             }
             if(code instanceof AssignNumberCode assignNumberCode)
             {
-                mem[addressTransformer(bp,assignNumberCode.target())]= toLong(assignNumberCode.left());
+                mem[addressTransformer(bp,assignNumberCode.target())]= writeToMemory(assignNumberCode.left());
                 continue;
             }
             if(code instanceof IndirectAssignCode indirectAssignCode)
@@ -365,17 +396,17 @@ public class Compiler
             //TODO Write to bytes(requires correct memory layout)
             if(code instanceof AssignMMCodeP assignMMCodeP)
             {
-                mem[addressTransformer(bp,assignMMCodeP.target())]=toLong(assignMMCodeP.op().operation.cal(mem[addressTransformer(bp,assignMMCodeP.left())],mem[addressTransformer(bp,assignMMCodeP.right())],assignMMCodeP.type()));
+                mem[addressTransformer(bp,assignMMCodeP.target())]= writeToMemory(assignMMCodeP.op().operation.cal(readFromMemory(addressTransformer(bp,assignMMCodeP.left()),assignMMCodeP.type()),readFromMemory(addressTransformer(bp,assignMMCodeP.right()),assignMMCodeP.type()),assignMMCodeP.type()));
                 continue;
             }
             if(code instanceof AssignMICodeP assignMICodeP)
             {
-                mem[addressTransformer(bp,assignMICodeP.target())]=toLong(assignMICodeP.op().operation.cal(mem[addressTransformer(bp,assignMICodeP.left())], assignMICodeP.right(),assignMICodeP.type()));
+                mem[addressTransformer(bp,assignMICodeP.target())]= writeToMemory(assignMICodeP.op().operation.cal(readFromMemory(addressTransformer(bp,assignMICodeP.left()),assignMICodeP.type()), assignMICodeP.right(),assignMICodeP.type()));
                 continue;
             }
             if(code instanceof CastMMCodeP castMMCodeP)
             {
-                mem[addressTransformer(bp,castMMCodeP.target())]=toLong(castPrimitiveType(mem[addressTransformer(bp, castMMCodeP.source())], castMMCodeP.targetType(), castMMCodeP.sourceType()));
+                mem[addressTransformer(bp,castMMCodeP.target())]= writeToMemory(castPrimitiveType(mem[addressTransformer(bp, castMMCodeP.source())], castMMCodeP.targetType(), castMMCodeP.sourceType()));
                 continue;
             }
             if(code instanceof ReturnCode returnCode)

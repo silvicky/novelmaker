@@ -132,27 +132,27 @@ public enum OperatorType
             }
             case CHAR,UNSIGNED_CHAR ->
             {
-                return (byte) a !=0;
+                return (byte) a ==0;
             }
             case SHORT,UNSIGNED_SHORT ->
             {
-                return (short)a!=0;
+                return (short)a==0;
             }
             case INT,LONG,UNSIGNED_INT,UNSIGNED_LONG ->
             {
-                return (int)a!=0;
+                return (int)a==0;
             }
             case LONG_LONG,UNSIGNED_LONG_LONG ->
             {
-                return (long)a!=0;
+                return (long)a==0;
             }
             case FLOAT ->
             {
-                return (float)a!=0;
+                return (float)a==0;
             }
             case DOUBLE,LONG_DOUBLE ->
             {
-                return (double)a!=0;
+                return (double)a==0;
             }
             default ->
             {
