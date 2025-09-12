@@ -1,6 +1,6 @@
 package io.silvicky.novel.compiler.parser.line;
 
-import io.silvicky.novel.compiler.code.raw.PlaceholderUnconditionalGotoCode;
+import io.silvicky.novel.compiler.code.PlaceholderUnconditionalGotoCode;
 import io.silvicky.novel.compiler.parser.ASTNode;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.NonTerminal;

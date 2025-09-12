@@ -2,7 +2,8 @@ package io.silvicky.novel.compiler.parser.declaration;
 
 import io.silvicky.novel.compiler.code.*;
 import io.silvicky.novel.compiler.code.raw.AssignCode;
-import io.silvicky.novel.compiler.code.raw.ReturnCode;
+import io.silvicky.novel.compiler.code.ReturnCode;
+import io.silvicky.novel.compiler.code.raw.AssignNumberCode;
 import io.silvicky.novel.compiler.parser.ASTNode;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.NonTerminal;
@@ -50,7 +51,7 @@ public class AssignmentDeclaration extends NonTerminal implements ASTNode
         unaryDeclaration.receivedType= baseTypeBuilderRoot.type;
         unaryDeclaration.travel();
         if(unaryDeclaration.name==null)throw new GrammarException("bare anonymous variable");
-        if(unaryDeclaration.type instanceof FunctionType)
+        if(unaryDeclaration.type instanceof FunctionType functionType)
         {
             int nid;
             if(directParent==null)
@@ -70,6 +71,7 @@ public class AssignmentDeclaration extends NonTerminal implements ASTNode
             if(functionBody!=null)
             {
                 ctx= registerLabel(unaryDeclaration.name);
+                returnType=functionType.returnType();
                 codes.add(new AssignNumberCode(nid,ctx, PrimitiveType.INT,PrimitiveType.INT));
                 for(Pair<Type,String> pair: unaryDeclaration.parameters)
                 {
@@ -84,6 +86,7 @@ public class AssignmentDeclaration extends NonTerminal implements ASTNode
                 codes.add(new ReturnCode(-1));
                 codes.add(new LabelCode(endLabel));
                 ctx=-1;
+                returnType=null;
             }
             //fixme
             else throw new GrammarException("function not implemented");

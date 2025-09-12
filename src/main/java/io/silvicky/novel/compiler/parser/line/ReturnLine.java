@@ -1,6 +1,7 @@
 package io.silvicky.novel.compiler.parser.line;
 
-import io.silvicky.novel.compiler.code.raw.ReturnCode;
+import io.silvicky.novel.compiler.code.raw.AssignCode;
+import io.silvicky.novel.compiler.code.ReturnCode;
 import io.silvicky.novel.compiler.parser.ASTNode;
 import io.silvicky.novel.compiler.parser.NonTerminal;
 import io.silvicky.novel.compiler.parser.expression.ExpressionRoot;
@@ -8,6 +9,9 @@ import io.silvicky.novel.compiler.tokens.*;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static io.silvicky.novel.compiler.Compiler.requestInternalVariable;
+import static io.silvicky.novel.compiler.Compiler.returnType;
 
 public class ReturnLine extends NonTerminal implements ASTNode
 {
@@ -28,7 +32,15 @@ public class ReturnLine extends NonTerminal implements ASTNode
     {
         expressionRoot.travel();
         codes.addAll(expressionRoot.codes);
-        //TODO Cast
-        codes.add(new ReturnCode(expressionRoot.resultId));
+        if(!returnType.equals(expressionRoot.type))
+        {
+            int t1 = requestInternalVariable();
+            codes.add(new AssignCode(t1, expressionRoot.resultId, expressionRoot.resultId, returnType, expressionRoot.type, expressionRoot.type, OperatorType.NOP));
+            codes.add(new ReturnCode(t1));
+        }
+        else
+        {
+            codes.add(new ReturnCode(expressionRoot.resultId));
+        }
     }
 }

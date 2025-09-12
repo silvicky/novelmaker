@@ -1,7 +1,7 @@
 package io.silvicky.novel.compiler.parser.expression;
 
 import io.silvicky.novel.compiler.code.raw.AssignCode;
-import io.silvicky.novel.compiler.code.AssignNumberCode;
+import io.silvicky.novel.compiler.code.raw.AssignNumberCode;
 import io.silvicky.novel.compiler.code.ReferenceCode;
 import io.silvicky.novel.compiler.tokens.*;
 import io.silvicky.novel.compiler.types.ArrayType;

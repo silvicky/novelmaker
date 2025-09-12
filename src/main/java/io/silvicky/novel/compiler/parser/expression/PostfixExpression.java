@@ -3,7 +3,7 @@ package io.silvicky.novel.compiler.parser.expression;
 import io.silvicky.novel.compiler.code.*;
 import io.silvicky.novel.compiler.code.raw.AssignCode;
 import io.silvicky.novel.compiler.code.raw.AssignVariableNumberCode;
-import io.silvicky.novel.compiler.code.raw.CallCode;
+import io.silvicky.novel.compiler.code.CallCode;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;

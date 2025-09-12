@@ -2,6 +2,8 @@ package io.silvicky.novel.compiler.parser.expression;
 
 import io.silvicky.novel.compiler.code.*;
 import io.silvicky.novel.compiler.code.raw.AssignCode;
+import io.silvicky.novel.compiler.code.raw.AssignNumberCode;
+import io.silvicky.novel.compiler.code.raw.GotoCode;
 import io.silvicky.novel.compiler.parser.operation.ResolveOperation;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;

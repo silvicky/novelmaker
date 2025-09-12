@@ -1,9 +1,9 @@
-package io.silvicky.novel.compiler.code;
+package io.silvicky.novel.compiler.code.raw;
 
+import io.silvicky.novel.compiler.code.Code;
 import io.silvicky.novel.compiler.code.primitive.AssignMMCodeP;
 import io.silvicky.novel.compiler.code.primitive.CastMMCodeP;
 import io.silvicky.novel.compiler.code.primitive.GotoCodeP;
-import io.silvicky.novel.compiler.code.raw.RawCode;
 import io.silvicky.novel.compiler.tokens.OperatorType;
 import io.silvicky.novel.compiler.types.PrimitiveType;
 import io.silvicky.novel.compiler.types.Type;

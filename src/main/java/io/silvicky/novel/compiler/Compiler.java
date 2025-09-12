@@ -30,6 +30,7 @@ public class Compiler
     private static int labelCnt=0;
     private static int variableCnt=0;
     public static int ctx=-1;
+    public static Type returnType=null;
     private static final long[] mem=new long[1048576];
     public static final int dataSegmentBaseAddress=0xF0000;
     private static final Map<String,Integer> labelMap=new HashMap<>();
@@ -285,17 +286,9 @@ public class Compiler
                     else ctx = labelCode.id();
                 }
             }
-            if(code instanceof AssignCode assignCode)
+            if(code instanceof RawCode rawCode)
             {
-                ret.addAll(assignCode.analyze());
-            }
-            else if(code instanceof AssignVariableNumberCode assignCode)
-            {
-                ret.addAll(assignCode.analyze());
-            }
-            else if(code instanceof GotoCode gotoCode)
-            {
-                ret.addAll(gotoCode.analyze());
+                ret.addAll(rawCode.analyze());
             }
             else
             {
@@ -375,11 +368,6 @@ public class Compiler
             if(code instanceof GotoCodeP gotoCode)
             {
                 if(mem[addressTransformer(bp,gotoCode.left())]!=0)ip=labelPos.get(gotoCode.id());
-                continue;
-            }
-            if(code instanceof AssignNumberCode assignNumberCode)
-            {
-                mem[addressTransformer(bp,assignNumberCode.target())]= writeToMemory(assignNumberCode.left());
                 continue;
             }
             if(code instanceof IndirectAssignCode indirectAssignCode)
