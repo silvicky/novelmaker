@@ -1,9 +1,11 @@
 package io.silvicky.novel.compiler.parser.expression;
 
-import io.silvicky.novel.compiler.code.*;
+import io.silvicky.novel.compiler.code.CallCode;
+import io.silvicky.novel.compiler.code.DereferenceCode;
+import io.silvicky.novel.compiler.code.FetchReturnValueCode;
+import io.silvicky.novel.compiler.code.IndirectAssignCode;
 import io.silvicky.novel.compiler.code.raw.AssignCode;
 import io.silvicky.novel.compiler.code.raw.AssignVariableNumberCode;
-import io.silvicky.novel.compiler.code.CallCode;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
@@ -48,16 +50,19 @@ public class PostfixExpression extends AbstractExpression
                 case PLUS_PLUS,MINUS_MINUS->
                 {
                     if(leftId==-1)throw new GrammarException("not lvalue");
-                    int realLeft;
-                    if(isDirect)realLeft=leftId;
+                    nextResult=requestInternalVariable();
+                    if(isDirect)
+                    {
+                        codes.add(new AssignCode(nextResult,leftId,0,type,type,type,OperatorType.NOP));
+                        codes.add(new AssignVariableNumberCode(leftId,leftId,1,type,type,PrimitiveType.INT,postfix.operatorType.baseType));
+                    }
                     else
                     {
-                        realLeft=requestInternalVariable();
-                        codes.add(new DereferenceCode(realLeft,leftId,new PointerType(new PointerType(new VoidType()))));
+                        codes.add(new DereferenceCode(nextResult,leftId,new PointerType(type)));
+                        int calResult=requestInternalVariable();
+                        codes.add(new AssignVariableNumberCode(calResult,nextResult,1,type,type,PrimitiveType.INT,postfix.operatorType.baseType));
+                        codes.add(new IndirectAssignCode(leftId,calResult,type));
                     }
-                    nextResult=requestInternalVariable();
-                    codes.add(new AssignCode(nextResult,realLeft,realLeft,type,type,type,OperatorType.NOP));
-                    codes.add(new AssignVariableNumberCode(realLeft,realLeft,1,type,type,type,postfix.operatorType.baseType));
                     curResult=nextResult;
                     leftId=-1;
                 }

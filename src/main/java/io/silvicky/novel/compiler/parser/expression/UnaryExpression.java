@@ -1,6 +1,8 @@
 package io.silvicky.novel.compiler.parser.expression;
 
-import io.silvicky.novel.compiler.code.*;
+import io.silvicky.novel.compiler.code.DereferenceCode;
+import io.silvicky.novel.compiler.code.IndirectAssignCode;
+import io.silvicky.novel.compiler.code.ReferenceCode;
 import io.silvicky.novel.compiler.code.raw.AssignCode;
 import io.silvicky.novel.compiler.code.raw.AssignVariableNumberCode;
 import io.silvicky.novel.compiler.parser.GrammarException;
@@ -10,7 +12,6 @@ import io.silvicky.novel.compiler.tokens.OperatorType;
 import io.silvicky.novel.compiler.types.AbstractPointer;
 import io.silvicky.novel.compiler.types.PointerType;
 import io.silvicky.novel.compiler.types.PrimitiveType;
-import io.silvicky.novel.compiler.types.VoidType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -80,16 +81,18 @@ public class UnaryExpression extends AbstractExpression
             if(child.leftId==-1)throw new GrammarException("not lvalue");
             leftId=-1;
             codes.addAll(child.codes);
-            int realLeft;
-            if(child.isDirect)realLeft=child.leftId;
+            if(child.isDirect)
+            {
+                codes.add(new AssignVariableNumberCode(child.leftId,child.leftId,1,type,type,PrimitiveType.INT,op.baseType));
+                codes.add(new AssignCode(resultId,child.leftId,0,type,type,type,OperatorType.NOP));
+            }
             else
             {
-                realLeft=requestInternalVariable();
-                codes.add(new DereferenceCode(realLeft,leftId,new PointerType(new PointerType(new VoidType()))));
+                int realValue=requestInternalVariable();
+                codes.add(new DereferenceCode(realValue,child.leftId,new PointerType(type)));
+                codes.add(new AssignVariableNumberCode(resultId,realValue,1,type,type,PrimitiveType.INT,op.baseType));
+                codes.add(new IndirectAssignCode(child.leftId,resultId,type));
             }
-            codes.add(new AssignVariableNumberCode(realLeft,realLeft,1,type,type,type,op.baseType));
-            codes.add(new AssignCode(resultId,realLeft,realLeft,type,type,type,OperatorType.NOP));
-
         }
         else
         {

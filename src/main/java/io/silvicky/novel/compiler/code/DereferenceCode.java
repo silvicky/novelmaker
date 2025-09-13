@@ -6,7 +6,6 @@ import static io.silvicky.novel.compiler.Compiler.lookupVariableName;
 
 public record DereferenceCode(int target, int left, Type type) implements Code
 {
-    //TODO Rewrite its usages
     @Override
     public String toString()
     {

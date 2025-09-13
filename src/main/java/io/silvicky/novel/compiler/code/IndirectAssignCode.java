@@ -4,7 +4,7 @@ import io.silvicky.novel.compiler.types.Type;
 
 import static io.silvicky.novel.compiler.Compiler.lookupVariableName;
 
-public record IndirectAssignCode(int target, int left, Type targetType, Type leftType) implements Code
+public record IndirectAssignCode(int target, int left, Type targetType) implements Code
 {
     public String toString()
     {
