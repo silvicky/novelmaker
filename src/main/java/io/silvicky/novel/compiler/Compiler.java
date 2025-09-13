@@ -62,6 +62,16 @@ public class Compiler
         localVariableCount.put(ctx,cnt+type.getSize());
         return cnt;
     }
+    public static void registerArgument(String s, Type type)
+    {
+        if(!localVariableMap.containsKey(ctx))localVariableMap.put(ctx,new HashMap<>());
+        if(!localVariableMap.get(ctx).containsKey(s))localVariableMap.get(ctx).put(s,new Stack<>());
+        //0 is bp and -1 is ip
+        int id=-localVariableMap.get(ctx).size()-1;
+        localVariableMap.get(ctx).get(s).push(new Pair<>(id,type));
+        if(!localVariableBackMap.containsKey(ctx))localVariableBackMap.put(ctx,new HashMap<>());
+        localVariableBackMap.get(ctx).put(id,new Pair<>(String.format("%s(V%d)",s,id),type));
+    }
     public static void revokeLocalVariable(String s)
     {
         if(!localVariableMap.containsKey(ctx))throw new DeclarationException("Undefined:"+s);
@@ -408,15 +418,14 @@ public class Compiler
             if(code instanceof CallCode callCode)
             {
                 int callTarget= (int) mem[addressTransformer(bp,callCode.target())];
+                for(int i=callCode.parameters().size()-1;i>=0;i--)
+                {
+                    mem[--sp]=mem[addressTransformer(bp,callCode.parameters().get(i))];
+                }
                 mem[--sp]=ip;
                 mem[--sp]=bp;
-                int oldBP=bp;
                 bp=sp;
                 sp=bp-localVariableCount.get(callTarget);
-                for(int i=0;i<callCode.parameters().size();i++)
-                {
-                    mem[bp-i-1]=mem[addressTransformer(oldBP,callCode.parameters().get(i))];
-                }
                 ip=labelPos.get(callTarget);
                 continue;
             }

@@ -75,7 +75,7 @@ public class AssignmentDeclaration extends NonTerminal implements ASTNode
                 codes.add(new AssignNumberCode(nid,ctx, PrimitiveType.INT,PrimitiveType.INT));
                 for(Pair<Type,String> pair: unaryDeclaration.parameters)
                 {
-                    registerLocalVariable(pair.second(), pair.first());
+                    registerArgument(pair.second(), pair.first());
                     functionBody.revokedVariables.add(pair.second());
                 }
                 int endLabel= registerLabel("0"+unaryDeclaration.name);
