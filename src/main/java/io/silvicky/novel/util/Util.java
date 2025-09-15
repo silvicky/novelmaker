@@ -7,6 +7,9 @@ import io.silvicky.novel.compiler.types.*;
 
 import java.util.List;
 
+import static io.silvicky.novel.compiler.types.PrimitiveType.BOOL;
+import static io.silvicky.novel.compiler.types.Type.ADDRESS_TYPE;
+
 public class Util
 {
     public static <T> void addNonNull(List<T> list, T element)
@@ -58,5 +61,65 @@ public class Util
         if(b instanceof PointerType)return b;
         if(a instanceof ArrayType aa)return new PointerType(aa.baseType());
         return new PointerType(((ArrayType)b).baseType());
+    }
+
+    public static PrimitiveType getPrimitiveType(Type type)
+    {
+        while(type instanceof ConstType constType)type=constType.baseType();
+        if(type instanceof PointerType||type instanceof ArrayType||type instanceof FunctionType)
+        {
+            return ADDRESS_TYPE;
+        }
+        if(type instanceof PrimitiveType primitiveType)return primitiveType;
+        throw new GrammarException("Unknown type");
+    }
+
+    public static Object castPrimitiveType(Object source, PrimitiveType targetType, PrimitiveType sourceType)
+    {
+        //TODO Consider unsigned
+        Number number;
+        if(source instanceof Boolean bl)
+        {
+            if(targetType==BOOL)return source;
+            number=bl?1:0;
+        }
+        else number=(Number) source;
+        switch (targetType)
+        {
+            case BOOL ->
+            {
+                if(number instanceof Float flt)return flt!=0;
+                if(number instanceof Double dbl)return dbl!=0;
+                return number.longValue()!=0;
+            }
+            case INT, UNSIGNED_INT, LONG, UNSIGNED_LONG ->
+            {
+                return number.intValue();
+            }
+            case CHAR, UNSIGNED_CHAR ->
+            {
+                return number.byteValue();
+            }
+            case SHORT, UNSIGNED_SHORT ->
+            {
+                return number.shortValue();
+            }
+            case LONG_LONG,UNSIGNED_LONG_LONG ->
+            {
+                return number.longValue();
+            }
+            case FLOAT ->
+            {
+                return number.floatValue();
+            }
+            case DOUBLE,LONG_DOUBLE ->
+            {
+                return number.doubleValue();
+            }
+            default ->
+            {
+                return null;
+            }
+        }
     }
 }

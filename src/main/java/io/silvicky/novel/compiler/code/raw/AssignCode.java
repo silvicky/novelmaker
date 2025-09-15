@@ -7,6 +7,7 @@ import io.silvicky.novel.compiler.code.primitive.CastMMCodeP;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.tokens.OperatorType;
 import io.silvicky.novel.compiler.types.*;
+import io.silvicky.novel.util.Util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +29,7 @@ public record AssignCode(int target, int left, int right, Type targetType, Type 
     public List<Code> analyze()
     {
         List<Code> ret=new ArrayList<>();
-        PrimitiveType targetType=getPrimitiveType(this.targetType());
+        PrimitiveType targetType= Util.getPrimitiveType(this.targetType());
         Type ta= this.leftType();
         Type tb= this.rightType();
         while(ta instanceof ConstType ca)ta=ca.baseType();
@@ -193,8 +194,8 @@ public record AssignCode(int target, int left, int right, Type targetType, Type 
             }
             case L_SHIFT,R_SHIFT,MOD,AND,OR,XOR, MULTIPLY,DIVIDE ->
             {
-                PrimitiveType pa=getPrimitiveType(ta);
-                PrimitiveType pb=getPrimitiveType(tb);
+                PrimitiveType pa= Util.getPrimitiveType(ta);
+                PrimitiveType pb= Util.getPrimitiveType(tb);
                 if((this.op().equals(OperatorType.L_SHIFT)
                         ||this.op().equals(OperatorType.R_SHIFT)
                         ||this.op().equals(OperatorType.MOD)
@@ -225,11 +226,11 @@ public record AssignCode(int target, int left, int right, Type targetType, Type 
                     ret.add(new CastMMCodeP(target,t1,targetType,type));
                 }
             }
-            case NOP-> ret.add(new CastMMCodeP(target,a,targetType,getPrimitiveType(ta)));
-            case COMMA -> ret.add(new CastMMCodeP(target,b,targetType,getPrimitiveType(tb)));
+            case NOP-> ret.add(new CastMMCodeP(target,a,targetType, Util.getPrimitiveType(ta)));
+            case COMMA -> ret.add(new CastMMCodeP(target,b,targetType, Util.getPrimitiveType(tb)));
             case REVERSE ->
             {
-                PrimitiveType pa=getPrimitiveType(ta);
+                PrimitiveType pa= Util.getPrimitiveType(ta);
                 if(!(pa.isInteger()))throw new GrammarException("not integer");
                 if(pa.equals(targetType))
                 {
@@ -244,7 +245,7 @@ public record AssignCode(int target, int left, int right, Type targetType, Type 
             }
             case NOT ->
             {
-                PrimitiveType pa=getPrimitiveType(ta);
+                PrimitiveType pa= Util.getPrimitiveType(ta);
                 if(targetType.equals(BOOL))
                 {
                     ret.add(new AssignMMCodeP(target,a,a,pa,OperatorType.NOT));
@@ -258,8 +259,8 @@ public record AssignCode(int target, int left, int right, Type targetType, Type 
             }
             case LESS,GREATER,LESS_EQUAL,GREATER_EQUAL,EQUAL_EQUAL,NOT_EQUAL ->
             {
-                PrimitiveType pa=getPrimitiveType(ta);
-                PrimitiveType pb=getPrimitiveType(tb);
+                PrimitiveType pa= Util.getPrimitiveType(ta);
+                PrimitiveType pb= Util.getPrimitiveType(tb);
                 PrimitiveType type=PrimitiveType.values()[Math.max(pa.ordinal(),pb.ordinal())];
                 if(!pa.equals(type))
                 {

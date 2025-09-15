@@ -7,6 +7,7 @@ import io.silvicky.novel.compiler.code.primitive.GotoCodeP;
 import io.silvicky.novel.compiler.tokens.OperatorType;
 import io.silvicky.novel.compiler.types.PrimitiveType;
 import io.silvicky.novel.compiler.types.Type;
+import io.silvicky.novel.util.Util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +31,7 @@ public record GotoCode(int left, Type type, boolean isReversed, int id) implemen
     public List<Code> analyze()
     {
         List<Code> ret=new ArrayList<>();
-        PrimitiveType primitiveType=getPrimitiveType(type);
+        PrimitiveType primitiveType= Util.getPrimitiveType(type);
         int t1=requestInternalVariable(PrimitiveType.BOOL);
         if(isReversed)
         {

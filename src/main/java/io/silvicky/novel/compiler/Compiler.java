@@ -14,6 +14,7 @@ import io.silvicky.novel.compiler.parser.operation.Skip;
 import io.silvicky.novel.compiler.tokens.*;
 import io.silvicky.novel.compiler.types.*;
 import io.silvicky.novel.util.Pair;
+import io.silvicky.novel.util.Util;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -22,7 +23,6 @@ import java.nio.file.Path;
 import java.util.*;
 
 import static io.silvicky.novel.compiler.types.PrimitiveType.BOOL;
-import static io.silvicky.novel.compiler.types.Type.ADDRESS_TYPE;
 import static io.silvicky.novel.compiler.types.Type.ADDRESS_WIDTH;
 import static io.silvicky.novel.util.Util.addNonNull;
 
@@ -284,16 +284,7 @@ public class Compiler
             }
         }
     }
-    public static PrimitiveType getPrimitiveType(Type type)
-    {
-        while(type instanceof ConstType constType)type=constType.baseType();
-        if(type instanceof PointerType||type instanceof ArrayType||type instanceof FunctionType)
-        {
-            return ADDRESS_TYPE;
-        }
-        if(type instanceof PrimitiveType primitiveType)return primitiveType;
-        throw new GrammarException("Unknown type");
-    }
+
     public static List<Code> typeEraser(List<Code> codes)
     {
         List<Code> ret=new ArrayList<>();
@@ -319,54 +310,7 @@ public class Compiler
         }
         return ret;
     }
-    public static Object castPrimitiveType(Object source,PrimitiveType targetType,PrimitiveType sourceType)
-    {
-        //TODO Consider unsigned
-        Number number;
-        if(source instanceof Boolean bl)
-        {
-            if(targetType==BOOL)return source;
-            number=bl?1:0;
-        }
-        else number=(Number) source;
-        switch (targetType)
-        {
-            case BOOL ->
-            {
-                if(number instanceof Float flt)return flt!=0;
-                if(number instanceof Double dbl)return dbl!=0;
-                return number.longValue()!=0;
-            }
-            case INT, UNSIGNED_INT, LONG, UNSIGNED_LONG ->
-            {
-                return number.intValue();
-            }
-            case CHAR, UNSIGNED_CHAR ->
-            {
-                return number.byteValue();
-            }
-            case SHORT, UNSIGNED_SHORT ->
-            {
-                return number.shortValue();
-            }
-            case LONG_LONG,UNSIGNED_LONG_LONG ->
-            {
-                return number.longValue();
-            }
-            case FLOAT ->
-            {
-                return number.floatValue();
-            }
-            case DOUBLE,LONG_DOUBLE ->
-            {
-                return number.doubleValue();
-            }
-            default ->
-            {
-                return null;
-            }
-        }
-    }
+
     private static int lookupAddress(int id)
     {
         if(id==0||id==-1)return 0;
@@ -530,7 +474,7 @@ public class Compiler
             }
             if(code instanceof CastMMCodeP castMMCodeP)
             {
-                mem[addressTransformer(bp,castMMCodeP.target())]= writeToMemory(castPrimitiveType(mem[addressTransformer(bp, castMMCodeP.source())], castMMCodeP.targetType(), castMMCodeP.sourceType()));
+                mem[addressTransformer(bp,castMMCodeP.target())]= writeToMemory(Util.castPrimitiveType(mem[addressTransformer(bp, castMMCodeP.source())], castMMCodeP.targetType(), castMMCodeP.sourceType()));
                 continue;
             }
             if(code instanceof ReturnCode returnCode)
@@ -584,7 +528,7 @@ public class Compiler
         }
         else
         {
-            System.out.print(readFromMemory(id,getPrimitiveType(type)));
+            System.out.print(readFromMemory(id, Util.getPrimitiveType(type)));
         }
     }
     private static void printResult()

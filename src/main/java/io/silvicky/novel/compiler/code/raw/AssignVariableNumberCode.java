@@ -7,6 +7,7 @@ import io.silvicky.novel.compiler.code.primitive.CastMMCodeP;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.tokens.OperatorType;
 import io.silvicky.novel.compiler.types.*;
+import io.silvicky.novel.util.Util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +29,7 @@ public record AssignVariableNumberCode(int target, int left, Object right, Type 
     {
         List<Code> ret=new ArrayList<>();
         //TODO in fact some are impossible
-        PrimitiveType targetType=getPrimitiveType(this.targetType());
+        PrimitiveType targetType= Util.getPrimitiveType(this.targetType());
         Type ta= this.leftType();
         Type tb= this.rightType();
         while(ta instanceof ConstType ca)ta=ca.baseType();
@@ -69,7 +70,7 @@ public record AssignVariableNumberCode(int target, int left, Object right, Type 
                 else if(ta instanceof PointerType pa)
                 {
                     if((!(tb instanceof PrimitiveType pb))||!pb.isInteger())throw new GrammarException("addition between pointer and float");
-                    if(pb!=ADDRESS_TYPE)b=castPrimitiveType(b,ADDRESS_TYPE,pb);
+                    if(pb!=ADDRESS_TYPE)b= Util.castPrimitiveType(b,ADDRESS_TYPE,pb);
                     int t1=((int)b)*pa.baseType().getSize();
                     if(targetType!=ADDRESS_TYPE)
                     {
@@ -92,7 +93,7 @@ public record AssignVariableNumberCode(int target, int left, Object right, Type 
                         ret.add(new CastMMCodeP(t1,a,type,pa));
                         a=t1;
                     }
-                    if(!pb.equals(type))b=castPrimitiveType(b,type,pb);
+                    if(!pb.equals(type))b= Util.castPrimitiveType(b,type,pb);
                     if(type.equals(targetType))
                     {
                         ret.add(new AssignMICodeP(target,a,b,type,OperatorType.PLUS));
@@ -133,7 +134,7 @@ public record AssignVariableNumberCode(int target, int left, Object right, Type 
                 else if(ta instanceof PointerType pa)
                 {
                     if((!(tb instanceof PrimitiveType pb))||!pb.isInteger())throw new GrammarException("addition between pointer and float");
-                    if(pb!=ADDRESS_TYPE)b=castPrimitiveType(b,ADDRESS_TYPE,pb);
+                    if(pb!=ADDRESS_TYPE)b= Util.castPrimitiveType(b,ADDRESS_TYPE,pb);
                     int t1=((int)b)*pa.baseType().getSize();
                     if(targetType!=ADDRESS_TYPE)
                     {
@@ -156,7 +157,7 @@ public record AssignVariableNumberCode(int target, int left, Object right, Type 
                         ret.add(new CastMMCodeP(t1,a,type,pa));
                         a=t1;
                     }
-                    if(!pb.equals(type))b=castPrimitiveType(b,type,pb);
+                    if(!pb.equals(type))b= Util.castPrimitiveType(b,type,pb);
                     if(type.equals(targetType))
                     {
                         ret.add(new AssignMICodeP(target,a,b,type,OperatorType.MINUS));
@@ -171,8 +172,8 @@ public record AssignVariableNumberCode(int target, int left, Object right, Type 
             }
             case L_SHIFT,R_SHIFT,MOD,AND,OR,XOR, MULTIPLY,DIVIDE ->
             {
-                PrimitiveType pa=getPrimitiveType(ta);
-                PrimitiveType pb=getPrimitiveType(tb);
+                PrimitiveType pa= Util.getPrimitiveType(ta);
+                PrimitiveType pb= Util.getPrimitiveType(tb);
                 if((this.op().equals(OperatorType.L_SHIFT)
                         ||this.op().equals(OperatorType.R_SHIFT)
                         ||this.op().equals(OperatorType.MOD)
@@ -186,7 +187,7 @@ public record AssignVariableNumberCode(int target, int left, Object right, Type 
                     ret.add(new CastMMCodeP(t1,a,type,pa));
                     a=t1;
                 }
-                if(!pb.equals(type))b=castPrimitiveType(b,type,pb);
+                if(!pb.equals(type))b= Util.castPrimitiveType(b,type,pb);
                 if(type.equals(targetType))
                 {
                     ret.add(new AssignMICodeP(target,a,b,type,this.op()));
@@ -198,11 +199,11 @@ public record AssignVariableNumberCode(int target, int left, Object right, Type 
                     ret.add(new CastMMCodeP(target,t1,targetType,type));
                 }
             }
-            case NOP-> ret.add(new CastMMCodeP(target,a,targetType,getPrimitiveType(ta)));
-            case COMMA -> ret.add(new AssignMICodeP(target,0,castPrimitiveType(b,targetType,getPrimitiveType(tb)),targetType,OperatorType.COMMA));
+            case NOP-> ret.add(new CastMMCodeP(target,a,targetType, Util.getPrimitiveType(ta)));
+            case COMMA -> ret.add(new AssignMICodeP(target,0, Util.castPrimitiveType(b,targetType, Util.getPrimitiveType(tb)),targetType,OperatorType.COMMA));
             case REVERSE ->
             {
-                PrimitiveType pa=getPrimitiveType(ta);
+                PrimitiveType pa= Util.getPrimitiveType(ta);
                 if(!(pa.isInteger()))throw new GrammarException("not integer");
                 if(pa.equals(targetType))
                 {
@@ -217,7 +218,7 @@ public record AssignVariableNumberCode(int target, int left, Object right, Type 
             }
             case NOT ->
             {
-                PrimitiveType pa=getPrimitiveType(ta);
+                PrimitiveType pa= Util.getPrimitiveType(ta);
                 if(targetType.equals(BOOL))
                 {
                     ret.add(new AssignMMCodeP(target,a,a,pa,OperatorType.NOT));
@@ -231,8 +232,8 @@ public record AssignVariableNumberCode(int target, int left, Object right, Type 
             }
             case LESS,GREATER,LESS_EQUAL,GREATER_EQUAL,EQUAL_EQUAL,NOT_EQUAL ->
             {
-                PrimitiveType pa=getPrimitiveType(ta);
-                PrimitiveType pb=getPrimitiveType(tb);
+                PrimitiveType pa= Util.getPrimitiveType(ta);
+                PrimitiveType pb= Util.getPrimitiveType(tb);
                 PrimitiveType type=PrimitiveType.values()[Math.max(pa.ordinal(),pb.ordinal())];
                 if(!pa.equals(type))
                 {
@@ -240,7 +241,7 @@ public record AssignVariableNumberCode(int target, int left, Object right, Type 
                     ret.add(new CastMMCodeP(t1,a,type,pa));
                     a=t1;
                 }
-                if(!pb.equals(type))b=castPrimitiveType(b,type,pb);
+                if(!pb.equals(type))b= Util.castPrimitiveType(b,type,pb);
                 if(BOOL.equals(targetType))
                 {
                     ret.add(new AssignMICodeP(target,a,b,type,this.op()));
