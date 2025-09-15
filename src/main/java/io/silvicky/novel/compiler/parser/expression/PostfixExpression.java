@@ -106,7 +106,7 @@ public class PostfixExpression extends AbstractExpression
                         codes.add(new AssignCode(id,postfix.parameters.get(i).second(),0,aType,pType,pType,OperatorType.NOP));
                         castParameters.add(id);
                     }
-                    codes.add(new CallCode(tmp,castParameters));
+                    codes.add(new CallCode(tmp,castParameters,functionType.args()));
                     type=functionType.returnType();
                     curResult=requestInternalVariable(type);
                     codes.add(new FetchReturnValueCode(curResult));

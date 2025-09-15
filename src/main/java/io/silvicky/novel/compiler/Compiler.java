@@ -377,7 +377,9 @@ public class Compiler
     {
         int cur=dataSegmentBaseAddress;
         int cur2;
-        for(Map.Entry<Integer, Pair<String, Type>> pr:variableBackMap.entrySet())
+        List<Map.Entry<Integer, Pair<String, Type>>> entries=new ArrayList<>(variableBackMap.entrySet());
+        entries.sort(Comparator.comparingInt(Map.Entry::getKey));
+        for(Map.Entry<Integer, Pair<String, Type>> pr:entries)
         {
             variableAddress.put(pr.getKey(),cur);
             cur+=pr.getValue().second().getSize();
@@ -386,7 +388,9 @@ public class Compiler
         {
             cur=0;
             cur2=-2*ADDRESS_WIDTH;
-            for(Map.Entry<Integer, Pair<String, Type>> pr2:pr.getValue().entrySet())
+            List<Map.Entry<Integer, Pair<String, Type>>> entries2=new ArrayList<>(pr.getValue().entrySet());
+            entries2.sort(Comparator.comparingInt(o -> Math.abs(o.getKey())));
+            for(Map.Entry<Integer, Pair<String, Type>> pr2:entries2)
             {
                 if(pr2.getKey()>=0)
                 {
@@ -463,7 +467,7 @@ public class Compiler
             {
                 List<Integer> parameters=new ArrayList<>();
                 for(int i:callCode.parameters())parameters.add(lookupAddress(i));
-                ret.add(new CallCode(lookupAddress(callCode.target()),parameters));
+                ret.add(new CallCode(lookupAddress(callCode.target()),parameters,callCode.args()));
                 continue;
             }
             if(code instanceof FetchReturnValueCode fetchReturnValueCode)
@@ -483,7 +487,7 @@ public class Compiler
         Map<Integer,Integer> labelPos=new HashMap<>();
         for(int i=0;i<codes.size();i++)if(codes.get(i) instanceof LabelCode labelCode)labelPos.put(labelCode.id(),i);
         if(!variableMap.containsKey("main"))throw new DeclarationException("no main function defined");
-        codes.add(new CallCode(lookupAddress(variableMap.get("main").first()),new ArrayList<>()));
+        codes.add(new CallCode(lookupAddress(variableMap.get("main").first()),new ArrayList<>(),new ArrayList<>()));
         int ip=0;
         int bp=dataSegmentBaseAddress-1;
         int sp=bp;
@@ -533,7 +537,7 @@ public class Compiler
             {
                 ret=addressTransformer(bp,returnCode.val());
                 sp=bp+2;
-                ip=(int)mem[bp+1];
+                ip=(int)mem[bp+ADDRESS_WIDTH];
                 bp=(int)mem[bp];
                 continue;
             }
@@ -542,10 +546,10 @@ public class Compiler
                 int callTarget= (int) mem[addressTransformer(bp,callCode.target())];
                 for(int i=callCode.parameters().size()-1;i>=0;i--)
                 {
-                    mem[--sp]=mem[addressTransformer(bp,callCode.parameters().get(i))];
+                    mem[sp-=callCode.args().get(i).getSize()]=mem[addressTransformer(bp,callCode.parameters().get(i))];
                 }
-                mem[--sp]=ip;
-                mem[--sp]=bp;
+                mem[sp-=ADDRESS_WIDTH]=ip;
+                mem[sp-=ADDRESS_WIDTH]=bp;
                 bp=sp;
                 sp=bp-localVariableCount.get(callTarget);
                 ip=labelPos.get(callTarget);
