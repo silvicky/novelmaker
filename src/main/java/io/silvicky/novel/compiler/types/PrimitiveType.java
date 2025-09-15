@@ -32,8 +32,6 @@ public enum PrimitiveType implements Type
     @Override
     public int getSize()
     {
-        //TODO
-        return 1;
-        //return size;
+        return size;
     }
 }

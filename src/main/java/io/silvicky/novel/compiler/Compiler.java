@@ -44,6 +44,7 @@ public class Compiler
     private static final Map<Integer,Map<String,Stack<Pair<Integer, Type>>>> localVariableMap=new HashMap<>();
     private static final Map<Integer,Map<Integer, Pair<String, Type>>> localVariableBackMap=new HashMap<>();
     private static final Map<Integer,Map<Integer,Integer>> localVariableAddress=new HashMap<>();
+    private static final Map<Integer,Integer> localVariableSize=new HashMap<>();
     private static final Map<Integer,Integer> localVariableCount=new HashMap<>();
     public static int registerVariable(String s, Type type)
     {
@@ -291,7 +292,11 @@ public class Compiler
         for(Map.Entry<Integer, Map<Integer, Pair<String, Type>>> pr:localVariableBackMap.entrySet())
         {
             cur=0;
-            cur2=-2*ADDRESS_WIDTH;
+            cur2=-(2*ADDRESS_WIDTH);
+            if(!localVariableSize.containsKey(pr.getKey()))
+                localVariableSize.put(pr.getKey(),0);
+            if (!localVariableAddress.containsKey(pr.getKey()))
+                localVariableAddress.put(pr.getKey(), new HashMap<>());
             List<Map.Entry<Integer, Pair<String, Type>>> entries2=new ArrayList<>(pr.getValue().entrySet());
             entries2.sort(Comparator.comparingInt(o -> Math.abs(o.getKey())));
             for(Map.Entry<Integer, Pair<String, Type>> pr2:entries2)
@@ -300,9 +305,9 @@ public class Compiler
                 {
                     //TODO Reference to array should not have its space
                     cur += pr2.getValue().second().getSize();
-                    if (!localVariableAddress.containsKey(pr.getKey()))
-                        localVariableAddress.put(pr.getKey(), new HashMap<>());
                     localVariableAddress.get(pr.getKey()).put(pr2.getKey(), cur);
+                    int curSize=localVariableSize.get(pr.getKey());
+                    localVariableSize.put(pr.getKey(),curSize+pr2.getValue().second().getSize());
                 }
                 else
                 {
@@ -453,7 +458,7 @@ public class Compiler
                 VirtualMemory.writeToMemory(sp-=ADDRESS_WIDTH,ip);
                 VirtualMemory.writeToMemory(sp-=ADDRESS_WIDTH,bp);
                 bp=sp;
-                sp=bp-localVariableCount.get(callTarget);
+                sp=bp-localVariableSize.get(callTarget);
                 ip=labelPos.get(callTarget);
                 continue;
             }
@@ -464,8 +469,8 @@ public class Compiler
             }
             if(code instanceof DereferenceCode dereferenceCode)
             {
-                if(dereferenceCode.type() instanceof FunctionType) VirtualMemory.moveBytes(addressTransformer(bp,dereferenceCode.target()),addressTransformer(bp, dereferenceCode.left()),dereferenceCode.type().getSize());
-                else VirtualMemory.moveBytes(addressTransformer(bp,dereferenceCode.target()),(int) VirtualMemory.readFromMemory(addressTransformer(bp, dereferenceCode.left()),INT),dereferenceCode.type().getSize());
+                if(dereferenceCode.type() instanceof FunctionType) VirtualMemory.moveBytes(addressTransformer(bp,dereferenceCode.target()),addressTransformer(bp, dereferenceCode.left()),ADDRESS_WIDTH);
+                else VirtualMemory.moveBytes(addressTransformer(bp,dereferenceCode.target()),(int) VirtualMemory.readFromMemory(addressTransformer(bp, dereferenceCode.left()),INT),((PointerType)(dereferenceCode.type())).baseType().getSize());
                 continue;
             }
             System.out.println("Unknown TAC: "+code.toString());
