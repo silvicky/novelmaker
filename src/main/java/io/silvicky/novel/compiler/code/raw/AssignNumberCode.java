@@ -10,7 +10,7 @@ import io.silvicky.novel.util.Util;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.silvicky.novel.compiler.Compiler.*;
+import static io.silvicky.novel.compiler.Compiler.lookupVariableName;
 
 public record AssignNumberCode(int target, Object left, Type targetType,Type leftType) implements RawCode
 {

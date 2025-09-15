@@ -8,6 +8,7 @@ import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.operation.ResolveOperation;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
+import io.silvicky.novel.compiler.types.ConstType;
 import io.silvicky.novel.compiler.types.PointerType;
 
 import java.util.ArrayList;
@@ -43,6 +44,7 @@ public class AssignmentExpression extends AbstractExpression implements ASTNode
             codes.addAll(right.codes);
             if(left.leftId==-1)throw new GrammarException("not lvalue");
             type= left.type;
+            if(type instanceof ConstType)throw new GrammarException("modifying const value");
             resultId=requestInternalVariable(type);
             leftId=-1;
             if(left.isDirect)
