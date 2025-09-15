@@ -34,12 +34,12 @@ public class ExclusiveOrExpression extends LTRExpression
         codes.addAll(left.codes);
         if(right!=null)
         {
-            resultId=requestInternalVariable();
             AndExpression right2=(AndExpression) right;
             if(right2.right instanceof AndExpression)right= rotateLeft(right2);
             right.travel();
             codes.addAll(right.codes);
             type=getResultType(left.type,right.type,OperatorType.XOR);
+            resultId=requestInternalVariable(type);
             leftId=-1;
             codes.add(new AssignCode(resultId,left.resultId,right.resultId,type,left.type,right.type, OperatorType.XOR));
         }

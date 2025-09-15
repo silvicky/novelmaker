@@ -49,15 +49,15 @@ public record AssignCode(int target, int left, int right, Type targetType, Type 
                     if((!(ta instanceof PrimitiveType pa))||!pa.isInteger())throw new GrammarException("addition between pointer and float");
                     if(pa!=ADDRESS_TYPE)
                     {
-                        int t1=requestInternalVariable();
+                        int t1=requestInternalVariable(ADDRESS_TYPE);
                         ret.add(new CastMMCodeP(t1,a,ADDRESS_TYPE,pa));
                         a=t1;
                     }
-                    int t1=requestInternalVariable();
+                    int t1=requestInternalVariable(ADDRESS_TYPE);
                     ret.add(new AssignMICodeP(t1,a,pb.baseType().getSize(),ADDRESS_TYPE,OperatorType.MULTIPLY));
                     if(targetType!=ADDRESS_TYPE)
                     {
-                        int t2 = requestInternalVariable();
+                        int t2 = requestInternalVariable(ADDRESS_TYPE);
                         ret.add(new AssignMMCodeP(t2, t1, b, ADDRESS_TYPE, PLUS));
                         ret.add(new CastMMCodeP(target,t2,targetType,ADDRESS_TYPE));
                     }
@@ -71,15 +71,15 @@ public record AssignCode(int target, int left, int right, Type targetType, Type 
                     if((!(tb instanceof PrimitiveType pb))||!pb.isInteger())throw new GrammarException("addition between pointer and float");
                     if(pb!=ADDRESS_TYPE)
                     {
-                        int t1=requestInternalVariable();
+                        int t1=requestInternalVariable(ADDRESS_TYPE);
                         ret.add(new CastMMCodeP(t1,b,ADDRESS_TYPE,pb));
                         b=t1;
                     }
-                    int t1=requestInternalVariable();
+                    int t1=requestInternalVariable(ADDRESS_TYPE);
                     ret.add(new AssignMICodeP(t1,b,pa.baseType().getSize(),ADDRESS_TYPE,OperatorType.MULTIPLY));
                     if(targetType!=ADDRESS_TYPE)
                     {
-                        int t2 = requestInternalVariable();
+                        int t2 = requestInternalVariable(ADDRESS_TYPE);
                         ret.add(new AssignMMCodeP(t2, t1, a, ADDRESS_TYPE, PLUS));
                         ret.add(new CastMMCodeP(target,t2,targetType,ADDRESS_TYPE));
                     }
@@ -94,13 +94,13 @@ public record AssignCode(int target, int left, int right, Type targetType, Type 
                     PrimitiveType type=PrimitiveType.values()[Math.max(pa.ordinal(),pb.ordinal())];
                     if(!pa.equals(type))
                     {
-                        int t1=requestInternalVariable();
+                        int t1=requestInternalVariable(type);
                         ret.add(new CastMMCodeP(t1,a,type,pa));
                         a=t1;
                     }
                     if(!pb.equals(type))
                     {
-                        int t1=requestInternalVariable();
+                        int t1=requestInternalVariable(type);
                         ret.add(new CastMMCodeP(t1,b,type,pb));
                         b=t1;
                     }
@@ -110,7 +110,7 @@ public record AssignCode(int target, int left, int right, Type targetType, Type 
                     }
                     else
                     {
-                        int t1=requestInternalVariable();
+                        int t1=requestInternalVariable(type);
                         ret.add(new AssignMMCodeP(t1,a,b,type, PLUS));
                         ret.add(new CastMMCodeP(target,t1,targetType,type));
                     }
@@ -124,11 +124,11 @@ public record AssignCode(int target, int left, int right, Type targetType, Type 
                 if(ta instanceof PointerType pa&&tb instanceof PointerType pb)
                 {
                     if(!pa.equals(pb))throw new GrammarException("minus between different pointers");
-                    int t1=requestInternalVariable();
+                    int t1=requestInternalVariable(ADDRESS_TYPE);
                     ret.add(new AssignMMCodeP(t1,a,b,ADDRESS_TYPE,OperatorType.MINUS));
                     if(targetType!=ADDRESS_TYPE)
                     {
-                        int t2 = requestInternalVariable();
+                        int t2 = requestInternalVariable(ADDRESS_TYPE);
                         ret.add(new AssignMICodeP(t2, t1, pb.baseType().getSize(), ADDRESS_TYPE, OperatorType.DIVIDE));
                         ret.add(new CastMMCodeP(target,t2,targetType,ADDRESS_TYPE));
                     }
@@ -146,15 +146,15 @@ public record AssignCode(int target, int left, int right, Type targetType, Type 
                     if((!(tb instanceof PrimitiveType pb))||!pb.isInteger())throw new GrammarException("addition between pointer and float");
                     if(pb!=ADDRESS_TYPE)
                     {
-                        int t1=requestInternalVariable();
+                        int t1=requestInternalVariable(ADDRESS_TYPE);
                         ret.add(new CastMMCodeP(t1,b,ADDRESS_TYPE,pb));
                         b=t1;
                     }
-                    int t1=requestInternalVariable();
+                    int t1=requestInternalVariable(ADDRESS_TYPE);
                     ret.add(new AssignMICodeP(t1,b,pa.baseType().getSize(),ADDRESS_TYPE,OperatorType.MULTIPLY));
                     if(targetType!=ADDRESS_TYPE)
                     {
-                        int t2 = requestInternalVariable();
+                        int t2 = requestInternalVariable(ADDRESS_TYPE);
                         ret.add(new AssignMMCodeP(t2, a, t1, ADDRESS_TYPE, OperatorType.MINUS));
                         ret.add(new CastMMCodeP(target,t2,targetType,ADDRESS_TYPE));
                     }
@@ -169,13 +169,13 @@ public record AssignCode(int target, int left, int right, Type targetType, Type 
                     PrimitiveType type=PrimitiveType.values()[Math.max(pa.ordinal(),pb.ordinal())];
                     if(!pa.equals(type))
                     {
-                        int t1=requestInternalVariable();
+                        int t1=requestInternalVariable(type);
                         ret.add(new CastMMCodeP(t1,a,type,pa));
                         a=t1;
                     }
                     if(!pb.equals(type))
                     {
-                        int t1=requestInternalVariable();
+                        int t1=requestInternalVariable(type);
                         ret.add(new CastMMCodeP(t1,b,type,pb));
                         b=t1;
                     }
@@ -185,7 +185,7 @@ public record AssignCode(int target, int left, int right, Type targetType, Type 
                     }
                     else
                     {
-                        int t1=requestInternalVariable();
+                        int t1=requestInternalVariable(type);
                         ret.add(new AssignMMCodeP(t1,a,b,type,OperatorType.MINUS));
                         ret.add(new CastMMCodeP(target,t1,targetType,type));
                     }
@@ -204,13 +204,13 @@ public record AssignCode(int target, int left, int right, Type targetType, Type 
                 PrimitiveType type=PrimitiveType.values()[Math.max(pa.ordinal(),pb.ordinal())];
                 if(!pa.equals(type))
                 {
-                    int t1=requestInternalVariable();
+                    int t1=requestInternalVariable(type);
                     ret.add(new CastMMCodeP(t1,a,type,pa));
                     a=t1;
                 }
                 if(!pb.equals(type))
                 {
-                    int t1=requestInternalVariable();
+                    int t1=requestInternalVariable(type);
                     ret.add(new CastMMCodeP(t1,b,type,pb));
                     b=t1;
                 }
@@ -220,7 +220,7 @@ public record AssignCode(int target, int left, int right, Type targetType, Type 
                 }
                 else
                 {
-                    int t1=requestInternalVariable();
+                    int t1=requestInternalVariable(type);
                     ret.add(new AssignMMCodeP(t1,a,b,type,this.op()));
                     ret.add(new CastMMCodeP(target,t1,targetType,type));
                 }
@@ -237,7 +237,7 @@ public record AssignCode(int target, int left, int right, Type targetType, Type 
                 }
                 else
                 {
-                    int t1=requestInternalVariable();
+                    int t1=requestInternalVariable(pa);
                     ret.add(new AssignMMCodeP(t1,a,a,pa,OperatorType.REVERSE));
                     ret.add(new CastMMCodeP(target,t1,targetType,pa));
                 }
@@ -251,8 +251,8 @@ public record AssignCode(int target, int left, int right, Type targetType, Type 
                 }
                 else
                 {
-                    int t1=requestInternalVariable();
-                    ret.add(new AssignMMCodeP(t1,a,a,BOOL,OperatorType.NOT));
+                    int t1=requestInternalVariable(BOOL);
+                    ret.add(new AssignMMCodeP(t1,a,a,pa,OperatorType.NOT));
                     ret.add(new CastMMCodeP(target,t1,targetType,BOOL));
                 }
             }
@@ -263,13 +263,13 @@ public record AssignCode(int target, int left, int right, Type targetType, Type 
                 PrimitiveType type=PrimitiveType.values()[Math.max(pa.ordinal(),pb.ordinal())];
                 if(!pa.equals(type))
                 {
-                    int t1=requestInternalVariable();
+                    int t1=requestInternalVariable(type);
                     ret.add(new CastMMCodeP(t1,a,type,pa));
                     a=t1;
                 }
                 if(!pb.equals(type))
                 {
-                    int t1=requestInternalVariable();
+                    int t1=requestInternalVariable(type);
                     ret.add(new CastMMCodeP(t1,b,type,pb));
                     b=t1;
                 }
@@ -279,7 +279,7 @@ public record AssignCode(int target, int left, int right, Type targetType, Type 
                 }
                 else
                 {
-                    int t1=requestInternalVariable();
+                    int t1=requestInternalVariable(BOOL);
                     ret.add(new AssignMMCodeP(t1,a,b,type,this.op()));
                     ret.add(new CastMMCodeP(target,t1,targetType,BOOL));
                 }

@@ -56,8 +56,8 @@ public class PrimaryExpression extends AbstractExpression
         }
         else if(variableName!=null)
         {
-            resultId=requestInternalVariable();
             type= lookupVariable(variableName).second();
+            resultId=requestInternalVariable(type);
             leftId=lookupVariable(variableName).first();
             isDirect=true;
             if(type instanceof ArrayType)codes.add(new ReferenceCode(resultId,leftId));
@@ -65,7 +65,7 @@ public class PrimaryExpression extends AbstractExpression
         }
         else
         {
-            resultId=requestInternalVariable();
+            resultId=requestInternalVariable(type);
             codes.add(new AssignNumberCode(resultId,numericVal,type,type));
         }
     }

@@ -4,12 +4,12 @@ import io.silvicky.novel.compiler.code.raw.AssignCode;
 import io.silvicky.novel.compiler.parser.operation.ResolveOperation;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
+import io.silvicky.novel.compiler.types.PrimitiveType;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static io.silvicky.novel.compiler.Compiler.requestInternalVariable;
-import static io.silvicky.novel.util.Util.getResultType;
 import static io.silvicky.novel.util.Util.rotateLeft;
 
 public class RelationalExpression extends LTRExpression
@@ -35,12 +35,12 @@ public class RelationalExpression extends LTRExpression
         codes.addAll(left.codes);
         if(right!=null)
         {
-            resultId=requestInternalVariable();
+            resultId=requestInternalVariable(PrimitiveType.BOOL);
             ShiftExpression right2=(ShiftExpression) right;
             if(right2.right instanceof ShiftExpression)right= rotateLeft(right2);
             right.travel();
             codes.addAll(right.codes);
-            type=getResultType(left.type,right.type,op);
+            type=PrimitiveType.BOOL;
             leftId=-1;
             codes.add(new AssignCode(resultId,left.resultId,right.resultId,type,left.type,right.type, op));
         }

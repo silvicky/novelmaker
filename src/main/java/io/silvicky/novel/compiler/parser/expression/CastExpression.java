@@ -63,11 +63,11 @@ public class CastExpression extends AbstractExpression
             resultId=nextExpression.resultId;
             return;
         }
-        resultId=requestInternalVariable();
         baseTypeBuilderRoot.travel();
         unaryDeclaration.receivedType= baseTypeBuilderRoot.type;
         unaryDeclaration.travel();
         type= unaryDeclaration.type;
+        resultId=requestInternalVariable(type);
         leftId=-1;
         isDirect=false;
         child.travel();

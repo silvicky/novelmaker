@@ -31,7 +31,7 @@ public record GotoCode(int left, Type type, boolean isReversed, int id) implemen
     {
         List<Code> ret=new ArrayList<>();
         PrimitiveType primitiveType=getPrimitiveType(type);
-        int t1=requestInternalVariable();
+        int t1=requestInternalVariable(PrimitiveType.BOOL);
         if(isReversed)
         {
             ret.add(new AssignMMCodeP(t1,left,left,primitiveType, OperatorType.NOT));

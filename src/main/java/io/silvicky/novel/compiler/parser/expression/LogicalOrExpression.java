@@ -37,7 +37,7 @@ public class LogicalOrExpression extends LTRExpression
         codes.addAll(left.codes);
         if(right!=null)
         {
-            resultId=requestInternalVariable();
+            resultId=requestInternalVariable(PrimitiveType.BOOL);
             leftId=-1;
             type= PrimitiveType.BOOL;
             LabelCode second=new LabelCode();

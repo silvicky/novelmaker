@@ -75,9 +75,9 @@ public class UnaryExpression extends AbstractExpression
         }
         else if(child!=null)
         {
-            resultId=requestInternalVariable();
             child.travel();
             type= child.type;
+            resultId=requestInternalVariable(type);
             if(child.leftId==-1)throw new GrammarException("not lvalue");
             leftId=-1;
             codes.addAll(child.codes);
@@ -88,7 +88,7 @@ public class UnaryExpression extends AbstractExpression
             }
             else
             {
-                int realValue=requestInternalVariable();
+                int realValue=requestInternalVariable(type);
                 codes.add(new DereferenceCode(realValue,child.leftId,new PointerType(type)));
                 codes.add(new AssignVariableNumberCode(resultId,realValue,1,type,type,PrimitiveType.INT,op.baseType));
                 codes.add(new IndirectAssignCode(child.leftId,resultId,type));
@@ -96,7 +96,6 @@ public class UnaryExpression extends AbstractExpression
         }
         else
         {
-            resultId=requestInternalVariable();
             castExpression.travel();
             codes.addAll(castExpression.codes);
             if(op==OperatorType.MULTIPLY)
@@ -105,12 +104,14 @@ public class UnaryExpression extends AbstractExpression
                 leftId=castExpression.resultId;
                 isDirect=false;
                 type= abstractPointer.baseType();
+                resultId=requestInternalVariable(type);
                 codes.add(new DereferenceCode(resultId,leftId, castExpression.type));
             }
             else if(op==OperatorType.AND)
             {
                 if(castExpression.leftId==-1)throw new GrammarException("not lvalue");
                 type=new PointerType(castExpression.type);
+                resultId=requestInternalVariable(type);
                 if(castExpression.isDirect)
                 {
                     codes.add(new ReferenceCode(resultId,castExpression.leftId));
@@ -125,6 +126,7 @@ public class UnaryExpression extends AbstractExpression
             {
                 leftId=-1;
                 type=getResultType(castExpression.type, castExpression.type, op);
+                resultId=requestInternalVariable(type);
                 codes.add(new AssignCode(resultId,castExpression.resultId,castExpression.resultId,type, castExpression.type, castExpression.type, op));
             }
         }

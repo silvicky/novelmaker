@@ -34,7 +34,7 @@ public class ReturnLine extends NonTerminal implements ASTNode
         codes.addAll(expressionRoot.codes);
         if(!returnType.equals(expressionRoot.type))
         {
-            int t1 = requestInternalVariable();
+            int t1 = requestInternalVariable(returnType);
             codes.add(new AssignCode(t1, expressionRoot.resultId, expressionRoot.resultId, returnType, expressionRoot.type, expressionRoot.type, OperatorType.NOP));
             codes.add(new ReturnCode(t1));
         }

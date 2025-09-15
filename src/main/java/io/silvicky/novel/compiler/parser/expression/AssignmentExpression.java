@@ -39,11 +39,11 @@ public class AssignmentExpression extends AbstractExpression implements ASTNode
         codes.addAll(left.codes);
         if(right!=null)
         {
-            resultId=requestInternalVariable();
             right.travel();
             codes.addAll(right.codes);
             if(left.leftId==-1)throw new GrammarException("not lvalue");
             type= left.type;
+            resultId=requestInternalVariable(type);
             leftId=-1;
             if(left.isDirect)
             {
@@ -52,7 +52,7 @@ public class AssignmentExpression extends AbstractExpression implements ASTNode
             }
             else
             {
-                int realValue=requestInternalVariable();
+                int realValue=requestInternalVariable(type);
                 codes.add(new DereferenceCode(realValue,left.leftId,new PointerType(type)));
                 codes.add(new AssignCode(resultId,realValue,right.resultId,type,type,right.type,op.baseType));
                 codes.add(new IndirectAssignCode(left.leftId,resultId,type));

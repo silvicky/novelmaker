@@ -41,7 +41,6 @@ public class ConditionalExpression extends AbstractExpression
         codes.addAll(left.codes);
         if(middle!=null)
         {
-            resultId=requestInternalVariable();
             int lbRight= requestLabel();
             int lbEnd= requestLabel();
             codes.add(new GotoCode(left.resultId,left.type, true,lbRight));
@@ -51,6 +50,7 @@ public class ConditionalExpression extends AbstractExpression
             right.travel();
             //TODO any better way?
             type=getResultType(middle.type,right.type,OperatorType.PLUS);
+            resultId=requestInternalVariable(type);
             codes.addAll(middle.codes);
             codes.add(new AssignCode(resultId, middle.resultId, middle.resultId, type,middle.type,middle.type,OperatorType.NOP));
             codes.add(new UnconditionalGotoCode(lbEnd));

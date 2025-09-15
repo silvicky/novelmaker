@@ -91,10 +91,17 @@ public class Compiler
         if(variableBackMap.containsKey(l))return variableBackMap.get(l).first();
         return "V"+l;
     }
-    public static int requestInternalVariable()
+    public static int requestInternalVariable(Type type)
     {
+        if(ctx==-1)
+        {
+            variableBackMap.put(variableCnt,new Pair<>("",type));
+            return variableCnt++;
+        }
         if(!localVariableCount.containsKey(ctx))localVariableCount.put(ctx,1);
         final int cnt=localVariableCount.get(ctx);
+        if(!localVariableBackMap.containsKey(ctx))localVariableBackMap.put(ctx,new HashMap<>());
+        localVariableBackMap.get(ctx).put(cnt,new Pair<>("",type));
         localVariableCount.put(ctx,cnt+1);
         return cnt;
     }
@@ -458,7 +465,7 @@ public class Compiler
         }
         else
         {
-            System.out.print(mem[id]);
+            System.out.print(readFromMemory(id,getPrimitiveType(type)));
         }
     }
     private static void printResult()
