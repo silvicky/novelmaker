@@ -398,7 +398,7 @@ public class Compiler
         if(!variableMap.containsKey("main"))throw new DeclarationException("no main function defined");
         codes.add(new CallCode(lookupAddress(variableMap.get("main").first()),new ArrayList<>(),new ArrayList<>()));
         int ip=0;
-        int bp=dataSegmentBaseAddress-1;
+        int bp=dataSegmentBaseAddress;
         int sp=bp;
         int ret=0;
         while(ip<codes.size())
