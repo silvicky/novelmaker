@@ -23,6 +23,7 @@ import java.util.*;
 
 import static io.silvicky.novel.compiler.types.PrimitiveType.BOOL;
 import static io.silvicky.novel.compiler.types.Type.ADDRESS_TYPE;
+import static io.silvicky.novel.compiler.types.Type.ADDRESS_WIDTH;
 import static io.silvicky.novel.util.Util.addNonNull;
 
 public class Compiler
@@ -38,8 +39,10 @@ public class Compiler
     private static final Map<Integer,Map<String,Integer>> localLabelMap=new HashMap<>();
     private static final Map<String, Pair<Integer, Type>> variableMap=new HashMap<>();
     private static final Map<Integer, Pair<String, Type>> variableBackMap=new HashMap<>();
+    private static final Map<Integer, Integer> variableAddress=new HashMap<>();
     private static final Map<Integer,Map<String,Stack<Pair<Integer, Type>>>> localVariableMap=new HashMap<>();
     private static final Map<Integer,Map<Integer, Pair<String, Type>>> localVariableBackMap=new HashMap<>();
+    private static final Map<Integer,Map<Integer,Integer>> localVariableAddress=new HashMap<>();
     private static final Map<Integer,Integer> localVariableCount=new HashMap<>();
     public static int registerVariable(String s, Type type)
     {
@@ -47,7 +50,7 @@ public class Compiler
         int ret=variableCnt+dataSegmentBaseAddress;
         variableMap.put(s,new Pair<>(ret,type));
         variableBackMap.put(ret,new Pair<>(s,type));
-        variableCnt+=type.getSize();
+        variableCnt++;
         return ret;
     }
     public static int registerLocalVariable(String s, Type type)
@@ -59,7 +62,7 @@ public class Compiler
         localVariableMap.get(ctx).get(s).push(new Pair<>(cnt,type));
         if(!localVariableBackMap.containsKey(ctx))localVariableBackMap.put(ctx,new HashMap<>());
         localVariableBackMap.get(ctx).put(cnt,new Pair<>(String.format("%s(V%d)",s,cnt),type));
-        localVariableCount.put(ctx,cnt+type.getSize());
+        localVariableCount.put(ctx,cnt+1);
         return cnt;
     }
     public static void registerArgument(String s, Type type)
@@ -95,13 +98,15 @@ public class Compiler
     {
         if(ctx==-1)
         {
-            variableBackMap.put(variableCnt,new Pair<>("",type));
-            return variableCnt++;
+            final int ret=variableCnt+dataSegmentBaseAddress;
+            variableBackMap.put(ret,new Pair<>("V"+variableCnt,type));
+            variableCnt++;
+            return ret;
         }
         if(!localVariableCount.containsKey(ctx))localVariableCount.put(ctx,1);
         final int cnt=localVariableCount.get(ctx);
         if(!localVariableBackMap.containsKey(ctx))localVariableBackMap.put(ctx,new HashMap<>());
-        localVariableBackMap.get(ctx).put(cnt,new Pair<>("",type));
+        localVariableBackMap.get(ctx).put(cnt,new Pair<>("V"+cnt,type));
         localVariableCount.put(ctx,cnt+1);
         return cnt;
     }
@@ -362,13 +367,123 @@ public class Compiler
             }
         }
     }
+    private static int lookupAddress(int id)
+    {
+        if(id==0||id==-1)return 0;
+        if(id>=dataSegmentBaseAddress)return variableAddress.get(id);
+        return localVariableAddress.get(ctx).get(id);
+    }
+    private static List<Code> assignAddress(List<Code> codes)
+    {
+        int cur=dataSegmentBaseAddress;
+        int cur2;
+        for(Map.Entry<Integer, Pair<String, Type>> pr:variableBackMap.entrySet())
+        {
+            variableAddress.put(pr.getKey(),cur);
+            cur+=pr.getValue().second().getSize();
+        }
+        for(Map.Entry<Integer, Map<Integer, Pair<String, Type>>> pr:localVariableBackMap.entrySet())
+        {
+            cur=0;
+            cur2=-2*ADDRESS_WIDTH;
+            for(Map.Entry<Integer, Pair<String, Type>> pr2:pr.getValue().entrySet())
+            {
+                if(pr2.getKey()>=0)
+                {
+                    //TODO Reference to array should not have its space
+                    cur += pr2.getValue().second().getSize();
+                    if (!localVariableAddress.containsKey(pr.getKey()))
+                        localVariableAddress.put(pr.getKey(), new HashMap<>());
+                    localVariableAddress.get(pr.getKey()).put(pr2.getKey(), cur);
+                }
+                else
+                {
+                    if (!localVariableAddress.containsKey(pr.getKey()))
+                        localVariableAddress.put(pr.getKey(), new HashMap<>());
+                    localVariableAddress.get(pr.getKey()).put(pr2.getKey(), cur2);
+                    cur2-=pr2.getValue().second().getSize();
+                }
+            }
+        }
+        List<Code> ret=new ArrayList<>();
+        ctx=-1;
+        for(Code code:codes)
+        {
+            if(code instanceof UnconditionalGotoCode)
+            {
+                ret.add(code);
+                continue;
+            }
+            if(code instanceof LabelCode labelCode)
+            {
+                if(labelBackMap.containsKey(labelCode.id()))
+                {
+                    if (labelBackMap.get(labelCode.id()).charAt(0) == '0') ctx = -1;
+                    else ctx = labelCode.id();
+                }
+                ret.add(code);
+                continue;
+            }
+            if(code instanceof GotoCodeP gotoCode)
+            {
+                ret.add(new GotoCodeP(lookupAddress(gotoCode.left()), gotoCode.id()));
+                continue;
+            }
+            if(code instanceof IndirectAssignCode indirectAssignCode)
+            {
+                ret.add(new IndirectAssignCode(lookupAddress(indirectAssignCode.target()),lookupAddress(indirectAssignCode.left()),indirectAssignCode.targetType()));
+                continue;
+            }
+            if(code instanceof ReferenceCode referenceCode)
+            {
+                ret.add(new ReferenceCode(lookupAddress(referenceCode.target()),lookupAddress(referenceCode.left())));
+                continue;
+            }
+            if(code instanceof AssignMMCodeP assignMMCodeP)
+            {
+                ret.add(new AssignMMCodeP(lookupAddress(assignMMCodeP.target()),lookupAddress(assignMMCodeP.left()),lookupAddress(assignMMCodeP.right()),assignMMCodeP.type(),assignMMCodeP.op()));
+                continue;
+            }
+            if(code instanceof AssignMICodeP assignMICodeP)
+            {
+                ret.add(new AssignMICodeP(lookupAddress(assignMICodeP.target()),lookupAddress(assignMICodeP.left()),assignMICodeP.right(),assignMICodeP.type(),assignMICodeP.op()));
+                continue;
+            }
+            if(code instanceof CastMMCodeP castMMCodeP)
+            {
+                ret.add(new CastMMCodeP(lookupAddress(castMMCodeP.target()),lookupAddress(castMMCodeP.source()), castMMCodeP.targetType(),castMMCodeP.sourceType()));
+                continue;
+            }
+            if(code instanceof ReturnCode returnCode)
+            {
+                ret.add(new ReturnCode(lookupAddress(returnCode.val())));
+                continue;
+            }
+            if(code instanceof CallCode callCode)
+            {
+                List<Integer> parameters=new ArrayList<>();
+                for(int i:callCode.parameters())parameters.add(lookupAddress(i));
+                ret.add(new CallCode(lookupAddress(callCode.target()),parameters));
+                continue;
+            }
+            if(code instanceof FetchReturnValueCode fetchReturnValueCode)
+            {
+                ret.add(new FetchReturnValueCode(lookupAddress(fetchReturnValueCode.target())));
+                continue;
+            }
+            if(code instanceof DereferenceCode dereferenceCode)
+            {
+                ret.add(new DereferenceCode(lookupAddress(dereferenceCode.target()),lookupAddress(dereferenceCode.left()), dereferenceCode.type()));
+            }
+        }
+        return ret;
+    }
     public static void emulateTAC(List<Code> codes)
     {
         Map<Integer,Integer> labelPos=new HashMap<>();
         for(int i=0;i<codes.size();i++)if(codes.get(i) instanceof LabelCode labelCode)labelPos.put(labelCode.id(),i);
         if(!variableMap.containsKey("main"))throw new DeclarationException("no main function defined");
-        codes.add(new CallCode(variableMap.get("main").first(),new ArrayList<>()));
-        printCodeList(codes);
+        codes.add(new CallCode(lookupAddress(variableMap.get("main").first()),new ArrayList<>()));
         int ip=0;
         int bp=dataSegmentBaseAddress-1;
         int sp=bp;
@@ -475,7 +590,7 @@ public class Compiler
         {
             if(entry.getValue().second() instanceof FunctionType)continue;
             System.out.print(entry.getKey()+"=");
-            printVariable(entry.getValue().first(),entry.getValue().second());
+            printVariable(lookupAddress(entry.getValue().first()),entry.getValue().second());
             System.out.println();
         }
     }
@@ -494,6 +609,8 @@ public class Compiler
         tokenParser(abstractTokenList);
         List<Code> codeList=parser(abstractTokenList);
         codeList=typeEraser(codeList);
+        printCodeList(codeList);
+        codeList=assignAddress(codeList);
         emulateTAC(codeList);
     }
 }
