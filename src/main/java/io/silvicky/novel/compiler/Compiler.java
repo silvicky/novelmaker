@@ -6,6 +6,7 @@ import io.silvicky.novel.compiler.code.primitive.AssignMMCodeP;
 import io.silvicky.novel.compiler.code.primitive.CastMMCodeP;
 import io.silvicky.novel.compiler.code.primitive.GotoCodeP;
 import io.silvicky.novel.compiler.code.raw.*;
+import io.silvicky.novel.compiler.emulator.VirtualMemory;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.NonTerminal;
 import io.silvicky.novel.compiler.parser.Program;
@@ -23,6 +24,7 @@ import java.nio.file.Path;
 import java.util.*;
 
 import static io.silvicky.novel.compiler.types.PrimitiveType.BOOL;
+import static io.silvicky.novel.compiler.types.PrimitiveType.INT;
 import static io.silvicky.novel.compiler.types.Type.ADDRESS_WIDTH;
 import static io.silvicky.novel.util.Util.addNonNull;
 
@@ -32,7 +34,6 @@ public class Compiler
     private static int variableCnt=0;
     public static int ctx=-1;
     public static Type returnType=null;
-    private static final long[] mem=new long[1048576];
     public static final int dataSegmentBaseAddress=0xF0000;
     private static final Map<String,Integer> labelMap=new HashMap<>();
     private static final Map<Integer,String> labelBackMap=new HashMap<>();
@@ -243,47 +244,6 @@ public class Compiler
         if(val>=dataSegmentBaseAddress)return val;
         return bp-val;
     }
-    public static long writeToMemory(Object o)
-    {
-        //TODO Remove this
-        if(o instanceof Integer integer)return integer;
-        if(o instanceof Long lon)return lon;
-        if(o instanceof Boolean bool)return bool?1:0;
-        if(o instanceof Character cha)return cha;
-        if(o instanceof Short sho)return sho;
-        throw new RuntimeException();
-    }
-    public static Object readFromMemory(int address,PrimitiveType type)
-    {
-        //TODO this is also wrong
-        switch (type)
-        {
-            case BOOL ->
-            {
-                return mem[address]!=0;
-            }
-            case CHAR,UNSIGNED_CHAR ->
-            {
-                return (byte)mem[address];
-            }
-            case SHORT,UNSIGNED_SHORT ->
-            {
-                return (short)mem[address];
-            }
-            case INT,LONG,UNSIGNED_INT,UNSIGNED_LONG ->
-            {
-                return (int)mem[address];
-            }
-            case LONG_LONG,UNSIGNED_LONG_LONG ->
-            {
-                return mem[address];
-            }
-            default ->
-            {
-                return null;
-            }
-        }
-    }
 
     public static List<Code> typeEraser(List<Code> codes)
     {
@@ -416,7 +376,7 @@ public class Compiler
             }
             if(code instanceof FetchReturnValueCode fetchReturnValueCode)
             {
-                ret.add(new FetchReturnValueCode(lookupAddress(fetchReturnValueCode.target())));
+                ret.add(new FetchReturnValueCode(lookupAddress(fetchReturnValueCode.target()), fetchReturnValueCode.type()));
                 continue;
             }
             if(code instanceof DereferenceCode dereferenceCode)
@@ -447,53 +407,51 @@ public class Compiler
             }
             if(code instanceof GotoCodeP gotoCode)
             {
-                if(mem[addressTransformer(bp,gotoCode.left())]!=0)ip=labelPos.get(gotoCode.id());
+                if((boolean) VirtualMemory.readFromMemory(addressTransformer(bp,gotoCode.left()),BOOL))ip=labelPos.get(gotoCode.id());
                 continue;
             }
             if(code instanceof IndirectAssignCode indirectAssignCode)
             {
-                //mem[addressTransformer(bp,(int)mem[addressTransformer(bp,indirectAssignCode.target())])]=mem[addressTransformer(bp,indirectAssignCode.left())];
-                mem[(int)mem[addressTransformer(bp,indirectAssignCode.target())]]=mem[addressTransformer(bp,indirectAssignCode.left())];
+                VirtualMemory.moveBytes((int) VirtualMemory.readFromMemory(addressTransformer(bp,indirectAssignCode.target()),INT),addressTransformer(bp,indirectAssignCode.left()),indirectAssignCode.targetType().getSize());
                 continue;
             }
             if(code instanceof ReferenceCode referenceCode)
             {
-                mem[addressTransformer(bp,referenceCode.target())]=addressTransformer(bp,referenceCode.left());
+                VirtualMemory.writeToMemory(addressTransformer(bp,referenceCode.target()),addressTransformer(bp,referenceCode.left()));
                 continue;
             }
-            //TODO Write to bytes(requires correct memory layout)
             if(code instanceof AssignMMCodeP assignMMCodeP)
             {
-                mem[addressTransformer(bp,assignMMCodeP.target())]= writeToMemory(assignMMCodeP.op().operation.cal(readFromMemory(addressTransformer(bp,assignMMCodeP.left()),assignMMCodeP.type()),readFromMemory(addressTransformer(bp,assignMMCodeP.right()),assignMMCodeP.type()),assignMMCodeP.type()));
+                VirtualMemory.writeToMemory(addressTransformer(bp,assignMMCodeP.target()),assignMMCodeP.op().operation.cal(VirtualMemory.readFromMemory(addressTransformer(bp,assignMMCodeP.left()),assignMMCodeP.type()), VirtualMemory.readFromMemory(addressTransformer(bp,assignMMCodeP.right()),assignMMCodeP.type()),assignMMCodeP.type()));
                 continue;
             }
             if(code instanceof AssignMICodeP assignMICodeP)
             {
-                mem[addressTransformer(bp,assignMICodeP.target())]= writeToMemory(assignMICodeP.op().operation.cal(readFromMemory(addressTransformer(bp,assignMICodeP.left()),assignMICodeP.type()), assignMICodeP.right(),assignMICodeP.type()));
+                VirtualMemory.writeToMemory(addressTransformer(bp,assignMICodeP.target()),assignMICodeP.op().operation.cal(VirtualMemory.readFromMemory(addressTransformer(bp,assignMICodeP.left()),assignMICodeP.type()), assignMICodeP.right(),assignMICodeP.type()));
                 continue;
             }
             if(code instanceof CastMMCodeP castMMCodeP)
             {
-                mem[addressTransformer(bp,castMMCodeP.target())]= writeToMemory(Util.castPrimitiveType(mem[addressTransformer(bp, castMMCodeP.source())], castMMCodeP.targetType(), castMMCodeP.sourceType()));
+                VirtualMemory.writeToMemory(addressTransformer(bp,castMMCodeP.target()),Util.castPrimitiveType(VirtualMemory.readFromMemory(addressTransformer(bp, castMMCodeP.source()), castMMCodeP.sourceType()), castMMCodeP.targetType(), castMMCodeP.sourceType()));
                 continue;
             }
             if(code instanceof ReturnCode returnCode)
             {
                 ret=addressTransformer(bp,returnCode.val());
                 sp=bp+2;
-                ip=(int)mem[bp+ADDRESS_WIDTH];
-                bp=(int)mem[bp];
+                ip=(int) VirtualMemory.readFromMemory(bp+ADDRESS_WIDTH,INT);
+                bp=(int) VirtualMemory.readFromMemory(bp,INT);
                 continue;
             }
             if(code instanceof CallCode callCode)
             {
-                int callTarget= (int) mem[addressTransformer(bp,callCode.target())];
+                int callTarget= (int) VirtualMemory.readFromMemory(addressTransformer(bp,callCode.target()),INT);
                 for(int i=callCode.parameters().size()-1;i>=0;i--)
                 {
-                    mem[sp-=callCode.args().get(i).getSize()]=mem[addressTransformer(bp,callCode.parameters().get(i))];
+                    VirtualMemory.moveBytes(sp-=callCode.args().get(i).getSize(),addressTransformer(bp,callCode.parameters().get(i)),callCode.args().get(i).getSize());
                 }
-                mem[sp-=ADDRESS_WIDTH]=ip;
-                mem[sp-=ADDRESS_WIDTH]=bp;
+                VirtualMemory.writeToMemory(sp-=ADDRESS_WIDTH,ip);
+                VirtualMemory.writeToMemory(sp-=ADDRESS_WIDTH,bp);
                 bp=sp;
                 sp=bp-localVariableCount.get(callTarget);
                 ip=labelPos.get(callTarget);
@@ -501,13 +459,13 @@ public class Compiler
             }
             if(code instanceof FetchReturnValueCode fetchReturnValueCode)
             {
-                mem[addressTransformer(bp,fetchReturnValueCode.target())]=mem[ret];
+                VirtualMemory.moveBytes(addressTransformer(bp,fetchReturnValueCode.target()),ret,fetchReturnValueCode.type().getSize());
                 continue;
             }
             if(code instanceof DereferenceCode dereferenceCode)
             {
-                if(dereferenceCode.type() instanceof FunctionType)mem[addressTransformer(bp,dereferenceCode.target())]=mem[addressTransformer(bp, dereferenceCode.left())];
-                else mem[addressTransformer(bp,dereferenceCode.target())]=mem[(int) mem[addressTransformer(bp, dereferenceCode.left())]];
+                if(dereferenceCode.type() instanceof FunctionType) VirtualMemory.moveBytes(addressTransformer(bp,dereferenceCode.target()),addressTransformer(bp, dereferenceCode.left()),dereferenceCode.type().getSize());
+                else VirtualMemory.moveBytes(addressTransformer(bp,dereferenceCode.target()),(int) VirtualMemory.readFromMemory(addressTransformer(bp, dereferenceCode.left()),INT),dereferenceCode.type().getSize());
                 continue;
             }
             System.out.println("Unknown TAC: "+code.toString());
@@ -528,7 +486,7 @@ public class Compiler
         }
         else
         {
-            System.out.print(readFromMemory(id, Util.getPrimitiveType(type)));
+            System.out.print(VirtualMemory.readFromMemory(id, Util.getPrimitiveType(type)));
         }
     }
     private static void printResult()
