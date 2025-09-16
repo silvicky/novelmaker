@@ -50,6 +50,7 @@ public class PostfixExpression extends AbstractExpression
                 case PLUS_PLUS,MINUS_MINUS->
                 {
                     if(leftId==-1)throw new GrammarException("not lvalue");
+                    if(type instanceof ConstType||type instanceof ArrayType||type instanceof FunctionType)throw new GrammarException("modifying const value");
                     nextResult=requestInternalVariable(type);
                     if(isDirect)
                     {

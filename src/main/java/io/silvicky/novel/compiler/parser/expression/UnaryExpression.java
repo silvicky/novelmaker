@@ -9,9 +9,7 @@ import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
-import io.silvicky.novel.compiler.types.AbstractPointer;
-import io.silvicky.novel.compiler.types.PointerType;
-import io.silvicky.novel.compiler.types.PrimitiveType;
+import io.silvicky.novel.compiler.types.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,6 +75,7 @@ public class UnaryExpression extends AbstractExpression
         {
             child.travel();
             type= child.type;
+            if(type instanceof ConstType ||type instanceof ArrayType ||type instanceof FunctionType)throw new GrammarException("modifying const value");
             resultId=requestInternalVariable(type);
             if(child.leftId==-1)throw new GrammarException("not lvalue");
             leftId=-1;
