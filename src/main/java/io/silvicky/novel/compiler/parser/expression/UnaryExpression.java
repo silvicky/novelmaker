@@ -126,12 +126,14 @@ public class UnaryExpression extends AbstractExpression
             codes.addAll(castExpression.codes);
             if(op==OperatorType.MULTIPLY)
             {
+                //TODO Array is not real pointer, how to convert?
                 if(!(castExpression.type instanceof AbstractPointer abstractPointer))throw new GrammarException("not a pointer/array");
                 leftId=castExpression.resultId;
                 isDirect=false;
                 type= abstractPointer.baseType();
                 resultId=requestInternalVariable(type);
-                codes.add(new DereferenceCode(resultId,leftId, castExpression.type));
+                if(abstractPointer.baseType() instanceof ArrayType) codes.add(new AssignCode(resultId,leftId,leftId,type,type,type,OperatorType.NOP));
+                else codes.add(new DereferenceCode(resultId,leftId, castExpression.type));
             }
             else if(op==OperatorType.AND)
             {

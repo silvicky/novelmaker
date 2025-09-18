@@ -50,15 +50,18 @@ public class UnaryDeclaration extends NonTerminal implements ASTNode
     {
         while(child!=null)
         {
-            isConst=isConst||child.isConst;
-            isPointer=isPointer||child.isPointer;
+            if(isPointer)
+            {
+                receivedType=new PointerType(receivedType);
+            }
+            if(isConst)
+            {
+                if(!(receivedType instanceof ConstType))receivedType=new ConstType(receivedType);
+            }
+            isConst=child.isConst;
+            isPointer=child.isPointer;
             postfixDeclaration=child.postfixDeclaration;
             child=child.child;
-        }
-        if(isPointer)
-        {
-            receivedType=new PointerType(receivedType);
-            if(isConst)receivedType=new ConstType(receivedType);
         }
         postfixDeclaration.receivedType=receivedType;
         postfixDeclaration.travel();
