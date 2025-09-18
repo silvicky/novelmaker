@@ -12,8 +12,7 @@ import io.silvicky.novel.compiler.types.PrimitiveType;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.silvicky.novel.compiler.Compiler.requestInternalVariable;
-import static io.silvicky.novel.compiler.Compiler.returnType;
+import static io.silvicky.novel.compiler.Compiler.*;
 
 public class ReturnLine extends NonTerminal implements ASTNode
 {
@@ -36,7 +35,7 @@ public class ReturnLine extends NonTerminal implements ASTNode
         if(returnType==PrimitiveType.VOID)
         {
             if(!expressionRoot.codes.isEmpty())throw new GrammarException("void function should not return expression");
-            codes.add(new ReturnCode(-1));
+            codes.add(new ReturnCode(-1,argSize));
             return;
         }
         codes.addAll(expressionRoot.codes);
@@ -44,11 +43,11 @@ public class ReturnLine extends NonTerminal implements ASTNode
         {
             int t1 = requestInternalVariable(returnType);
             codes.add(new AssignCode(t1, expressionRoot.resultId, expressionRoot.resultId, returnType, expressionRoot.type, expressionRoot.type, OperatorType.NOP));
-            codes.add(new ReturnCode(t1));
+            codes.add(new ReturnCode(t1,argSize));
         }
         else
         {
-            codes.add(new ReturnCode(expressionRoot.resultId));
+            codes.add(new ReturnCode(expressionRoot.resultId,argSize));
         }
     }
 }

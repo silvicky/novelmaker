@@ -31,6 +31,7 @@ public class Compiler
     private static int variableCnt=0;
     public static int ctx=-1;
     public static Type returnType=null;
+    public static int argSize;
     public static final int dataSegmentBaseAddress=0xF0000;
     private static final Map<String,Integer> labelMap=new HashMap<>();
     private static final Map<Integer,String> labelBackMap=new HashMap<>();
@@ -375,15 +376,16 @@ public class Compiler
             }
             if(code instanceof ReturnCode returnCode)
             {
-                ret.add(new ReturnCode(lookupAddress(returnCode.val())));
+                ret.add(new ReturnCode(lookupAddress(returnCode.val()),returnCode.size()));
                 continue;
             }
-            if(code instanceof CallCode callCode)
+            if(code instanceof CallCodeP callCodeP)
             {
-                List<Integer> parameters=new ArrayList<>();
-                for(int i:callCode.parameters())parameters.add(lookupAddress(i));
-                ret.add(new CallCode(lookupAddress(callCode.target()),parameters,callCode.args()));
-                continue;
+                ret.add(new CallCodeP(lookupAddress(callCodeP.target())));
+            }
+            if(code instanceof PushCodeP pushCodeP)
+            {
+                ret.add(new PushCodeP(lookupAddress(pushCodeP.source()),pushCodeP.size()));
             }
             if(code instanceof FetchReturnValueCodeP fetchReturnValueCode)
             {
@@ -406,7 +408,7 @@ public class Compiler
         Map<Integer,Integer> labelPos=new HashMap<>();
         for(int i=0;i<codes.size();i++)if(codes.get(i) instanceof LabelCode labelCode)labelPos.put(labelCode.id(),i);
         if(!variableMap.containsKey("main"))throw new DeclarationException("no main function defined");
-        codes.add(new CallCode(lookupAddress(variableMap.get("main").first()),new ArrayList<>(),new ArrayList<>()));
+        codes.add(new CallCodeP(lookupAddress(variableMap.get("main").first())));
         int ip=0;
         int bp=dataSegmentBaseAddress;
         int sp=bp;
@@ -453,23 +455,24 @@ public class Compiler
             if(code instanceof ReturnCode returnCode)
             {
                 ret=addressTransformer(bp,returnCode.val());
-                sp=bp+2;
+                sp=bp+2*ADDRESS_WIDTH+returnCode.size();
                 ip=(int) VirtualMemory.readFromMemory(bp+ADDRESS_WIDTH,INT);
                 bp=(int) VirtualMemory.readFromMemory(bp,INT);
                 continue;
             }
-            if(code instanceof CallCode callCode)
+            if(code instanceof CallCodeP callCode)
             {
                 int callTarget= (int) VirtualMemory.readFromMemory(addressTransformer(bp,callCode.target()),INT);
-                for(int i=callCode.parameters().size()-1;i>=0;i--)
-                {
-                    VirtualMemory.moveBytes(sp-=callCode.args().get(i).getSize(),addressTransformer(bp,callCode.parameters().get(i)),callCode.args().get(i).getSize());
-                }
                 VirtualMemory.writeToMemory(sp-=ADDRESS_WIDTH,ip);
                 VirtualMemory.writeToMemory(sp-=ADDRESS_WIDTH,bp);
                 bp=sp;
                 sp=bp-localVariableSize.get(callTarget);
                 ip=labelPos.get(callTarget);
+                continue;
+            }
+            if(code instanceof PushCodeP pushCodeP)
+            {
+                VirtualMemory.moveBytes(sp-=pushCodeP.size(),addressTransformer(bp,pushCodeP.source()),pushCodeP.size());
                 continue;
             }
             if(code instanceof FetchReturnValueCodeP fetchReturnValueCode)

@@ -1,6 +1,6 @@
 package io.silvicky.novel.compiler.parser.expression;
 
-import io.silvicky.novel.compiler.code.CallCode;
+import io.silvicky.novel.compiler.code.raw.CallCode;
 import io.silvicky.novel.compiler.code.raw.DereferenceCode;
 import io.silvicky.novel.compiler.code.raw.FetchReturnValueCode;
 import io.silvicky.novel.compiler.code.raw.IndirectAssignCode;
