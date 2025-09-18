@@ -109,6 +109,13 @@ public class PostfixExpression extends AbstractExpression
                     }
                     codes.add(new CallCode(tmp,castParameters,functionType.args()));
                     type=functionType.returnType();
+                    if(type==PrimitiveType.VOID)
+                    {
+                        curResult=-1;
+                        leftId=-1;
+                        isDirect=false;
+                        continue;
+                    }
                     curResult=requestInternalVariable(type);
                     codes.add(new FetchReturnValueCode(curResult,type));
                     leftId=-1;

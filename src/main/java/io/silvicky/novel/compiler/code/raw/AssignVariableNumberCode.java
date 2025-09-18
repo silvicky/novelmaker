@@ -12,8 +12,11 @@ import io.silvicky.novel.util.Util;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.silvicky.novel.compiler.Compiler.*;
+import static io.silvicky.novel.compiler.Compiler.lookupVariableName;
+import static io.silvicky.novel.compiler.Compiler.requestInternalVariable;
+import static io.silvicky.novel.compiler.tokens.OperatorType.COMMA;
 import static io.silvicky.novel.compiler.types.PrimitiveType.BOOL;
+import static io.silvicky.novel.compiler.types.PrimitiveType.VOID;
 import static io.silvicky.novel.compiler.types.Type.ADDRESS_TYPE;
 
 public record AssignVariableNumberCode(int target, int left, Object right, Type targetType, Type leftType, Type rightType,OperatorType op) implements RawCode
@@ -34,6 +37,7 @@ public record AssignVariableNumberCode(int target, int left, Object right, Type 
         Type tb= this.rightType();
         while(ta instanceof ConstType ca)ta=ca.baseType();
         while(tb instanceof ConstType cb)tb=cb.baseType();
+        if((op!=COMMA)&&ta==VOID)throw new GrammarException("using void value");
         int a=this.left();
         Object b=this.right();
         int target=this.target();

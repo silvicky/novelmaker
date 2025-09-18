@@ -15,6 +15,7 @@ import java.util.List;
 import static io.silvicky.novel.compiler.Compiler.*;
 import static io.silvicky.novel.compiler.tokens.OperatorType.*;
 import static io.silvicky.novel.compiler.types.PrimitiveType.BOOL;
+import static io.silvicky.novel.compiler.types.PrimitiveType.VOID;
 import static io.silvicky.novel.compiler.types.Type.ADDRESS_TYPE;
 
 public record AssignCode(int target, int left, int right, Type targetType, Type leftType, Type rightType, OperatorType op) implements RawCode
@@ -34,6 +35,7 @@ public record AssignCode(int target, int left, int right, Type targetType, Type 
         Type tb= this.rightType();
         while(ta instanceof ConstType ca)ta=ca.baseType();
         while(tb instanceof ConstType cb)tb=cb.baseType();
+        if(((op!=COMMA)&&ta==VOID)||((op!=NOP&&op!=NOT&&op!=REVERSE)&&tb==VOID))throw new GrammarException("using void value");
         int a=this.left();
         int b=this.right();
         int target=this.target();

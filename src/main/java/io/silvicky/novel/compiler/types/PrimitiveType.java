@@ -3,6 +3,7 @@ package io.silvicky.novel.compiler.types;
 public enum PrimitiveType implements Type
 {
     AUTO(0,null,"auto"),
+    VOID(0,null,"void"),
     BOOL(1, Boolean.class, "bool"),//bool is int in C but not here
     CHAR(1, Byte.class, "char"),
     UNSIGNED_CHAR(1, Byte.class, "unsigned char"),

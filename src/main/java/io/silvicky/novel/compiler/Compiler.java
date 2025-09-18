@@ -48,6 +48,7 @@ public class Compiler
     private static final Map<Integer,Integer> localVariableCount=new HashMap<>();
     public static int registerVariable(String s, Type type)
     {
+        if(type==PrimitiveType.VOID)throw new DeclarationException("declaring void variable");
         if(variableMap.containsKey(s))throw new DeclarationException("Repeated:"+s);
         int ret=variableCnt+dataSegmentBaseAddress;
         variableMap.put(s,new Pair<>(ret,type));
@@ -57,6 +58,7 @@ public class Compiler
     }
     public static int registerLocalVariable(String s, Type type)
     {
+        if(type==PrimitiveType.VOID)throw new DeclarationException("declaring void variable");
         if(!localVariableMap.containsKey(ctx))localVariableMap.put(ctx,new HashMap<>());
         if(!localVariableMap.get(ctx).containsKey(s))localVariableMap.get(ctx).put(s,new Stack<>());
         if(!localVariableCount.containsKey(ctx))localVariableCount.put(ctx,1);
@@ -69,6 +71,7 @@ public class Compiler
     }
     public static void registerArgument(String s, Type type)
     {
+        if(type==PrimitiveType.VOID)throw new DeclarationException("declaring void variable");
         if(!localVariableMap.containsKey(ctx))localVariableMap.put(ctx,new HashMap<>());
         if(!localVariableMap.get(ctx).containsKey(s))localVariableMap.get(ctx).put(s,new Stack<>());
         //0 is bp and -1 is ip
@@ -98,6 +101,7 @@ public class Compiler
     }
     public static int requestInternalVariable(Type type)
     {
+        if(type==PrimitiveType.VOID)throw new DeclarationException("declaring void variable");
         if(ctx==-1)
         {
             final int ret=variableCnt+dataSegmentBaseAddress;
@@ -317,6 +321,11 @@ public class Compiler
                     cur2-=pr2.getValue().second().getSize();
                 }
             }
+        }
+        for(Map.Entry<String, Integer> pr:labelMap.entrySet())
+        {
+            if(pr.getKey().charAt(0)=='0')continue;
+            if(!localVariableSize.containsKey(pr.getValue()))localVariableSize.put(pr.getValue(),0);
         }
         List<Code> ret=new ArrayList<>();
         ctx=-1;
