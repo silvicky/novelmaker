@@ -1,10 +1,7 @@
 package io.silvicky.novel.compiler;
 
 import io.silvicky.novel.compiler.code.*;
-import io.silvicky.novel.compiler.code.primitive.AssignMICodeP;
-import io.silvicky.novel.compiler.code.primitive.AssignMMCodeP;
-import io.silvicky.novel.compiler.code.primitive.CastMMCodeP;
-import io.silvicky.novel.compiler.code.primitive.GotoCodeP;
+import io.silvicky.novel.compiler.code.primitive.*;
 import io.silvicky.novel.compiler.code.raw.*;
 import io.silvicky.novel.compiler.emulator.VirtualMemory;
 import io.silvicky.novel.compiler.parser.GrammarException;
@@ -351,9 +348,9 @@ public class Compiler
                 ret.add(new GotoCodeP(lookupAddress(gotoCode.left()), gotoCode.id()));
                 continue;
             }
-            if(code instanceof IndirectAssignCode indirectAssignCode)
+            if(code instanceof IndirectAssignCodeP indirectAssignCode)
             {
-                ret.add(new IndirectAssignCode(lookupAddress(indirectAssignCode.target()),lookupAddress(indirectAssignCode.left()),indirectAssignCode.targetType()));
+                ret.add(new IndirectAssignCodeP(lookupAddress(indirectAssignCode.target()),lookupAddress(indirectAssignCode.source()),indirectAssignCode.size()));
                 continue;
             }
             if(code instanceof ReferenceCode referenceCode)
@@ -388,14 +385,18 @@ public class Compiler
                 ret.add(new CallCode(lookupAddress(callCode.target()),parameters,callCode.args()));
                 continue;
             }
-            if(code instanceof FetchReturnValueCode fetchReturnValueCode)
+            if(code instanceof FetchReturnValueCodeP fetchReturnValueCode)
             {
-                ret.add(new FetchReturnValueCode(lookupAddress(fetchReturnValueCode.target()), fetchReturnValueCode.type()));
+                ret.add(new FetchReturnValueCodeP(lookupAddress(fetchReturnValueCode.target()), fetchReturnValueCode.size()));
                 continue;
             }
-            if(code instanceof DereferenceCode dereferenceCode)
+            if(code instanceof DereferenceCodeP dereferenceCodeP)
             {
-                ret.add(new DereferenceCode(lookupAddress(dereferenceCode.target()),lookupAddress(dereferenceCode.left()), dereferenceCode.type()));
+                ret.add(new DereferenceCodeP(lookupAddress(dereferenceCodeP.target()),lookupAddress(dereferenceCodeP.source()), dereferenceCodeP.size()));
+            }
+            if(code instanceof MoveCodeP moveCodeP)
+            {
+                ret.add(new MoveCodeP(lookupAddress(moveCodeP.target()),lookupAddress(moveCodeP.source()), moveCodeP.size()));
             }
         }
         return ret;
@@ -424,9 +425,9 @@ public class Compiler
                 if((boolean) VirtualMemory.readFromMemory(addressTransformer(bp,gotoCode.left()),BOOL))ip=labelPos.get(gotoCode.id());
                 continue;
             }
-            if(code instanceof IndirectAssignCode indirectAssignCode)
+            if(code instanceof IndirectAssignCodeP indirectAssignCode)
             {
-                VirtualMemory.moveBytes((int) VirtualMemory.readFromMemory(addressTransformer(bp,indirectAssignCode.target()),INT),addressTransformer(bp,indirectAssignCode.left()),indirectAssignCode.targetType().getSize());
+                VirtualMemory.moveBytes((int) VirtualMemory.readFromMemory(addressTransformer(bp,indirectAssignCode.target()),INT),addressTransformer(bp,indirectAssignCode.source()),indirectAssignCode.size());
                 continue;
             }
             if(code instanceof ReferenceCode referenceCode)
@@ -471,15 +472,19 @@ public class Compiler
                 ip=labelPos.get(callTarget);
                 continue;
             }
-            if(code instanceof FetchReturnValueCode fetchReturnValueCode)
+            if(code instanceof FetchReturnValueCodeP fetchReturnValueCode)
             {
-                VirtualMemory.moveBytes(addressTransformer(bp,fetchReturnValueCode.target()),ret,fetchReturnValueCode.type().getSize());
+                VirtualMemory.moveBytes(addressTransformer(bp,fetchReturnValueCode.target()),ret,fetchReturnValueCode.size());
                 continue;
             }
-            if(code instanceof DereferenceCode dereferenceCode)
+            if(code instanceof DereferenceCodeP dereferenceCodeP)
             {
-                if(dereferenceCode.type() instanceof FunctionType) VirtualMemory.moveBytes(addressTransformer(bp,dereferenceCode.target()),addressTransformer(bp, dereferenceCode.left()),ADDRESS_WIDTH);
-                else VirtualMemory.moveBytes(addressTransformer(bp,dereferenceCode.target()),(int) VirtualMemory.readFromMemory(addressTransformer(bp, dereferenceCode.left()),INT),((PointerType)(dereferenceCode.type())).baseType().getSize());
+                VirtualMemory.moveBytes(addressTransformer(bp,dereferenceCodeP.target()),(int) VirtualMemory.readFromMemory(addressTransformer(bp, dereferenceCodeP.source()),INT),dereferenceCodeP.size());
+                continue;
+            }
+            if(code instanceof MoveCodeP moveCodeP)
+            {
+                VirtualMemory.moveBytes(addressTransformer(bp,moveCodeP.target()),addressTransformer(bp, moveCodeP.source()),moveCodeP.size());
                 continue;
             }
             System.out.println("Unknown TAC: "+code.toString());
