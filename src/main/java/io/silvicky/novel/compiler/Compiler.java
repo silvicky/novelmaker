@@ -289,7 +289,11 @@ public class Compiler
         for(Map.Entry<Integer, Pair<String, Type>> pr:entries)
         {
             variableAddress.put(pr.getKey(),cur);
-            cur+=pr.getValue().second().getSize();
+            if((pr.getValue().second() instanceof ArrayType)&&(!variableMap.containsKey(pr.getValue().first())))
+            {
+                cur+=ADDRESS_WIDTH;
+            }
+            else cur+=pr.getValue().second().getSize();
         }
         for(Map.Entry<Integer, Map<Integer, Pair<String, Type>>> pr:localVariableBackMap.entrySet())
         {
@@ -305,11 +309,16 @@ public class Compiler
             {
                 if(pr2.getKey()>=0)
                 {
-                    //TODO Reference to array should not have its space
-                    cur += pr2.getValue().second().getSize();
+                    int siz;
+                    if((pr2.getValue().second() instanceof ArrayType)&&(!localVariableMap.get(pr.getKey()).containsKey(pr2.getValue().first())))
+                    {
+                        siz=ADDRESS_WIDTH;
+                    }
+                    else siz = pr2.getValue().second().getSize();
+                    cur+=siz;
                     localVariableAddress.get(pr.getKey()).put(pr2.getKey(), cur);
                     int curSize=localVariableSize.get(pr.getKey());
-                    localVariableSize.put(pr.getKey(),curSize+pr2.getValue().second().getSize());
+                    localVariableSize.put(pr.getKey(),curSize+siz);
                 }
                 else
                 {

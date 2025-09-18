@@ -32,7 +32,6 @@ public class LogicalAndExpression extends LTRExpression
     @Override
     public void travel()
     {
-        //TODO fix this and other logical stuff
         if(left instanceof InclusiveOrExpression left2&&left2.right instanceof InclusiveOrExpression)left= rotateLeft(left2);
         left.travel();
         codes.addAll(left.codes);

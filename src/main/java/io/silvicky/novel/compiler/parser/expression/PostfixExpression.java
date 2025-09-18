@@ -34,7 +34,6 @@ public class PostfixExpression extends AbstractExpression
     @Override
     public void travel()
     {
-        //TODO maybe rewrite?
         nextExpression.travel();
         codes.addAll(nextExpression.codes);
         int curResult=nextExpression.resultId,nextResult;

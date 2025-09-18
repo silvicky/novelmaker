@@ -2,7 +2,6 @@ package io.silvicky.novel.compiler.tokens;
 
 public enum OperatorType
 {
-    //TODO everything here
     L_PARENTHESES("("),
     R_PARENTHESES(")"),
     L_BRACKET("["),

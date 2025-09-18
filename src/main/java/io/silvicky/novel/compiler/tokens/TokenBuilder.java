@@ -19,7 +19,6 @@ public class TokenBuilder
         if(tokenBuilder!=null)return tokenBuilder.append(c);
         if(Character.isDigit(c))
         {
-            //TODO: sign
             tokenBuilder=new NumberTokenBuilder(fileName,line,pos);
             tokenBuilder.append(c);
             return true;
