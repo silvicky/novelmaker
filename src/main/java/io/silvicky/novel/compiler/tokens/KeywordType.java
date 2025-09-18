@@ -23,7 +23,8 @@ public enum KeywordType
     VOID("void"),
     GOTO("goto"),
     BREAK("break"),
-    CONTINUE("continue");
+    CONTINUE("continue"),
+    SIZEOF("sizeof");
     public final String symbol;
     KeywordType(String symbol)
     {

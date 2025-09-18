@@ -6,9 +6,10 @@ import io.silvicky.novel.compiler.code.ReferenceCode;
 import io.silvicky.novel.compiler.code.raw.AssignCode;
 import io.silvicky.novel.compiler.code.raw.AssignVariableNumberCode;
 import io.silvicky.novel.compiler.parser.GrammarException;
-import io.silvicky.novel.compiler.tokens.AbstractToken;
-import io.silvicky.novel.compiler.tokens.OperatorToken;
-import io.silvicky.novel.compiler.tokens.OperatorType;
+import io.silvicky.novel.compiler.parser.declaration.BaseTypeBuilderRoot;
+import io.silvicky.novel.compiler.parser.declaration.UnaryDeclaration;
+import io.silvicky.novel.compiler.parser.operation.ResolveOperation;
+import io.silvicky.novel.compiler.tokens.*;
 import io.silvicky.novel.compiler.types.*;
 
 import java.util.ArrayList;
@@ -23,10 +24,12 @@ public class UnaryExpression extends AbstractExpression
     private UnaryExpression child=null;
     private PostfixExpression nextExpression=null;
     private CastExpression castExpression=null;
+    public BaseTypeBuilderRoot baseTypeBuilderRoot=null;
+    public UnaryDeclaration unaryDeclaration=null;
+    public UnaryExpression sizeofExpression=null;
     @Override
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
-        //TODO sizeof
         List<AbstractToken> ret=new ArrayList<>();
         if(next instanceof OperatorToken operatorToken)
         {
@@ -54,6 +57,14 @@ public class UnaryExpression extends AbstractExpression
                 return ret;
             }
         }
+        else if(next instanceof KeywordToken keywordToken&&keywordToken.type== KeywordType.SIZEOF)
+        {
+            SizeofResidue sizeofResidue=new SizeofResidue(this);
+            ret.add(new ResolveOperation(sizeofResidue));
+            ret.add(sizeofResidue);
+            ret.add(new KeywordToken(KeywordType.SIZEOF));
+            return ret;
+        }
         nextExpression=new PostfixExpression();
         ret.add(nextExpression);
         return ret;
@@ -70,6 +81,22 @@ public class UnaryExpression extends AbstractExpression
             isDirect= nextExpression.isDirect;
             codes.addAll(nextExpression.codes);
             resultId= nextExpression.resultId;
+        }
+        else if(sizeofExpression!=null)
+        {
+            sizeofExpression.travel();
+            type=Type.ADDRESS_TYPE;
+            resultId=requestInternalVariable(type);
+            codes.add(new AssignVariableNumberCode(resultId,0,sizeofExpression.type.getSize(),type,type,type,OperatorType.COMMA));
+        }
+        else if(baseTypeBuilderRoot!=null)
+        {
+            baseTypeBuilderRoot.travel();
+            unaryDeclaration.receivedType=baseTypeBuilderRoot.type;
+            unaryDeclaration.travel();
+            type=Type.ADDRESS_TYPE;
+            resultId=requestInternalVariable(type);
+            codes.add(new AssignVariableNumberCode(resultId,0,unaryDeclaration.type.getSize(),type,type,type,OperatorType.COMMA));
         }
         else if(child!=null)
         {
