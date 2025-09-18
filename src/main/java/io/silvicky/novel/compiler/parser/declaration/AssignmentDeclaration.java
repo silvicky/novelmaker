@@ -1,5 +1,6 @@
 package io.silvicky.novel.compiler.parser.declaration;
 
+import io.silvicky.novel.compiler.DeclarationException;
 import io.silvicky.novel.compiler.code.*;
 import io.silvicky.novel.compiler.code.raw.AssignCode;
 import io.silvicky.novel.compiler.code.ReturnCode;
@@ -57,7 +58,19 @@ public class AssignmentDeclaration extends NonTerminal implements ASTNode
             int nid;
             if(directParent==null)
             {
-                nid=registerVariable(unaryDeclaration.name, unaryDeclaration.type);
+                try
+                {
+                    Pair<Integer,Type> pr=lookupVariable(unaryDeclaration.name);
+                    if(pr.second().equals(unaryDeclaration.type))
+                    {
+                        nid=pr.first();
+                    }
+                    else throw new RuntimeException("conflict function declaration");
+                }
+                catch(DeclarationException e)
+                {
+                    nid = registerVariable(unaryDeclaration.name, unaryDeclaration.type);
+                }
             }
             else
             {
@@ -91,8 +104,6 @@ public class AssignmentDeclaration extends NonTerminal implements ASTNode
                 ctx=-1;
                 returnType=null;
             }
-            //fixme
-            else throw new GrammarException("function not implemented");
         }
         else
         {
