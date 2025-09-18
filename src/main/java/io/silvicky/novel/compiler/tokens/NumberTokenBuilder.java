@@ -40,7 +40,9 @@ public class NumberTokenBuilder extends TokenBuilder
         }
         else if(c=='.')
         {
+            if(isDotted)throw new InvalidTokenException("dot after dot");
             isDotted=true;
+            return true;
         }
         return false;
     }
