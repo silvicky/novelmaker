@@ -148,19 +148,11 @@ public class Compiler
             for(int pos=0;pos<cur.length();pos++)
             {
                 char c=cur.charAt(pos);
-                if(Character.isLetter(c)||c=='_'||Character.isDigit(c)||OperatorType.find(String.valueOf(c))!=null)
-                {
-                    if(!tokenBuilder.append(c))
-                    {
-                        addNonNull(ret, tokenBuilder.build());
-                        tokenBuilder=new TokenBuilder(input.toString(),line,pos+1);
-                        tokenBuilder.append(c);
-                    }
-                }
-                else
+                if(!tokenBuilder.append(c))
                 {
                     addNonNull(ret, tokenBuilder.build());
-                    tokenBuilder=new TokenBuilder(input.toString(),line,pos+1);
+                    tokenBuilder = new TokenBuilder(input.toString(), line, pos + 1);
+                    tokenBuilder.append(c);
                 }
             }
         }

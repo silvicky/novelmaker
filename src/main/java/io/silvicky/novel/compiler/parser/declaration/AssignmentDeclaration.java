@@ -74,7 +74,7 @@ public class AssignmentDeclaration extends NonTerminal implements ASTNode
             }
             else
             {
-                //TODO how to even process this stuff??
+                //TODO This is nested/lambda function, which is (in principle) forbidden in C but we should make it
                 nid=registerLocalVariable(unaryDeclaration.name, unaryDeclaration.type);
                 directParent.revokedVariables.add(unaryDeclaration.name);
             }
