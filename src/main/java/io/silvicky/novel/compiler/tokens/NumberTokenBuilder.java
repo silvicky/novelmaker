@@ -16,15 +16,23 @@ public class NumberTokenBuilder extends TokenBuilder
     int base=0;
     int exponent=0;
     boolean isExponentNegative=false;
+    boolean isExponentPositive=false;
     StringBuilder suffix=new StringBuilder();
     @Override
     public boolean append(char c)
     {
+        //TODO begin with dot
         if(c=='\'')return true;
         if(c=='-')
         {
-            if((!isExponent)||isExponentNegative)throw new InvalidTokenException("invalid exponent");
+            if((!isExponent)||isExponentNegative||isExponentPositive)return false;
             isExponentNegative=true;
+            return true;
+        }
+        if(c=='+')
+        {
+            if((!isExponent)||isExponentNegative||isExponentPositive)return false;
+            isExponentPositive=true;
             return true;
         }
         if(Character.isLetter(c))
