@@ -1,6 +1,7 @@
 package io.silvicky.novel.compiler.parser.declaration;
 
 import io.silvicky.novel.compiler.parser.ASTNode;
+import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.NonTerminal;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
@@ -35,6 +36,7 @@ public class PostfixDeclaration extends NonTerminal implements ASTNode
     {
         for(DeclarationPostfix postfix:postfixes.reversed())
         {
+            if(receivedType.isAuto())throw new GrammarException("auto cannot be used as return type or array base type");
             if(postfix.operatorType==OperatorType.L_PARENTHESES)
             {
                 parameters=postfix.parameters;

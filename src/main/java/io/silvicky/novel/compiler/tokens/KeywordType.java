@@ -21,6 +21,7 @@ public enum KeywordType
     SIGNED("signed"),
     CONST("const"),
     VOID("void"),
+    AUTO("auto"),
     GOTO("goto"),
     BREAK("break"),
     CONTINUE("continue"),

@@ -11,6 +11,7 @@ import io.silvicky.novel.compiler.parser.expression.AssignmentExpression;
 import io.silvicky.novel.compiler.parser.line.Block;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
+import io.silvicky.novel.compiler.types.ConstType;
 import io.silvicky.novel.compiler.types.FunctionType;
 import io.silvicky.novel.compiler.types.PrimitiveType;
 import io.silvicky.novel.compiler.types.Type;
@@ -101,6 +102,17 @@ public class AssignmentDeclaration extends NonTerminal implements ASTNode
             else if(functionBody!=null)
             {
                 throw new GrammarException("variable assigned as function");
+            }
+            if(unaryDeclaration.type.isAuto())
+            {
+                //TODO this is very wrong, for example, C++ standard forces all declarations in one line to resolve into a same type, and pointers are thus not meaningless
+                if(assignmentExpression==null)throw new GrammarException("auto variable not initialized");
+                Type type=assignmentExpression.type;
+                if(unaryDeclaration.type instanceof ConstType)
+                {
+                    type=new ConstType(type);
+                }
+                unaryDeclaration.type=type;
             }
             int nid;
             if(directParent==null)

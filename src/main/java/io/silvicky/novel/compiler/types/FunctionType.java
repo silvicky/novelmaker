@@ -11,6 +11,12 @@ public record FunctionType(Type returnType, List<Type> args) implements Type,Abs
     }
 
     @Override
+    public boolean isAuto()
+    {
+        return returnType().isAuto();
+    }
+
+    @Override
     public Type baseType()
     {
         return this;

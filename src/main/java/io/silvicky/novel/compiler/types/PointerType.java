@@ -7,6 +7,13 @@ public record PointerType(Type baseType) implements Type,AbstractPointer
     {
         return Type.ADDRESS_WIDTH;
     }
+
+    @Override
+    public boolean isAuto()
+    {
+        return baseType().isAuto();
+    }
+
     @Override
     public boolean equals(Object o)
     {

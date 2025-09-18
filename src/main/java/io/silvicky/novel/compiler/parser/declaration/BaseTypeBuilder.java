@@ -32,7 +32,8 @@ public class BaseTypeBuilder extends NonTerminal
                 ||keywordToken.type==KeywordType.SHORT
                 ||keywordToken.type==KeywordType.LONG
                 ||keywordToken.type==KeywordType.CHAR
-                ||keywordToken.type==KeywordType.SIGNED))
+                ||keywordToken.type==KeywordType.SIGNED
+                ||keywordToken.type==KeywordType.AUTO))
         {
             root.keywordTypeList.add(keywordToken.type);
             ret.add(new BaseTypeBuilder(root));

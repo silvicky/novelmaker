@@ -2,6 +2,7 @@ package io.silvicky.novel.compiler.types;
 
 public enum PrimitiveType implements Type
 {
+    AUTO(0,null,"auto"),
     BOOL(1, Boolean.class, "bool"),//bool is int in C but not here
     CHAR(1, Byte.class, "char"),
     UNSIGNED_CHAR(1, Byte.class, "unsigned char"),
@@ -33,5 +34,11 @@ public enum PrimitiveType implements Type
     public int getSize()
     {
         return size;
+    }
+
+    @Override
+    public boolean isAuto()
+    {
+        return this==AUTO;
     }
 }

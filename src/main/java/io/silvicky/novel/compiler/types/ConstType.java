@@ -7,6 +7,13 @@ public record ConstType(Type baseType) implements Type
     {
         return baseType.getSize();
     }
+
+    @Override
+    public boolean isAuto()
+    {
+        return baseType().isAuto();
+    }
+
     @Override
     public boolean equals(Object o)
     {
