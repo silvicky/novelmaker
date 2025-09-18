@@ -1,6 +1,7 @@
 package io.silvicky.novel.compiler.parser.declaration;
 
 import io.silvicky.novel.compiler.parser.ASTNode;
+import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.NonTerminal;
 import io.silvicky.novel.compiler.parser.operation.ResolveOperation;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
@@ -25,6 +26,7 @@ public class Declaration extends NonTerminal implements ASTNode
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
         List<AbstractToken> ret=new ArrayList<>();
+        if(baseTypeBuilderRoot.keywordTypeList.isEmpty())throw new GrammarException("not a declaration");
         assignmentDeclaration =new AssignmentDeclaration(baseTypeBuilderRoot,directParent);
         DeclarationResidue declarationResidue =new DeclarationResidue(this,baseTypeBuilderRoot,directParent);
         ret.add(new ResolveOperation(declarationResidue));

@@ -148,6 +148,7 @@ public class Compiler
             for(int pos=0;pos<cur.length();pos++)
             {
                 char c=cur.charAt(pos);
+                if(c=='\\'&&pos==cur.length()-1)continue;
                 if(!tokenBuilder.append(c))
                 {
                     addNonNull(ret, tokenBuilder.build());
