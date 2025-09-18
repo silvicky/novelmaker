@@ -141,23 +141,49 @@ public class Compiler
         TokenBuilder tokenBuilder=new TokenBuilder(input.toString(),1,1);
         BufferedReader bufferedReader=new BufferedReader(new FileReader(input.toFile()));
         String cur;
+        char las;
+        boolean isGlobalComment=false;
         for(int line=1;;line++)
         {
+            las=0;
             cur= bufferedReader.readLine();
             if(cur==null)break;
             for(int pos=0;pos<cur.length();pos++)
             {
                 char c=cur.charAt(pos);
+                if(isGlobalComment)
+                {
+                    if(las=='*'&&c=='/')
+                    {
+                        isGlobalComment=false;
+                        las=0;
+                    }
+                    else las=c;
+                    continue;
+                }
+                if(las=='/'&&c=='/')
+                {
+                    tokenBuilder = null;
+                    break;
+                }
+                if(las=='/'&&c=='*')
+                {
+                    tokenBuilder = null;
+                    isGlobalComment=true;
+                    continue;
+                }
                 if(c=='\\'&&pos==cur.length()-1)continue;
+                if(tokenBuilder==null)tokenBuilder=new TokenBuilder(input.toString(), line, pos+1);
                 if(!tokenBuilder.append(c))
                 {
                     addNonNull(ret, tokenBuilder.build());
                     tokenBuilder = new TokenBuilder(input.toString(), line, pos + 1);
                     tokenBuilder.append(c);
                 }
+                las=c;
             }
         }
-        addNonNull(ret, tokenBuilder.build());
+        if(tokenBuilder!=null)addNonNull(ret, tokenBuilder.build());
         ret.add(new EofToken());
         ret.add(new EofToken());
         bufferedReader.close();
