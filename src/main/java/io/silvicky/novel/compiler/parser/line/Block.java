@@ -2,10 +2,10 @@ package io.silvicky.novel.compiler.parser.line;
 
 import io.silvicky.novel.compiler.parser.ASTNode;
 import io.silvicky.novel.compiler.parser.NonTerminal;
-import io.silvicky.novel.compiler.tokens.EofToken;
+import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
-import io.silvicky.novel.compiler.tokens.AbstractToken;
+import io.silvicky.novel.compiler.tokens.PreprocessorToken;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +26,7 @@ public class Block extends NonTerminal implements ASTNode
     {
         List<AbstractToken> ret=new ArrayList<>();
         if(next instanceof OperatorToken&&((OperatorToken) next).type== OperatorType.R_BRACE)return ret;
-        if(next instanceof EofToken)return ret;
+        if(next== PreprocessorToken.EOF)return ret;
         residue=new Block(breakLabel,continueLabel, Objects.requireNonNullElse(this.directParent,this));
         current=new Line(breakLabel,continueLabel,Objects.requireNonNullElse(this.directParent,this));
         ret.add(residue);

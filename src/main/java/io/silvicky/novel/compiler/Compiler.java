@@ -138,15 +138,20 @@ public class Compiler
     public static List<AbstractToken> lexer(Path input) throws IOException
     {
         List<AbstractToken> ret=new ArrayList<>();
-        TokenBuilder tokenBuilder=new TokenBuilder(input.toString(),1,1);
+        TokenBuilder tokenBuilder=null;
         BufferedReader bufferedReader=new BufferedReader(new FileReader(input.toFile()));
         String cur;
-        char las;
+        char las=0;
         boolean isGlobalComment=false;
+        boolean isBackslashConnected=false;
         for(int line=1;;line++)
         {
-            las=0;
-            cur= bufferedReader.readLine();
+            if(!isBackslashConnected)
+            {
+                las = 0;
+            }
+            isBackslashConnected=false;
+            cur = bufferedReader.readLine();
             if(cur==null)break;
             for(int pos=0;pos<cur.length();pos++)
             {
@@ -164,6 +169,7 @@ public class Compiler
                 if(las=='/'&&c=='/')
                 {
                     tokenBuilder = null;
+                    ret.add(PreprocessorToken.EOL);
                     break;
                 }
                 if(las=='/'&&c=='*')
@@ -172,7 +178,11 @@ public class Compiler
                     isGlobalComment=true;
                     continue;
                 }
-                if(c=='\\'&&pos==cur.length()-1)continue;
+                if(c=='\\'&&pos==cur.length()-1)
+                {
+                    isBackslashConnected=true;
+                    continue;
+                }
                 if(tokenBuilder==null)tokenBuilder=new TokenBuilder(input.toString(), line, pos+1);
                 if(!tokenBuilder.append(c))
                 {
@@ -181,29 +191,83 @@ public class Compiler
                     tokenBuilder.append(c);
                 }
                 las=c;
+                if(pos==cur.length()-1)
+                {
+                    addNonNull(ret, tokenBuilder.build());
+                    tokenBuilder=null;
+                    ret.add(PreprocessorToken.EOL);
+                }
             }
         }
         if(tokenBuilder!=null)addNonNull(ret, tokenBuilder.build());
-        ret.add(new EofToken());
-        ret.add(new EofToken());
+        ret.add(PreprocessorToken.EOF);
+        ret.add(PreprocessorToken.EOF);
         bufferedReader.close();
         return ret;
     }
-    public static void tokenParser(List<AbstractToken> abstractTokens)
+    public static List<AbstractToken> tokenParser(List<AbstractToken> abstractTokens)
     {
-        for(int i = 0; i< abstractTokens.size(); i++)
+        List<AbstractToken> ret=new ArrayList<>();
+        for (AbstractToken abstractToken : abstractTokens)
         {
-            AbstractToken abstractToken = abstractTokens.get(i);
-            if(abstractToken instanceof KeywordToken keywordToken&&keywordToken.type==KeywordType.TRUE)
+            if (abstractToken instanceof KeywordToken keywordToken)
             {
-                abstractTokens.set(i,new NumberToken<>(1,BOOL,keywordToken.fileName,keywordToken.line,keywordToken.pos));
-                continue;
+                switch (keywordToken.type)
+                {
+                    case TRUE ->
+                            ret.add(new NumberToken<>(true, BOOL, keywordToken.fileName, keywordToken.line, keywordToken.pos));
+                    case FALSE ->
+                            ret.add(new NumberToken<>(false, BOOL, keywordToken.fileName, keywordToken.line, keywordToken.pos));
+                    case AND ->
+                            ret.add(new OperatorToken(OperatorType.AND_AND, keywordToken.fileName, keywordToken.line, keywordToken.pos));
+                    case AND_EQ ->
+                            ret.add(new OperatorToken(OperatorType.AND_EQUAL, keywordToken.fileName, keywordToken.line, keywordToken.pos));
+                    case BITAND ->
+                            ret.add(new OperatorToken(OperatorType.AND, keywordToken.fileName, keywordToken.line, keywordToken.pos));
+                    case BITOR ->
+                            ret.add(new OperatorToken(OperatorType.OR, keywordToken.fileName, keywordToken.line, keywordToken.pos));
+                    case COMPL ->
+                            ret.add(new OperatorToken(OperatorType.REVERSE, keywordToken.fileName, keywordToken.line, keywordToken.pos));
+                    case NOT ->
+                            ret.add(new OperatorToken(OperatorType.NOT, keywordToken.fileName, keywordToken.line, keywordToken.pos));
+                    case NOT_EQ ->
+                            ret.add(new OperatorToken(OperatorType.NOT_EQUAL, keywordToken.fileName, keywordToken.line, keywordToken.pos));
+                    case OR ->
+                            ret.add(new OperatorToken(OperatorType.OR_OR, keywordToken.fileName, keywordToken.line, keywordToken.pos));
+                    case OR_EQ ->
+                            ret.add(new OperatorToken(OperatorType.OR_EQUAL, keywordToken.fileName, keywordToken.line, keywordToken.pos));
+                    case XOR ->
+                            ret.add(new OperatorToken(OperatorType.XOR, keywordToken.fileName, keywordToken.line, keywordToken.pos));
+                    case XOR_EQ ->
+                            ret.add(new OperatorToken(OperatorType.XOR_EQUAL, keywordToken.fileName, keywordToken.line, keywordToken.pos));
+                    default -> ret.add(keywordToken);
+                }
             }
-            if(abstractToken instanceof KeywordToken keywordToken&&keywordToken.type==KeywordType.FALSE)
+            else if (abstractToken instanceof OperatorToken operatorToken)
             {
-                abstractTokens.set(i,new NumberToken<>(0,BOOL,keywordToken.fileName,keywordToken.line,keywordToken.pos));
+                switch (operatorToken.type)
+                {
+                    case ALT_L_BRACKET ->
+                            ret.add(new OperatorToken(OperatorType.L_BRACKET, operatorToken.fileName, operatorToken.line, operatorToken.pos));
+                    case ALT_R_BRACKET ->
+                            ret.add(new OperatorToken(OperatorType.R_BRACKET, operatorToken.fileName, operatorToken.line, operatorToken.pos));
+                    case ALT_L_BRACE ->
+                            ret.add(new OperatorToken(OperatorType.L_BRACE, operatorToken.fileName, operatorToken.line, operatorToken.pos));
+                    case ALT_R_BRACE ->
+                            ret.add(new OperatorToken(OperatorType.R_BRACE, operatorToken.fileName, operatorToken.line, operatorToken.pos));
+                    case SHARP, ALT_SHARP -> ret.add(PreprocessorToken.SHARP);
+                    case SHARP_SHARP, ALT_SHARP_SHARP -> ret.add(PreprocessorToken.SHARP_SHARP);
+                    case ALT_SHARP_MOD ->
+                    {
+                        ret.add(PreprocessorToken.SHARP);
+                        ret.add(new OperatorToken(OperatorType.MOD, operatorToken.fileName, operatorToken.line, operatorToken.pos));
+                    }
+                    default -> ret.add(abstractToken);
+                }
             }
+            else ret.add(abstractToken);
         }
+        return ret;
     }
     public static boolean match(AbstractToken a, AbstractToken b)
     {
@@ -562,7 +626,7 @@ public class Compiler
     public static void main(String[] args) throws IOException
     {
         List<AbstractToken> abstractTokenList =lexer(Path.of(args[0]));
-        tokenParser(abstractTokenList);
+        abstractTokenList=tokenParser(abstractTokenList);
         List<Code> codeList=parser(abstractTokenList);
         codeList=typeEraser(codeList);
         printCodeList(codeList);

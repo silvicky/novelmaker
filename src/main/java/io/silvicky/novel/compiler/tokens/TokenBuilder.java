@@ -2,7 +2,7 @@ package io.silvicky.novel.compiler.tokens;
 
 public class TokenBuilder
 {
-    TokenBuilder tokenBuilder=null;
+    private TokenBuilder tokenBuilder=null;
     public final String fileName;
     public final int line;
     public final int pos;

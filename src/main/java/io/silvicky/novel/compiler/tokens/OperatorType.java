@@ -5,9 +5,13 @@ public enum OperatorType
     L_PARENTHESES("("),
     R_PARENTHESES(")"),
     L_BRACKET("["),
+    ALT_L_BRACKET("<:"),
     R_BRACKET("]"),
+    ALT_R_BRACKET(":>"),
     L_BRACE("{"),
+    ALT_L_BRACE("<%"),
     R_BRACE("}"),
+    ALT_R_BRACE("%>"),
     LESS("<",OperatorArgsProperties.BINARY,(a,b,t)->
     {
         switch (t)
@@ -477,7 +481,12 @@ public enum OperatorType
     }),
     XOR_EQUAL("^=",OperatorArgsProperties.BINARY_ASSIGN,XOR),
     NOP("",OperatorArgsProperties.UNARY_R,(a,b,t)->a),
-    EQUAL("=",OperatorArgsProperties.BINARY_ASSIGN,COMMA)
+    EQUAL("=",OperatorArgsProperties.BINARY_ASSIGN,COMMA),
+    SHARP("#"),
+    SHARP_SHARP("##"),
+    ALT_SHARP("%:"),
+    ALT_SHARP_SHARP("%:%:"),
+    ALT_SHARP_MOD("%:%"),
     ;
     public enum OperatorArgsProperties
     {

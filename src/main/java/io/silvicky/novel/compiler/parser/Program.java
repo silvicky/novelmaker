@@ -2,7 +2,7 @@ package io.silvicky.novel.compiler.parser;
 
 import io.silvicky.novel.compiler.parser.declaration.DeclarationRoot;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
-import io.silvicky.novel.compiler.tokens.EofToken;
+import io.silvicky.novel.compiler.tokens.PreprocessorToken;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +15,7 @@ public class Program extends NonTerminal implements ASTNode
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
         List<AbstractToken> ret=new ArrayList<>();
-        if(next==null||next instanceof EofToken)return ret;
+        if(next==null||next== PreprocessorToken.EOF)return ret;
         declarationRoot =new DeclarationRoot(null);
         program=new Program();
         ret.add(program);
