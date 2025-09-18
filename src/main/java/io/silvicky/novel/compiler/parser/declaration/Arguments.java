@@ -2,9 +2,7 @@ package io.silvicky.novel.compiler.parser.declaration;
 
 import io.silvicky.novel.compiler.parser.NonTerminal;
 import io.silvicky.novel.compiler.parser.operation.TravelASTOperation;
-import io.silvicky.novel.compiler.tokens.AbstractToken;
-import io.silvicky.novel.compiler.tokens.OperatorToken;
-import io.silvicky.novel.compiler.tokens.OperatorType;
+import io.silvicky.novel.compiler.tokens.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +22,11 @@ public class Arguments extends NonTerminal
     {
         List<AbstractToken> ret=new ArrayList<>();
         if(next instanceof OperatorToken operatorToken&&operatorToken.type==OperatorType.R_PARENTHESES)return ret;
+        if(next instanceof KeywordToken keywordToken&&keywordToken.type== KeywordType.VOID)
+        {
+            ret.add(new KeywordToken(KeywordType.VOID));
+            return ret;
+        }
         ret.add(new ArgumentsResidue(this,postfix));
         Argument argument=new Argument(postfix);
         ret.add(new TravelASTOperation(argument));
