@@ -26,7 +26,7 @@ public class LabelLine extends NonTerminal implements ASTNode
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
         List<AbstractToken> ret=new ArrayList<>();
-        ret.add(new OperatorToken(OperatorType.LABEL));
+        ret.add(new OperatorToken(OperatorType.COLON));
         ret.add(new IdentifierToken(id));
         return ret;
     }

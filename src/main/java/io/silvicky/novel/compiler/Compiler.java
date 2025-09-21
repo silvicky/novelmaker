@@ -325,7 +325,7 @@ public class Compiler
             {
                 if(!labelBackMap.containsKey(labelCode.id()))continue;
                 if(labelBackMap.get(labelCode.id()).charAt(0)=='0')ctx=-1;
-                else ctx=labelCode.id();
+                else if(labelMap.containsKey(labelBackMap.get(labelCode.id())))ctx=labelCode.id();
             }
             if(root.codes.get(i) instanceof PlaceholderUnconditionalGotoCode tmp)
             {
@@ -352,7 +352,7 @@ public class Compiler
                 if(labelBackMap.containsKey(labelCode.id()))
                 {
                     if (labelBackMap.get(labelCode.id()).charAt(0) == '0') ctx = -1;
-                    else ctx = labelCode.id();
+                    else if(labelMap.containsKey(labelBackMap.get(labelCode.id())))ctx = labelCode.id();
                 }
             }
             if(code instanceof RawCode rawCode)
@@ -441,7 +441,7 @@ public class Compiler
                 if(labelBackMap.containsKey(labelCode.id()))
                 {
                     if (labelBackMap.get(labelCode.id()).charAt(0) == '0') ctx = -1;
-                    else ctx = labelCode.id();
+                    else if(labelMap.containsKey(labelBackMap.get(labelCode.id())))ctx = labelCode.id();
                 }
                 ret.add(code);
                 continue;
@@ -628,7 +628,7 @@ public class Compiler
     {
         for(Code code:codeList)
         {
-            if(code instanceof LabelCode labelCode&&labelBackMap.containsKey(labelCode.id()))ctx=labelCode.id();
+            if(code instanceof LabelCode labelCode&&labelBackMap.containsKey(labelCode.id())&&(labelMap.containsKey(labelBackMap.get(labelCode.id()))))ctx=labelCode.id();
             if(code instanceof ReturnCode)ctx=-1;
             System.out.println(code);
         }

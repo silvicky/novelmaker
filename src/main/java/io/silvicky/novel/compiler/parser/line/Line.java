@@ -89,7 +89,7 @@ public class Line extends NonTerminal implements ASTNode
             ret.add(content);
             return ret;
         }
-        else if(second instanceof OperatorToken operatorToken&&operatorToken.type==OperatorType.LABEL)
+        else if(second instanceof OperatorToken operatorToken&&operatorToken.type==OperatorType.COLON)
         {
             if(!(next instanceof IdentifierToken identifierToken))
             {

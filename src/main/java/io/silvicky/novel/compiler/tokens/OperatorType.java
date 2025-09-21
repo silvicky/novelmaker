@@ -165,7 +165,6 @@ public enum OperatorType
     }),
     COLON(":"),
     QUESTION("?"),
-    LABEL(":;"),
     SEMICOLON(";"),
     COMMA(",",OperatorArgsProperties.BINARY,(a,b,t)->b),
     DOT("."),
