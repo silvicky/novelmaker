@@ -135,75 +135,78 @@ public class Compiler
         return labelBackMap.get(l);
     }
     public static int requestLabel(){return labelCnt++;}
-    public static List<AbstractToken> lexer(Path input) throws IOException
+    public static List<AbstractToken> lexer(Path input)
     {
         List<AbstractToken> ret=new ArrayList<>();
         TokenBuilder tokenBuilder=null;
-        BufferedReader bufferedReader=new BufferedReader(new FileReader(input.toFile()));
-        String cur;
-        char las=0;
-        boolean isGlobalComment=false;
-        boolean isBackslashConnected=false;
-        for(int line=1;;line++)
+        try(BufferedReader bufferedReader=new BufferedReader(new FileReader(input.toFile())))
         {
-            if(!isBackslashConnected)
+            String cur;
+            char las = 0;
+            boolean isGlobalComment = false;
+            boolean isBackslashConnected = false;
+            for (int line = 1; ; line++)
             {
-                las = 0;
-            }
-            isBackslashConnected=false;
-            cur = bufferedReader.readLine();
-            if(cur==null)break;
-            for(int pos=0;pos<cur.length();pos++)
-            {
-                char c=cur.charAt(pos);
-                if(isGlobalComment)
+                if (!isBackslashConnected)
                 {
-                    if(las=='*'&&c=='/')
+                    las = 0;
+                }
+                isBackslashConnected = false;
+                cur = bufferedReader.readLine();
+                if (cur == null) break;
+                for (int pos = 0; pos < cur.length(); pos++)
+                {
+                    char c = cur.charAt(pos);
+                    if (isGlobalComment)
                     {
-                        isGlobalComment=false;
-                        las=0;
+                        if (las == '*' && c == '/')
+                        {
+                            isGlobalComment = false;
+                            las = 0;
+                        }
+                        else las = c;
+                        continue;
                     }
-                    else las=c;
-                    continue;
-                }
-                if(las=='/'&&c=='/')
-                {
-                    tokenBuilder = null;
-                    ret.add(PreprocessorToken.EOL);
-                    break;
-                }
-                if(las=='/'&&c=='*')
-                {
-                    tokenBuilder = null;
-                    isGlobalComment=true;
-                    continue;
-                }
-                if(c=='\\'&&pos==cur.length()-1)
-                {
-                    isBackslashConnected=true;
-                    continue;
-                }
-                if(tokenBuilder==null)tokenBuilder=new TokenBuilder(input.toString(), line, pos+1);
-                if(!tokenBuilder.append(c))
-                {
-                    addNonNull(ret, tokenBuilder.build());
-                    tokenBuilder = new TokenBuilder(input.toString(), line, pos + 1);
-                    tokenBuilder.append(c);
-                }
-                las=c;
-                if(pos==cur.length()-1)
-                {
-                    addNonNull(ret, tokenBuilder.build());
-                    tokenBuilder=null;
-                    ret.add(PreprocessorToken.EOL);
+                    if (las == '/' && c == '/')
+                    {
+                        tokenBuilder = null;
+                        ret.add(PreprocessorToken.EOL);
+                        break;
+                    }
+                    if (las == '/' && c == '*')
+                    {
+                        tokenBuilder = null;
+                        isGlobalComment = true;
+                        continue;
+                    }
+                    if (c == '\\' && pos == cur.length() - 1)
+                    {
+                        isBackslashConnected = true;
+                        continue;
+                    }
+                    if (tokenBuilder == null) tokenBuilder = new TokenBuilder(input.toString(), line, pos + 1);
+                    if (!tokenBuilder.append(c))
+                    {
+                        addNonNull(ret, tokenBuilder.build());
+                        tokenBuilder = new TokenBuilder(input.toString(), line, pos + 1);
+                        tokenBuilder.append(c);
+                    }
+                    las = c;
+                    if (pos == cur.length() - 1)
+                    {
+                        addNonNull(ret, tokenBuilder.build());
+                        tokenBuilder = null;
+                        ret.add(PreprocessorToken.EOL);
+                    }
                 }
             }
+            if (tokenBuilder != null) addNonNull(ret, tokenBuilder.build());
+            return ret;
         }
-        if(tokenBuilder!=null)addNonNull(ret, tokenBuilder.build());
-        ret.add(PreprocessorToken.EOF);
-        ret.add(PreprocessorToken.EOF);
-        bufferedReader.close();
-        return ret;
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
     public static List<AbstractToken> tokenParser(List<AbstractToken> abstractTokens)
     {
@@ -284,6 +287,8 @@ public class Compiler
     }
     public static List<Code> parser(List<AbstractToken> abstractTokens)
     {
+        abstractTokens.add(PreprocessorToken.EOF);
+        abstractTokens.add(PreprocessorToken.EOF);
         int rul=0;
         Stack<AbstractToken> stack=new Stack<>();
         Program root=new Program();
@@ -628,11 +633,12 @@ public class Compiler
             System.out.println(code);
         }
     }
-    public static void main(String[] args) throws IOException
+    public static void main(String[] args)
     {
-        List<AbstractToken> abstractTokenList =lexer(Path.of(args[0]));
+        Path sourceFile=Path.of(args[0]);
+        List<AbstractToken> abstractTokenList =lexer(sourceFile);
         abstractTokenList=tokenParser(abstractTokenList);
-        abstractTokenList= Preprocessor.preprocessor(abstractTokenList);
+        abstractTokenList= Preprocessor.preprocessor(abstractTokenList,sourceFile);
         List<Code> codeList=parser(abstractTokenList);
         codeList=typeEraser(codeList);
         printCodeList(codeList);
