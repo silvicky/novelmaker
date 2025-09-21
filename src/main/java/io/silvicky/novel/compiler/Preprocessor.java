@@ -2,11 +2,161 @@ package io.silvicky.novel.compiler;
 
 import io.silvicky.novel.compiler.tokens.*;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 
+import static io.silvicky.novel.compiler.types.PrimitiveType.BOOL;
+import static io.silvicky.novel.util.Util.addNonNull;
+
 public class Preprocessor
 {
+    private static List<AbstractToken> lexer(Path input)
+    {
+        List<AbstractToken> ret=new ArrayList<>();
+        TokenBuilder tokenBuilder=null;
+        try(BufferedReader bufferedReader=new BufferedReader(new FileReader(input.toFile())))
+        {
+            String cur;
+            char las = 0;
+            boolean isGlobalComment = false;
+            boolean isBackslashConnected = false;
+            for (int line = 1; ; line++)
+            {
+                if (!isBackslashConnected)
+                {
+                    las = 0;
+                }
+                isBackslashConnected = false;
+                cur = bufferedReader.readLine();
+                if (cur == null) break;
+                for (int pos = 0; pos < cur.length(); pos++)
+                {
+                    char c = cur.charAt(pos);
+                    if (isGlobalComment)
+                    {
+                        if (las == '*' && c == '/')
+                        {
+                            isGlobalComment = false;
+                            las = 0;
+                        }
+                        else las = c;
+                        continue;
+                    }
+                    if (las == '/' && c == '/')
+                    {
+                        tokenBuilder = null;
+                        ret.add(PreprocessorToken.EOL);
+                        break;
+                    }
+                    if (las == '/' && c == '*')
+                    {
+                        tokenBuilder = null;
+                        isGlobalComment = true;
+                        continue;
+                    }
+                    if (c == '\\' && pos == cur.length() - 1)
+                    {
+                        isBackslashConnected = true;
+                        continue;
+                    }
+                    if (tokenBuilder == null) tokenBuilder = new TokenBuilder(input.toString(), line, pos + 1);
+                    if (!tokenBuilder.append(c))
+                    {
+                        addNonNull(ret, tokenBuilder.build());
+                        tokenBuilder = new TokenBuilder(input.toString(), line, pos + 1);
+                        tokenBuilder.append(c);
+                    }
+                    las = c;
+                    if (pos == cur.length() - 1)
+                    {
+                        addNonNull(ret, tokenBuilder.build());
+                        tokenBuilder = null;
+                        ret.add(PreprocessorToken.EOL);
+                    }
+                }
+            }
+            if (tokenBuilder != null) addNonNull(ret, tokenBuilder.build());
+            return ret;
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static List<AbstractToken> tokenParser(List<AbstractToken> abstractTokens)
+    {
+        List<AbstractToken> ret=new ArrayList<>();
+        for (AbstractToken abstractToken : abstractTokens)
+        {
+            if (abstractToken instanceof KeywordToken keywordToken)
+            {
+                switch (keywordToken.type)
+                {
+                    case TRUE ->
+                            ret.add(new NumberToken<>(true, BOOL, keywordToken.fileName, keywordToken.line, keywordToken.pos));
+                    case FALSE ->
+                            ret.add(new NumberToken<>(false, BOOL, keywordToken.fileName, keywordToken.line, keywordToken.pos));
+                    case AND ->
+                            ret.add(new OperatorToken(OperatorType.AND_AND, keywordToken.fileName, keywordToken.line, keywordToken.pos));
+                    case AND_EQ ->
+                            ret.add(new OperatorToken(OperatorType.AND_EQUAL, keywordToken.fileName, keywordToken.line, keywordToken.pos));
+                    case BITAND ->
+                            ret.add(new OperatorToken(OperatorType.AND, keywordToken.fileName, keywordToken.line, keywordToken.pos));
+                    case BITOR ->
+                            ret.add(new OperatorToken(OperatorType.OR, keywordToken.fileName, keywordToken.line, keywordToken.pos));
+                    case COMPL ->
+                            ret.add(new OperatorToken(OperatorType.REVERSE, keywordToken.fileName, keywordToken.line, keywordToken.pos));
+                    case NOT ->
+                            ret.add(new OperatorToken(OperatorType.NOT, keywordToken.fileName, keywordToken.line, keywordToken.pos));
+                    case NOT_EQ ->
+                            ret.add(new OperatorToken(OperatorType.NOT_EQUAL, keywordToken.fileName, keywordToken.line, keywordToken.pos));
+                    case OR ->
+                            ret.add(new OperatorToken(OperatorType.OR_OR, keywordToken.fileName, keywordToken.line, keywordToken.pos));
+                    case OR_EQ ->
+                            ret.add(new OperatorToken(OperatorType.OR_EQUAL, keywordToken.fileName, keywordToken.line, keywordToken.pos));
+                    case XOR ->
+                            ret.add(new OperatorToken(OperatorType.XOR, keywordToken.fileName, keywordToken.line, keywordToken.pos));
+                    case XOR_EQ ->
+                            ret.add(new OperatorToken(OperatorType.XOR_EQUAL, keywordToken.fileName, keywordToken.line, keywordToken.pos));
+                    default -> ret.add(keywordToken);
+                }
+            }
+            else if (abstractToken instanceof OperatorToken operatorToken)
+            {
+                switch (operatorToken.type)
+                {
+                    case ALT_L_BRACKET ->
+                            ret.add(new OperatorToken(OperatorType.L_BRACKET, operatorToken.fileName, operatorToken.line, operatorToken.pos));
+                    case ALT_R_BRACKET ->
+                            ret.add(new OperatorToken(OperatorType.R_BRACKET, operatorToken.fileName, operatorToken.line, operatorToken.pos));
+                    case ALT_L_BRACE ->
+                            ret.add(new OperatorToken(OperatorType.L_BRACE, operatorToken.fileName, operatorToken.line, operatorToken.pos));
+                    case ALT_R_BRACE ->
+                            ret.add(new OperatorToken(OperatorType.R_BRACE, operatorToken.fileName, operatorToken.line, operatorToken.pos));
+                    case SHARP, ALT_SHARP -> ret.add(PreprocessorToken.SHARP);
+                    case SHARP_SHARP, ALT_SHARP_SHARP -> ret.add(PreprocessorToken.SHARP_SHARP);
+                    case ALT_SHARP_MOD ->
+                    {
+                        ret.add(PreprocessorToken.SHARP);
+                        ret.add(new OperatorToken(OperatorType.MOD, operatorToken.fileName, operatorToken.line, operatorToken.pos+2));
+                    }
+                    case DOT_DOT ->
+                    {
+                        ret.add(new OperatorToken(OperatorType.DOT, operatorToken.fileName, operatorToken.line, operatorToken.pos));
+                        ret.add(new OperatorToken(OperatorType.DOT, operatorToken.fileName, operatorToken.line, operatorToken.pos+1));
+                    }
+                    default -> ret.add(abstractToken);
+                }
+            }
+            else ret.add(abstractToken);
+        }
+        return ret;
+    }
+
     private interface Rule{}
     private static class SimpleRule implements Rule
     {
@@ -36,20 +186,15 @@ public class Preprocessor
             default -> throw new InvalidTokenException("unknown token");
         };
     }
-    public static List<AbstractToken> preprocessor(List<AbstractToken> abstractTokens, Path sourceFile)
+    public static List<AbstractToken> preprocessor(Path sourceFile)
     {
+        List<AbstractToken> abstractTokens=tokenParser(lexer(sourceFile));
         List<AbstractToken> ret=new ArrayList<>();
         Iterator<AbstractToken> it=abstractTokens.iterator();
         Stack<Boolean> ifStack=new Stack<>();
         while(it.hasNext())
         {
             AbstractToken token=it.next();
-            if(token== PreprocessorToken.EOF)
-            {
-                ret.add(PreprocessorToken.EOF);
-                ret.add(PreprocessorToken.EOF);
-                break;
-            }
             if(token==PreprocessorToken.SHARP)
             {
                 token= it.next();
@@ -72,13 +217,13 @@ public class Preprocessor
                                 Path header=sourceFile.getParent().resolve(stringToken.content);
                                 if(header.toFile().exists()&&header.toFile().isFile())
                                 {
-                                    ret.addAll(preprocessor(Compiler.tokenParser(Compiler.lexer(header)),header));
+                                    ret.addAll(preprocessor(header));
                                     continue;
                                 }
                                 header=libraryPath.resolve(stringToken.content);
                                 if(header.toFile().exists()&&header.toFile().isFile())
                                 {
-                                    ret.addAll(preprocessor(Compiler.tokenParser(Compiler.lexer(header)),header));
+                                    ret.addAll(preprocessor(header));
                                     continue;
                                 }
                                 throw new RuntimeException("file not found");
@@ -90,7 +235,7 @@ public class Preprocessor
                                 Path header=libraryPath.resolve(stringBuilder.toString());
                                 if(header.toFile().exists()&&header.toFile().isFile())
                                 {
-                                    ret.addAll(preprocessor(Compiler.tokenParser(Compiler.lexer(header)),header));
+                                    ret.addAll(preprocessor(header));
                                     continue;
                                 }
                                 throw new RuntimeException("file not found");
