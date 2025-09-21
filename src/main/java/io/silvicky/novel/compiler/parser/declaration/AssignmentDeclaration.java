@@ -85,14 +85,12 @@ public class AssignmentDeclaration extends NonTerminal implements ASTNode
             if(functionBody!=null)
             {
                 ctx= registerLabel(unaryDeclaration.name);
-                argSize=0;
                 returnType=functionType.returnType();
                 codes.add(new AssignNumberCode(nid,ctx, PrimitiveType.INT,PrimitiveType.INT));
                 for(Pair<Type,String> pair: unaryDeclaration.parameters)
                 {
                     if(pair.first()==PrimitiveType.ELLIPSIS)continue;
-                    argSize+=pair.first().getSize();
-                    registerArgument(pair.second(), pair.first());
+                    registerParameter(pair.second(), pair.first());
                     functionBody.revokedVariables.add(pair.second());
                 }
                 int endLabel= registerLabel("0"+unaryDeclaration.name);
@@ -100,7 +98,7 @@ public class AssignmentDeclaration extends NonTerminal implements ASTNode
                 codes.add(new LabelCode(ctx));
                 functionBody.travel();
                 codes.addAll(functionBody.codes);
-                codes.add(new ReturnCode(-1,argSize));
+                codes.add(new ReturnCode(-1));
                 codes.add(new LabelCode(endLabel));
                 ctx=-1;
                 returnType=null;

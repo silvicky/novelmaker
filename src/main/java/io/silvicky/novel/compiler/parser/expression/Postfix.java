@@ -15,8 +15,8 @@ public class Postfix extends NonTerminal implements ASTNode
 {
     public OperatorType operatorType;
     public ExpressionNew nextExpression;
-    public final List<Pair<Type,Integer>> parameters=new ArrayList<>();
-    private Parameters pr;
+    public final List<Pair<Type,Integer>> arguments =new ArrayList<>();
+    private Arguments pr;
     @Override
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
@@ -36,7 +36,7 @@ public class Postfix extends NonTerminal implements ASTNode
         else
         {
             ret.add(new OperatorToken(OperatorType.R_PARENTHESES));
-            pr=new Parameters(this);
+            pr=new Arguments(this);
             ret.add(pr);
             ret.add(new OperatorToken(OperatorType.L_PARENTHESES));
         }

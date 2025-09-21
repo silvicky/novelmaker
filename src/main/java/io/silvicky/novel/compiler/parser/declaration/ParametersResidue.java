@@ -10,10 +10,10 @@ import io.silvicky.novel.util.Pair;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ArgumentsResidue extends AbstractExpressionResidue<Arguments>
+public class ParametersResidue extends AbstractExpressionResidue<Parameters>
 {
     private final DeclarationPostfix postfix;
-    protected ArgumentsResidue(Arguments root, DeclarationPostfix postfix)
+    protected ParametersResidue(Parameters root, DeclarationPostfix postfix)
     {
         super(root);
         this.postfix=postfix;
@@ -30,7 +30,7 @@ public class ArgumentsResidue extends AbstractExpressionResidue<Arguments>
             ret.add(new OperatorToken(OperatorType.ELLIPSIS));
             return ret;
         }
-        ret.add(new Arguments(postfix));
+        ret.add(new Parameters(postfix));
         ret.add(new OperatorToken(OperatorType.COMMA));
         return ret;
     }

@@ -12,7 +12,7 @@ public enum OperatorType
     ALT_L_BRACE("<%"),
     R_BRACE("}"),
     ALT_R_BRACE("%>"),
-    LESS("<",OperatorArgsProperties.BINARY,(a,b,t)->
+    LESS("<", OperatorProperties.BINARY,(a, b, t)->
     {
         switch (t)
         {
@@ -66,12 +66,12 @@ public enum OperatorType
             }
         }
     }),
-    GREATER(">",OperatorArgsProperties.BINARY,(a,b,t)->LESS.operation.cal(b,a,t)),
-    LESS_EQUAL("<=",OperatorArgsProperties.BINARY,(a,b,t)-> !(boolean)(LESS.operation.cal(b,a,t))),
-    GREATER_EQUAL(">=",OperatorArgsProperties.BINARY,(a,b,t)-> !(boolean)(LESS.operation.cal(a,b,t))),
-    NOT_EQUAL("!=",OperatorArgsProperties.BINARY,(a,b,t)->(boolean)(LESS.operation.cal(a,b,t))||(boolean)(LESS.operation.cal(b,a,t))),
-    EQUAL_EQUAL("==",OperatorArgsProperties.BINARY,(a,b,t)->!((boolean)(LESS.operation.cal(a,b,t))||(boolean)(LESS.operation.cal(b,a,t)))),
-    L_SHIFT("<<",OperatorArgsProperties.BINARY,(a,b,t)->
+    GREATER(">", OperatorProperties.BINARY,(a, b, t)->LESS.operation.cal(b,a,t)),
+    LESS_EQUAL("<=", OperatorProperties.BINARY,(a, b, t)-> !(boolean)(LESS.operation.cal(b,a,t))),
+    GREATER_EQUAL(">=", OperatorProperties.BINARY,(a, b, t)-> !(boolean)(LESS.operation.cal(a,b,t))),
+    NOT_EQUAL("!=", OperatorProperties.BINARY,(a, b, t)->(boolean)(LESS.operation.cal(a,b,t))||(boolean)(LESS.operation.cal(b,a,t))),
+    EQUAL_EQUAL("==", OperatorProperties.BINARY,(a, b, t)->!((boolean)(LESS.operation.cal(a,b,t))||(boolean)(LESS.operation.cal(b,a,t)))),
+    L_SHIFT("<<", OperatorProperties.BINARY,(a, b, t)->
     {
         switch (t)
         {
@@ -97,7 +97,7 @@ public enum OperatorType
             }
         }
     }),
-    R_SHIFT(">>",OperatorArgsProperties.BINARY,(a,b,t)->
+    R_SHIFT(">>", OperatorProperties.BINARY,(a, b, t)->
     {
         switch (t)
         {
@@ -123,9 +123,9 @@ public enum OperatorType
             }
         }
     }),
-    L_SHIFT_EQUAL("<<=",OperatorArgsProperties.BINARY_ASSIGN,L_SHIFT),
-    R_SHIFT_EQUAL(">>=",OperatorArgsProperties.BINARY_ASSIGN,R_SHIFT),
-    NOT("!",OperatorArgsProperties.UNARY_R,(a,b,t)->
+    L_SHIFT_EQUAL("<<=", OperatorProperties.BINARY_ASSIGN,L_SHIFT),
+    R_SHIFT_EQUAL(">>=", OperatorProperties.BINARY_ASSIGN,R_SHIFT),
+    NOT("!", OperatorProperties.UNARY_R,(a, b, t)->
     {
         switch (t)
         {
@@ -166,11 +166,11 @@ public enum OperatorType
     COLON(":"),
     QUESTION("?"),
     SEMICOLON(";"),
-    COMMA(",",OperatorArgsProperties.BINARY,(a,b,t)->b),
+    COMMA(",", OperatorProperties.BINARY,(a, b, t)->b),
     DOT("."),
     DOT_DOT(".."),
     ELLIPSIS("..."),
-    MULTIPLY("*",OperatorArgsProperties.BINARY,(a,b,t)->
+    MULTIPLY("*", OperatorProperties.BINARY,(a, b, t)->
     {
         switch (t)
         {
@@ -204,8 +204,8 @@ public enum OperatorType
             }
         }
     }),
-    MULTIPLY_EQUAL("*=",OperatorArgsProperties.BINARY_ASSIGN,MULTIPLY),
-    PLUS("+",OperatorArgsProperties.BINARY,(a,b,t)->
+    MULTIPLY_EQUAL("*=", OperatorProperties.BINARY_ASSIGN,MULTIPLY),
+    PLUS("+", OperatorProperties.BINARY,(a, b, t)->
     {
         switch (t)
         {
@@ -239,9 +239,9 @@ public enum OperatorType
             }
         }
     }),
-    PLUS_EQUAL("+=",OperatorArgsProperties.BINARY_ASSIGN,PLUS),
-    PLUS_PLUS("++",OperatorArgsProperties.UNARY,PLUS),
-    MINUS("-",OperatorArgsProperties.BINARY,(a,b,t)->
+    PLUS_EQUAL("+=", OperatorProperties.BINARY_ASSIGN,PLUS),
+    PLUS_PLUS("++", OperatorProperties.UNARY,PLUS),
+    MINUS("-", OperatorProperties.BINARY,(a, b, t)->
     {
         switch (t)
         {
@@ -275,9 +275,9 @@ public enum OperatorType
             }
         }
     }),
-    MINUS_EQUAL("-=",OperatorArgsProperties.BINARY_ASSIGN,MINUS),
-    MINUS_MINUS("--",OperatorArgsProperties.UNARY,MINUS),
-    DIVIDE("/",OperatorArgsProperties.BINARY,(a,b,t)->
+    MINUS_EQUAL("-=", OperatorProperties.BINARY_ASSIGN,MINUS),
+    MINUS_MINUS("--", OperatorProperties.UNARY,MINUS),
+    DIVIDE("/", OperatorProperties.BINARY,(a, b, t)->
     {
         switch (t)
         {
@@ -319,8 +319,8 @@ public enum OperatorType
             }
         }
     }),
-    DIVIDE_EQUAL("/=",OperatorArgsProperties.BINARY_ASSIGN,DIVIDE),
-    MOD("%",OperatorArgsProperties.BINARY,(a,b,t)->
+    DIVIDE_EQUAL("/=", OperatorProperties.BINARY_ASSIGN,DIVIDE),
+    MOD("%", OperatorProperties.BINARY,(a, b, t)->
     {
         switch (t)
         {
@@ -354,9 +354,9 @@ public enum OperatorType
             }
         }
     }),
-    MOD_EQUAL("%=",OperatorArgsProperties.BINARY_ASSIGN,MOD),
+    MOD_EQUAL("%=", OperatorProperties.BINARY_ASSIGN,MOD),
     BACKSLASH("\\"),
-    REVERSE("~",OperatorArgsProperties.UNARY_R,(a,b,t)->
+    REVERSE("~", OperatorProperties.UNARY_R,(a, b, t)->
     {
         switch (t)
         {
@@ -386,7 +386,7 @@ public enum OperatorType
             }
         }
     }),
-    OR("|",OperatorArgsProperties.BINARY,(a,b,t)->
+    OR("|", OperatorProperties.BINARY,(a, b, t)->
     {
         switch (t)
         {
@@ -416,9 +416,9 @@ public enum OperatorType
             }
         }
     }),
-    OR_EQUAL("|=",OperatorArgsProperties.BINARY_ASSIGN,OR),
+    OR_EQUAL("|=", OperatorProperties.BINARY_ASSIGN,OR),
     OR_OR("||"),
-    AND("&",OperatorArgsProperties.BINARY,(a,b,t)->
+    AND("&", OperatorProperties.BINARY,(a, b, t)->
     {
         switch (t)
         {
@@ -448,9 +448,9 @@ public enum OperatorType
             }
         }
     }),
-    AND_EQUAL("&=",OperatorArgsProperties.BINARY_ASSIGN,AND),
+    AND_EQUAL("&=", OperatorProperties.BINARY_ASSIGN,AND),
     AND_AND("&&"),
-    XOR("^",OperatorArgsProperties.BINARY,(a,b,t)->
+    XOR("^", OperatorProperties.BINARY,(a, b, t)->
     {
         switch (t)
         {
@@ -480,16 +480,16 @@ public enum OperatorType
             }
         }
     }),
-    XOR_EQUAL("^=",OperatorArgsProperties.BINARY_ASSIGN,XOR),
-    NOP("",OperatorArgsProperties.UNARY_R,(a,b,t)->a),
-    EQUAL("=",OperatorArgsProperties.BINARY_ASSIGN,COMMA),
+    XOR_EQUAL("^=", OperatorProperties.BINARY_ASSIGN,XOR),
+    NOP("", OperatorProperties.UNARY_R,(a, b, t)->a),
+    EQUAL("=", OperatorProperties.BINARY_ASSIGN,COMMA),
     SHARP("#"),
     SHARP_SHARP("##"),
     ALT_SHARP("%:"),
     ALT_SHARP_SHARP("%:%:"),
     ALT_SHARP_MOD("%:%"),
     ;
-    public enum OperatorArgsProperties
+    public enum OperatorProperties
     {
         UNARY_R,
         UNARY,
@@ -498,22 +498,22 @@ public enum OperatorType
         BINARY_ASSIGN
     }
     public final String symbol;
-    public final OperatorArgsProperties properties;
+    public final OperatorProperties properties;
     public final OperatorOperation operation;
     public final OperatorType baseType;
-    OperatorType(String symbol, OperatorArgsProperties properties, OperatorOperation operation, OperatorType baseType)
+    OperatorType(String symbol, OperatorProperties properties, OperatorOperation operation, OperatorType baseType)
     {
         this.symbol=symbol;
         this.properties=properties;
         this.operation=operation;
         this.baseType=baseType;
     }
-    OperatorType(String symbol, OperatorArgsProperties properties, OperatorType baseType)
+    OperatorType(String symbol, OperatorProperties properties, OperatorType baseType)
     {this(symbol,properties, baseType.operation,baseType);}
-    OperatorType(String symbol, OperatorArgsProperties properties, OperatorOperation operation)
+    OperatorType(String symbol, OperatorProperties properties, OperatorOperation operation)
     {this(symbol,properties,operation,null);}
     OperatorType(String symbol)
-    {this(symbol,OperatorArgsProperties.INVALID,null,null);}
+    {this(symbol, OperatorProperties.INVALID,null,null);}
     public static OperatorType find(String s)
     {
         for(OperatorType type:OperatorType.values())

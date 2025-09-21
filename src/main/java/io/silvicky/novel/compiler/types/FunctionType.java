@@ -2,7 +2,7 @@ package io.silvicky.novel.compiler.types;
 
 import java.util.List;
 
-public record FunctionType(Type returnType, List<Type> args) implements Type,AbstractPointer
+public record FunctionType(Type returnType, List<Type> params) implements Type,AbstractPointer
 {
     @Override
     public int getSize()
@@ -24,6 +24,6 @@ public record FunctionType(Type returnType, List<Type> args) implements Type,Abs
     @Override
     public boolean equals(Object o)
     {
-        return o instanceof FunctionType functionType&& args.equals(functionType.args)&&returnType.equals(functionType.returnType);
+        return o instanceof FunctionType functionType&& params.equals(functionType.params)&&returnType.equals(functionType.returnType);
     }
 }

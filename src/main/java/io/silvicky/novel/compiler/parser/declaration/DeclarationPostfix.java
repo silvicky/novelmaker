@@ -35,7 +35,7 @@ public class DeclarationPostfix extends NonTerminal
         else
         {
             ret.add(new OperatorToken(OperatorType.R_PARENTHESES));
-            ret.add(new Arguments(this));
+            ret.add(new Parameters(this));
             ret.add(new OperatorToken(OperatorType.L_PARENTHESES));
         }
         return ret;

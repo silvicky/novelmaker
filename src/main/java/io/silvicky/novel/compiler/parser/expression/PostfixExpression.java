@@ -92,28 +92,28 @@ public class PostfixExpression extends AbstractExpression
                         tmp=tmp2;
                     }
                     if(!(type instanceof FunctionType functionType))throw new GrammarException("not a function");
-                    int argsSize=functionType.args().size();
-                    int paramsSize=postfix.parameters.size();
-                    boolean isVariadic=(!functionType.args().isEmpty())&&functionType.args().get(argsSize-1)==PrimitiveType.ELLIPSIS;
-                    if(isVariadic)argsSize--;
-                    if(isVariadic?(paramsSize<argsSize):(paramsSize!=argsSize))throw new GrammarException("parameters mismatch");
-                    List<Integer> castParameters=new ArrayList<>();
+                    int paramsSize=functionType.params().size();
+                    int argsSize=postfix.arguments.size();
+                    boolean isVariadic=(!functionType.params().isEmpty())&&functionType.params().get(paramsSize-1)==PrimitiveType.ELLIPSIS;
+                    if(isVariadic)paramsSize--;
+                    if(isVariadic?(argsSize<paramsSize):(argsSize!=paramsSize))throw new GrammarException("args mismatch");
+                    List<Integer> castArguments=new ArrayList<>();
                     List<Type> castTypes=new ArrayList<>();
-                    for(int i=0;i<postfix.parameters.size();i++)
+                    for(int i = 0; i<postfix.arguments.size(); i++)
                     {
-                        Type pType=postfix.parameters.get(i).first(),aType=functionType.args().get(i);
-                        if(pType.equals(aType)||i>=argsSize)
+                        Type aType=postfix.arguments.get(i).first(),pType=functionType.params().get(i);
+                        if(aType.equals(pType)||i>=paramsSize)
                         {
-                            castParameters.add(postfix.parameters.get(i).second());
-                            castTypes.add(pType);
+                            castArguments.add(postfix.arguments.get(i).second());
+                            castTypes.add(aType);
                             continue;
                         }
-                        int id=requestInternalVariable(aType);
-                        codes.add(new AssignCode(id,postfix.parameters.get(i).second(),0,aType,pType,pType,OperatorType.NOP));
-                        castParameters.add(id);
-                        castTypes.add(aType);
+                        int id=requestInternalVariable(pType);
+                        codes.add(new AssignCode(id,postfix.arguments.get(i).second(),0,pType,aType,aType,OperatorType.NOP));
+                        castArguments.add(id);
+                        castTypes.add(pType);
                     }
-                    codes.add(new CallCode(tmp,castParameters,castTypes));
+                    codes.add(new CallCode(tmp,castArguments,castTypes));
                     type=functionType.returnType();
                     if(type==PrimitiveType.VOID)
                     {

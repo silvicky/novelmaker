@@ -13,7 +13,7 @@ import io.silvicky.novel.util.Pair;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Argument extends NonTerminal implements ASTNode
+public class Parameter extends NonTerminal implements ASTNode
 {
     private BaseTypeBuilderRoot baseTypeBuilderRoot;
     private UnaryDeclaration declaration;
@@ -22,7 +22,7 @@ public class Argument extends NonTerminal implements ASTNode
     public Type type;
     private boolean isEllipsis=false;
 
-    public Argument(DeclarationPostfix directParent)
+    public Parameter(DeclarationPostfix directParent)
     {
         this.directParent = directParent;
     }

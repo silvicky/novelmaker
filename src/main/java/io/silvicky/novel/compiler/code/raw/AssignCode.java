@@ -22,7 +22,7 @@ public record AssignCode(int target, int left, int right, Type targetType, Type 
 {
     public String toString()
     {
-        if(op.properties== OperatorType.OperatorArgsProperties.BINARY)return lookupVariableName(target)+"="+lookupVariableName(left)+op.symbol+lookupVariableName(right);
+        if(op.properties== OperatorProperties.BINARY)return lookupVariableName(target)+"="+lookupVariableName(left)+op.symbol+lookupVariableName(right);
         else return lookupVariableName(target)+"="+op.symbol+lookupVariableName(left);
     }
 

@@ -7,11 +7,11 @@ import io.silvicky.novel.compiler.tokens.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Arguments extends NonTerminal
+public class Parameters extends NonTerminal
 {
     private final DeclarationPostfix postfix;
 
-    public Arguments(DeclarationPostfix postfix)
+    public Parameters(DeclarationPostfix postfix)
     {
         this.postfix = postfix;
     }
@@ -27,10 +27,10 @@ public class Arguments extends NonTerminal
             ret.add(new KeywordToken(KeywordType.VOID));
             return ret;
         }
-        Argument argument=new Argument(postfix);
-        ret.add(new TravelASTOperation(argument));
-        ret.add(new ArgumentsResidue(this,postfix));
-        ret.add(argument);
+        Parameter parameter =new Parameter(postfix);
+        ret.add(new TravelASTOperation(parameter));
+        ret.add(new ParametersResidue(this,postfix));
+        ret.add(parameter);
         return ret;
     }
 }

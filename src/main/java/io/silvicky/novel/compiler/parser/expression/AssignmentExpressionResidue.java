@@ -20,7 +20,7 @@ public class AssignmentExpressionResidue extends AbstractExpressionResidue<Assig
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
         List<AbstractToken> ret=new ArrayList<>();
-        if(next instanceof OperatorToken operatorToken&&operatorToken.type.properties== OperatorType.OperatorArgsProperties.BINARY_ASSIGN)
+        if(next instanceof OperatorToken operatorToken&&operatorToken.type.properties== OperatorType.OperatorProperties.BINARY_ASSIGN)
         {
             child = new AssignmentExpression();
             type=operatorToken.type;

@@ -7,12 +7,12 @@ import io.silvicky.novel.compiler.tokens.OperatorType;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ParametersResidue extends AbstractExpressionResidue<Parameters>
+public class ArgumentsResidue extends AbstractExpressionResidue<Arguments>
 {
-    private Parameters child=null;
+    private Arguments child=null;
     private final Postfix func;
 
-    protected ParametersResidue(Parameters root, Postfix func)
+    protected ArgumentsResidue(Arguments root, Postfix func)
     {
         super(root);
         this.func = func;
@@ -24,7 +24,7 @@ public class ParametersResidue extends AbstractExpressionResidue<Parameters>
         List<AbstractToken> ret=new ArrayList<>();
         if(next instanceof OperatorToken operatorToken&&operatorToken.type== OperatorType.COMMA)
         {
-            child=new Parameters(func);
+            child=new Arguments(func);
             ret.add(child);
             ret.add(new OperatorToken(OperatorType.COMMA));
         }

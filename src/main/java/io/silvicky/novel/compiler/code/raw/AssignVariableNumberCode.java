@@ -23,7 +23,7 @@ public record AssignVariableNumberCode(int target, int left, Object right, Type 
 {
     public String toString()
     {
-        if(op.properties== OperatorType.OperatorArgsProperties.BINARY)return lookupVariableName(target)+"="+lookupVariableName(left)+op.symbol+right;
+        if(op.properties== OperatorType.OperatorProperties.BINARY)return lookupVariableName(target)+"="+lookupVariableName(left)+op.symbol+right;
         else return lookupVariableName(target)+"="+op.symbol+lookupVariableName(left);
     }
 

@@ -35,7 +35,7 @@ public class ReturnLine extends NonTerminal implements ASTNode
         if(returnType==PrimitiveType.VOID)
         {
             if(!expressionRoot.codes.isEmpty())throw new GrammarException("void function should not return expression");
-            codes.add(new ReturnCode(-1,argSize));
+            codes.add(new ReturnCode(-1));
             return;
         }
         codes.addAll(expressionRoot.codes);
@@ -43,11 +43,11 @@ public class ReturnLine extends NonTerminal implements ASTNode
         {
             int t1 = requestInternalVariable(returnType);
             codes.add(new AssignCode(t1, expressionRoot.resultId, expressionRoot.resultId, returnType, expressionRoot.type, expressionRoot.type, OperatorType.NOP));
-            codes.add(new ReturnCode(t1,argSize));
+            codes.add(new ReturnCode(t1));
         }
         else
         {
-            codes.add(new ReturnCode(expressionRoot.resultId,argSize));
+            codes.add(new ReturnCode(expressionRoot.resultId));
         }
     }
 }

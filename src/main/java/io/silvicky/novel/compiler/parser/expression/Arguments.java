@@ -10,14 +10,12 @@ import io.silvicky.novel.util.Pair;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.silvicky.novel.compiler.Compiler.requestInternalVariable;
-
-public class Parameters extends AbstractExpression implements ASTNode
+public class Arguments extends AbstractExpression implements ASTNode
 {
     private final Postfix func;
     private AssignmentExpression left=null;
-    public Parameters right=null;
-    public Parameters(Postfix func)
+    public Arguments right=null;
+    public Arguments(Postfix func)
     {
         this.func = func;
     }
@@ -28,7 +26,7 @@ public class Parameters extends AbstractExpression implements ASTNode
         List<AbstractToken> ret=new ArrayList<>();
         if(next instanceof OperatorToken operatorToken&&operatorToken.type==OperatorType.R_PARENTHESES)return ret;
         left=new AssignmentExpression();
-        ParametersResidue residue=new ParametersResidue(this,func);
+        ArgumentsResidue residue=new ArgumentsResidue(this,func);
         ret.add(new ResolveOperation(residue));
         ret.add(residue);
         ret.add(left);
@@ -41,7 +39,7 @@ public class Parameters extends AbstractExpression implements ASTNode
         if(left==null)return;
         left.travel();
         codes.addAll(left.codes);
-        func.parameters.add(new Pair<>(left.type,left.resultId));
+        func.arguments.add(new Pair<>(left.type,left.resultId));
         if(right!=null)
         {
             right.travel();

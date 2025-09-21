@@ -31,7 +31,6 @@ public class Compiler
     private static int variableCnt=0;
     public static int ctx=-1;
     public static Type returnType=null;
-    public static int argSize;
     public static final int dataSegmentBaseAddress=0xF0000;
     private static final Map<String,Integer> labelMap=new HashMap<>();
     private static final Map<Integer,String> labelBackMap=new HashMap<>();
@@ -67,7 +66,7 @@ public class Compiler
         localVariableCount.put(ctx,cnt+1);
         return cnt;
     }
-    public static void registerArgument(String s, Type type)
+    public static void registerParameter(String s, Type type)
     {
         if(type==PrimitiveType.VOID)throw new DeclarationException("declaring void variable");
         if(!localVariableMap.containsKey(ctx))localVariableMap.put(ctx,new HashMap<>());
@@ -431,7 +430,7 @@ public class Compiler
         ctx=-1;
         for(Code code:codes)
         {
-            if(code instanceof UnconditionalGotoCode)
+            if(code instanceof UnconditionalGotoCode||code instanceof PopCodeP)
             {
                 ret.add(code);
                 continue;
@@ -478,7 +477,7 @@ public class Compiler
             }
             if(code instanceof ReturnCode returnCode)
             {
-                ret.add(new ReturnCode(lookupAddress(returnCode.val()),returnCode.size()));
+                ret.add(new ReturnCode(lookupAddress(returnCode.val())));
                 continue;
             }
             if(code instanceof CallCodeP callCodeP)
@@ -557,7 +556,7 @@ public class Compiler
             if(code instanceof ReturnCode returnCode)
             {
                 ret=addressTransformer(bp,returnCode.val());
-                sp=bp+2*ADDRESS_WIDTH+returnCode.size();
+                sp=bp+2*ADDRESS_WIDTH;
                 ip=(int) VirtualMemory.readFromMemory(bp+ADDRESS_WIDTH,INT);
                 bp=(int) VirtualMemory.readFromMemory(bp,INT);
                 continue;
