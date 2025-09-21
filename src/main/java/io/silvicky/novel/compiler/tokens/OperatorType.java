@@ -168,6 +168,8 @@ public enum OperatorType
     SEMICOLON(";"),
     COMMA(",",OperatorArgsProperties.BINARY,(a,b,t)->b),
     DOT("."),
+    DOT_DOT(".."),
+    ELLIPSIS("..."),
     MULTIPLY("*",OperatorArgsProperties.BINARY,(a,b,t)->
     {
         switch (t)

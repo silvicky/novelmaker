@@ -39,8 +39,8 @@ public class PostfixDeclaration extends NonTerminal implements ASTNode
             if(receivedType.isAuto())throw new GrammarException("auto cannot be used as return type or array base type");
             if(postfix.operatorType==OperatorType.L_PARENTHESES)
             {
-                parameters=postfix.parameters;
-                receivedType=new FunctionType(receivedType,postfix.parameters.stream().map(Pair::first).toList());
+                parameters=postfix.parameters.reversed();
+                receivedType=new FunctionType(receivedType,parameters.stream().map(Pair::first).toList());
             }
             else
             {

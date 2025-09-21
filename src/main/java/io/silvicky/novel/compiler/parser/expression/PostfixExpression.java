@@ -92,21 +92,28 @@ public class PostfixExpression extends AbstractExpression
                         tmp=tmp2;
                     }
                     if(!(type instanceof FunctionType functionType))throw new GrammarException("not a function");
-                    if(postfix.parameters.size()!=functionType.args().size())throw new GrammarException("parameters mismatch");
+                    int argsSize=functionType.args().size();
+                    int paramsSize=postfix.parameters.size();
+                    boolean isVariadic=(!functionType.args().isEmpty())&&functionType.args().get(argsSize-1)==PrimitiveType.ELLIPSIS;
+                    if(isVariadic)argsSize--;
+                    if(isVariadic?(paramsSize<argsSize):(paramsSize!=argsSize))throw new GrammarException("parameters mismatch");
                     List<Integer> castParameters=new ArrayList<>();
+                    List<Type> castTypes=new ArrayList<>();
                     for(int i=0;i<postfix.parameters.size();i++)
                     {
                         Type pType=postfix.parameters.get(i).first(),aType=functionType.args().get(i);
-                        if(pType.equals(aType))
+                        if(pType.equals(aType)||i>=argsSize)
                         {
                             castParameters.add(postfix.parameters.get(i).second());
+                            castTypes.add(pType);
                             continue;
                         }
                         int id=requestInternalVariable(aType);
                         codes.add(new AssignCode(id,postfix.parameters.get(i).second(),0,aType,pType,pType,OperatorType.NOP));
                         castParameters.add(id);
+                        castTypes.add(aType);
                     }
-                    codes.add(new CallCode(tmp,castParameters,functionType.args()));
+                    codes.add(new CallCode(tmp,castParameters,castTypes));
                     type=functionType.returnType();
                     if(type==PrimitiveType.VOID)
                     {

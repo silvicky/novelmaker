@@ -260,7 +260,12 @@ public class Compiler
                     case ALT_SHARP_MOD ->
                     {
                         ret.add(PreprocessorToken.SHARP);
-                        ret.add(new OperatorToken(OperatorType.MOD, operatorToken.fileName, operatorToken.line, operatorToken.pos));
+                        ret.add(new OperatorToken(OperatorType.MOD, operatorToken.fileName, operatorToken.line, operatorToken.pos+2));
+                    }
+                    case DOT_DOT ->
+                    {
+                        ret.add(new OperatorToken(OperatorType.DOT, operatorToken.fileName, operatorToken.line, operatorToken.pos));
+                        ret.add(new OperatorToken(OperatorType.DOT, operatorToken.fileName, operatorToken.line, operatorToken.pos+1));
                     }
                     default -> ret.add(abstractToken);
                 }

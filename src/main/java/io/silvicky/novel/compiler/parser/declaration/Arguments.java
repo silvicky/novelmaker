@@ -27,9 +27,9 @@ public class Arguments extends NonTerminal
             ret.add(new KeywordToken(KeywordType.VOID));
             return ret;
         }
-        ret.add(new ArgumentsResidue(this,postfix));
         Argument argument=new Argument(postfix);
         ret.add(new TravelASTOperation(argument));
+        ret.add(new ArgumentsResidue(this,postfix));
         ret.add(argument);
         return ret;
     }

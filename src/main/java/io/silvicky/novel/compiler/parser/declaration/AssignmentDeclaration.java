@@ -90,6 +90,7 @@ public class AssignmentDeclaration extends NonTerminal implements ASTNode
                 codes.add(new AssignNumberCode(nid,ctx, PrimitiveType.INT,PrimitiveType.INT));
                 for(Pair<Type,String> pair: unaryDeclaration.parameters)
                 {
+                    if(pair.first()==PrimitiveType.ELLIPSIS)continue;
                     argSize+=pair.first().getSize();
                     registerArgument(pair.second(), pair.first());
                     functionBody.revokedVariables.add(pair.second());
