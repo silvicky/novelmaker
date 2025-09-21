@@ -274,16 +274,6 @@ public class Compiler
         }
         return ret;
     }
-    public static List<AbstractToken> preprocessor(List<AbstractToken> abstractTokens)
-    {
-        //TODO
-        List<AbstractToken> ret=new ArrayList<>();
-        for(AbstractToken abstractToken:abstractTokens)
-        {
-            if(abstractToken!=PreprocessorToken.EOL&&abstractToken!=PreprocessorToken.SHARP&&abstractToken!=PreprocessorToken.SHARP_SHARP)ret.add(abstractToken);
-        }
-        return ret;
-    }
     public static boolean match(AbstractToken a, AbstractToken b)
     {
         if(!(a.getClass().equals(b.getClass())))return false;
@@ -642,7 +632,7 @@ public class Compiler
     {
         List<AbstractToken> abstractTokenList =lexer(Path.of(args[0]));
         abstractTokenList=tokenParser(abstractTokenList);
-        abstractTokenList=preprocessor(abstractTokenList);
+        abstractTokenList= Preprocessor.preprocessor(abstractTokenList);
         List<Code> codeList=parser(abstractTokenList);
         codeList=typeEraser(codeList);
         printCodeList(codeList);

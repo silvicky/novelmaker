@@ -14,8 +14,8 @@ public class IdentifierToken extends Token
     {
         if(line==-1)
         {
-            return String.format("'%s'",id);
+            return String.format("%s",id);
         }
-        return String.format("'%s'@(%s,%d,%d)",id,fileName,line,pos);
+        return String.format("%s@(%s,%d,%d)",id,fileName,line,pos);
     }
 }

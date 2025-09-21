@@ -19,8 +19,8 @@ public class NumberToken<T> extends Token
     {
         if(line==-1)
         {
-            return String.format("'%s'",value.toString());
+            return String.format("%s",value.toString());
         }
-        return String.format("'%s'@(%s,%d,%d)",value.toString(),fileName,line,pos);
+        return String.format("%s@(%s,%d,%d)",value.toString(),fileName,line,pos);
     }
 }

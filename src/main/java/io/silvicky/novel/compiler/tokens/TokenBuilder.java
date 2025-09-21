@@ -32,7 +32,11 @@ public class TokenBuilder
         else if(c=='\'')
         {
             tokenBuilder=new CharTokenBuilder(fileName,line,pos);
-            tokenBuilder.append(c);
+            return true;
+        }
+        else if(c=='\"')
+        {
+            tokenBuilder=new StringTokenBuilder(fileName,line,pos);
             return true;
         }
         else if(OperatorType.find(String.valueOf(c))!=null)

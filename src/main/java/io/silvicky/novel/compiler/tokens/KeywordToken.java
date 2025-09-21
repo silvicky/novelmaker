@@ -14,8 +14,8 @@ public class KeywordToken extends Token
     {
         if(line==-1)
         {
-            return String.format("'%s'",type.symbol);
+            return String.format("%s",type.symbol);
         }
-        return String.format("'%s'@(%s,%d,%d)",type.symbol,fileName,line,pos);
+        return String.format("%s@(%s,%d,%d)",type.symbol,fileName,line,pos);
     }
 }
