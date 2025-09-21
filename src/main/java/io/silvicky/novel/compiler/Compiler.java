@@ -576,6 +576,11 @@ public class Compiler
                 VirtualMemory.moveBytes(sp-=pushCodeP.size(),addressTransformer(bp,pushCodeP.source()),pushCodeP.size());
                 continue;
             }
+            if(code instanceof PopCodeP popCodeP)
+            {
+                sp+=popCodeP.size();
+                continue;
+            }
             if(code instanceof FetchReturnValueCodeP fetchReturnValueCode)
             {
                 VirtualMemory.moveBytes(addressTransformer(bp,fetchReturnValueCode.target()),ret,fetchReturnValueCode.size());

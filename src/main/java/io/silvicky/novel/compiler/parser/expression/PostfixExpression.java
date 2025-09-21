@@ -101,13 +101,14 @@ public class PostfixExpression extends AbstractExpression
                     List<Type> castTypes=new ArrayList<>();
                     for(int i = 0; i<postfix.arguments.size(); i++)
                     {
-                        Type aType=postfix.arguments.get(i).first(),pType=functionType.params().get(i);
-                        if(aType.equals(pType)||i>=paramsSize)
+                        Type aType=postfix.arguments.get(i).first();
+                        if(i>=paramsSize||aType.equals(functionType.params().get(i)))
                         {
                             castArguments.add(postfix.arguments.get(i).second());
                             castTypes.add(aType);
                             continue;
                         }
+                        Type pType=functionType.params().get(i);
                         int id=requestInternalVariable(pType);
                         codes.add(new AssignCode(id,postfix.arguments.get(i).second(),0,pType,aType,aType,OperatorType.NOP));
                         castArguments.add(id);
