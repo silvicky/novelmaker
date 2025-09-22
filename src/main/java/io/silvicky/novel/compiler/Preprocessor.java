@@ -278,6 +278,12 @@ public class Preprocessor
                                 {
                                     token1=it2.next();
                                     token2=it2.next();
+                                    if(token1 instanceof OperatorToken operatorToken1&&operatorToken1.type==OperatorType.ELLIPSIS)
+                                    {
+                                        functionRule.parameters.add(OperatorType.ELLIPSIS.symbol);
+                                        if((!(token2 instanceof OperatorToken operatorToken2))||operatorToken2.type!=OperatorType.R_PARENTHESES)throw new RuntimeException("invalid define");
+                                        break;
+                                    }
                                     if(!(token1 instanceof IdentifierToken identifierToken2))throw new RuntimeException("invalid define");
                                     functionRule.parameters.add(identifierToken2.id);
                                     if(token2 instanceof OperatorToken operatorToken1&&operatorToken1.type==OperatorType.R_PARENTHESES)break;
