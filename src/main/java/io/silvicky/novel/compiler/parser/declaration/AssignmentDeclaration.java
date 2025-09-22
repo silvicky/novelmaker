@@ -58,18 +58,15 @@ public class AssignmentDeclaration extends NonTerminal implements ASTNode
             int nid;
             if(directParent==null)
             {
-                try
+                Pair<Integer,Type> pr=lookupVariable(unaryDeclaration.name);
+                if(pr==null)nid = registerVariable(unaryDeclaration.name, unaryDeclaration.type);
+                else
                 {
-                    Pair<Integer,Type> pr=lookupVariable(unaryDeclaration.name);
-                    if(pr.second().equals(unaryDeclaration.type))
+                    if (pr.second().equals(unaryDeclaration.type))
                     {
-                        nid=pr.first();
+                        nid = pr.first();
                     }
                     else throw new RuntimeException("conflict function declaration");
-                }
-                catch(DeclarationException e)
-                {
-                    nid = registerVariable(unaryDeclaration.name, unaryDeclaration.type);
                 }
             }
             else

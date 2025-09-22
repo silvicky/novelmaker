@@ -84,7 +84,7 @@ public class Compiler
     {
         if(localVariableMap.containsKey(ctx)&&localVariableMap.get(ctx).containsKey(s)&&!localVariableMap.get(ctx).get(s).empty())return localVariableMap.get(ctx).get(s).peek();
         if(variableMap.containsKey(s))return variableMap.get(s);
-        throw new DeclarationException("Undefined:"+s);
+        return null;
     }
     public static String lookupVariableName(int l)
     {

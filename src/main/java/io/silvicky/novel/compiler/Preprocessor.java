@@ -254,10 +254,35 @@ public class Preprocessor
                             if(tokens.size()!=1||!(tokens.getFirst() instanceof IdentifierToken identifierToken1))throw new RuntimeException("invalid undef");
                             definitions.remove(identifierToken1.id);
                         }
+                        case "define" ->
+                        {
+                            token=it.next();
+                            if(!(token instanceof IdentifierToken identifierToken1))throw new RuntimeException("invalid define");
+                            token=it.next();
+                            List<AbstractToken> tokens=new ArrayList<>();
+                            while(token!=PreprocessorToken.EOL)
+                            {
+                                tokens.add(token);
+                                token=it.next();
+                            }
+                            if(tokens.getFirst() instanceof OperatorToken operatorToken
+                                    &&operatorToken.type==OperatorType.L_PARENTHESES
+                                    &&operatorToken.line== identifierToken1.line
+                                    &&operatorToken.pos==identifierToken1.pos+identifierToken1.id.length())
+                            {
+                                //TODO a function
+                            }
+                            else
+                            {
+                                SimpleRule rule=new SimpleRule();
+                                rule.result.addAll(tokens);
+                                definitions.put(identifierToken1.id,rule);
+                            }
+                        }
                         default -> throw new InvalidTokenException("unknown instruction");
                     }
                 }
-                //TODO if, define
+                //TODO if
             }
             while(token!=PreprocessorToken.EOL)
             {
