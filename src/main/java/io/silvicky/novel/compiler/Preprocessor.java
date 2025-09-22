@@ -67,12 +67,12 @@ public class Preprocessor
                     {
                         addNonNull(ret, tokenBuilder.build());
                         tokenBuilder = new TokenBuilder(input.toString(), line, pos + 1);
-                        tokenBuilder.append(c);
+                        if(!tokenBuilder.append(c))tokenBuilder=null;
                     }
                     las = c;
                     if (pos == cur.length() - 1)
                     {
-                        addNonNull(ret, tokenBuilder.build());
+                        if(tokenBuilder!=null)addNonNull(ret, tokenBuilder.build());
                         tokenBuilder = null;
                         ret.add(PreprocessorToken.EOL);
                     }
@@ -164,7 +164,7 @@ public class Preprocessor
     }
     private static class FunctionRule implements Rule
     {
-        public final List<String> arguments=new ArrayList<>();
+        public final List<String> parameters =new ArrayList<>();
         public final List<AbstractToken> result=new ArrayList<>();
     }
     private static final Map<String,Rule> definitions=new HashMap<>();
@@ -270,7 +270,20 @@ public class Preprocessor
                                     &&operatorToken.line== identifierToken1.line
                                     &&operatorToken.pos==identifierToken1.pos+identifierToken1.id.length())
                             {
-                                //TODO a function
+                                FunctionRule functionRule=new FunctionRule();
+                                Iterator<AbstractToken> it2=tokens.iterator();
+                                AbstractToken token1,token2;
+                                it2.next();
+                                while(true)
+                                {
+                                    token1=it2.next();
+                                    token2=it2.next();
+                                    if(!(token1 instanceof IdentifierToken identifierToken2))throw new RuntimeException("invalid define");
+                                    functionRule.parameters.add(identifierToken2.id);
+                                    if(token2 instanceof OperatorToken operatorToken1&&operatorToken1.type==OperatorType.R_PARENTHESES)break;
+                                }
+                                while(it2.hasNext())functionRule.result.add(it2.next());
+                                definitions.put(identifierToken1.id, functionRule);
                             }
                             else
                             {
