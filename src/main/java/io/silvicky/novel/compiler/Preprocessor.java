@@ -192,11 +192,14 @@ public class Preprocessor
         List<AbstractToken> ret=new ArrayList<>();
         Iterator<AbstractToken> it=abstractTokens.iterator();
         Stack<Boolean> ifStack=new Stack<>();
+        List<AbstractToken> cur=new ArrayList<>();
         while(it.hasNext())
         {
             AbstractToken token=it.next();
             if(token==PreprocessorToken.SHARP)
             {
+                ret.addAll(parseDefine(cur,new HashSet<>()));
+                cur.clear();
                 token= it.next();
                 if(token instanceof IdentifierToken identifierToken)
                 {
@@ -301,14 +304,16 @@ public class Preprocessor
                         default -> throw new InvalidTokenException("unknown instruction");
                     }
                 }
+                continue;
                 //TODO if
             }
             while(token!=PreprocessorToken.EOL)
             {
-                ret.add(token);
+                cur.add(token);
                 token=it.next();
             }
         }
+        ret.addAll(parseDefine(cur,new HashSet<>()));
         return ret;
     }
 }
