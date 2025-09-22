@@ -242,6 +242,18 @@ public class Preprocessor
                             }
                             throw new RuntimeException("file not found");
                         }
+                        case "undef"->
+                        {
+                            token=it.next();
+                            List<AbstractToken> tokens=new ArrayList<>();
+                            while(token!=PreprocessorToken.EOL)
+                            {
+                                tokens.add(token);
+                                token=it.next();
+                            }
+                            if(tokens.size()!=1||!(tokens.getFirst() instanceof IdentifierToken identifierToken1))throw new RuntimeException("invalid undef");
+                            definitions.remove(identifierToken1.id);
+                        }
                         default -> throw new InvalidTokenException("unknown instruction");
                     }
                 }
