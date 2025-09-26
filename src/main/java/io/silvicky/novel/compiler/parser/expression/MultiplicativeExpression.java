@@ -4,11 +4,14 @@ import io.silvicky.novel.compiler.code.raw.AssignCode;
 import io.silvicky.novel.compiler.parser.operation.ResolveOperation;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
+import io.silvicky.novel.compiler.types.PrimitiveType;
+import io.silvicky.novel.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static io.silvicky.novel.compiler.Compiler.requestInternalVariable;
+import static io.silvicky.novel.util.Util.calculateConstExpr;
 import static io.silvicky.novel.util.Util.getResultType;
 
 public class MultiplicativeExpression extends LTRExpression
@@ -47,5 +50,12 @@ public class MultiplicativeExpression extends LTRExpression
             isDirect=left.isDirect;
             resultId=left.resultId;
         }
+    }
+
+    @Override
+    public Pair<PrimitiveType, Object> evaluateConstExpr()
+    {
+        if(right!=null) return calculateConstExpr(left.evaluateConstExpr(),right.evaluateConstExpr(),op);
+        else return left.evaluateConstExpr();
     }
 }

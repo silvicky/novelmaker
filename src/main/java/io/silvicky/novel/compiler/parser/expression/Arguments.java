@@ -5,6 +5,7 @@ import io.silvicky.novel.compiler.parser.operation.ResolveOperation;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
+import io.silvicky.novel.compiler.types.PrimitiveType;
 import io.silvicky.novel.util.Pair;
 
 import java.util.ArrayList;
@@ -45,5 +46,11 @@ public class Arguments extends AbstractExpression implements ASTNode
             right.travel();
             codes.addAll(right.codes);
         }
+    }
+
+    @Override
+    public Pair<PrimitiveType, Object> evaluateConstExpr()
+    {
+        return null;
     }
 }

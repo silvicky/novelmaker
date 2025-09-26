@@ -495,7 +495,9 @@ public class Compiler
     public static void main(String[] args)
     {
         Path sourceFile=Path.of(args[0]);
+        Preprocessor.isPreprocessing=true;
         List<AbstractToken> abstractTokenList= Preprocessor.preprocessor(sourceFile);
+        Preprocessor.isPreprocessing=false;
         List<Code> codeList=parser(abstractTokenList);
         codeList=typeEraser(codeList);
         printCodeList(codeList);

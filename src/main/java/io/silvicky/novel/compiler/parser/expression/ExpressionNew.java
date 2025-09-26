@@ -2,6 +2,8 @@ package io.silvicky.novel.compiler.parser.expression;
 
 import io.silvicky.novel.compiler.parser.operation.ResolveOperation;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
+import io.silvicky.novel.compiler.types.PrimitiveType;
+import io.silvicky.novel.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,5 +43,13 @@ public class ExpressionNew extends LTRExpression
             isDirect=left.isDirect;
             resultId=left.resultId;
         }
+    }
+
+    @Override
+    public Pair<PrimitiveType, Object> evaluateConstExpr()
+    {
+        //TODO Comma should be forbidden but why?
+        if(right!=null)return right.evaluateConstExpr();
+        else return left.evaluateConstExpr();
     }
 }

@@ -1,13 +1,19 @@
 package io.silvicky.novel.compiler.parser.expression;
 
+import io.silvicky.novel.compiler.Preprocessor;
 import io.silvicky.novel.compiler.code.raw.AssignCode;
 import io.silvicky.novel.compiler.code.raw.AssignNumberCode;
 import io.silvicky.novel.compiler.code.ReferenceCode;
+import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.tokens.*;
 import io.silvicky.novel.compiler.types.ArrayType;
+import io.silvicky.novel.compiler.types.PrimitiveType;
+import io.silvicky.novel.compiler.types.Type;
+import io.silvicky.novel.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static io.silvicky.novel.compiler.Compiler.lookupVariable;
 import static io.silvicky.novel.compiler.Compiler.requestInternalVariable;
@@ -56,9 +62,10 @@ public class PrimaryExpression extends AbstractExpression
         }
         else if(variableName!=null)
         {
-            type= lookupVariable(variableName).second();
+            Pair<Integer, Type> pr= Objects.requireNonNull(lookupVariable(variableName));
+            type= pr.second();
             resultId=requestInternalVariable(type);
-            leftId=lookupVariable(variableName).first();
+            leftId=pr.first();
             isDirect=true;
             if(type instanceof ArrayType)codes.add(new ReferenceCode(resultId,leftId));
             else codes.add(new AssignCode(resultId,leftId,leftId,type,type,type,OperatorType.NOP));
@@ -67,6 +74,26 @@ public class PrimaryExpression extends AbstractExpression
         {
             resultId=requestInternalVariable(type);
             codes.add(new AssignNumberCode(resultId,numericVal,type,type));
+        }
+    }
+
+    @Override
+    public Pair<PrimitiveType, Object> evaluateConstExpr()
+    {
+        if(nextExpression!=null)
+        {
+            if(nextExpression.right instanceof ExpressionNew)nextExpression= rotateLeft(nextExpression);
+            return nextExpression.evaluateConstExpr();
+        }
+        else if(variableName!=null)
+        {
+            //TODO const value
+            if(Preprocessor.isPreprocessing)return new Pair<>(PrimitiveType.BOOL,0);
+            throw new GrammarException("not a constant value");
+        }
+        else
+        {
+            return new Pair<>((PrimitiveType) type,numericVal);
         }
     }
 }

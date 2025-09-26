@@ -1,6 +1,8 @@
 package io.silvicky.novel.compiler;
 
 import io.silvicky.novel.compiler.tokens.*;
+import io.silvicky.novel.compiler.types.PrimitiveType;
+import io.silvicky.novel.util.Pair;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -9,10 +11,13 @@ import java.nio.file.Path;
 import java.util.*;
 
 import static io.silvicky.novel.compiler.types.PrimitiveType.BOOL;
-import static io.silvicky.novel.util.Util.addNonNull;
+import static io.silvicky.novel.util.Util.*;
 
 public class Preprocessor
 {
+    public static boolean isPreprocessing=false;
+    public static final Map<String,Rule> definitions=new HashMap<>();
+    public static final Path libraryPath=Path.of(".");//TODO
     private static List<AbstractToken> lexer(Path input)
     {
         List<AbstractToken> ret=new ArrayList<>();
@@ -167,8 +172,6 @@ public class Preprocessor
         public final List<String> parameters =new ArrayList<>();
         public final List<AbstractToken> result=new ArrayList<>();
     }
-    private static final Map<String,Rule> definitions=new HashMap<>();
-    public static final Path libraryPath=Path.of(".");//TODO
     private static List<AbstractToken> parseDefine(List<AbstractToken> abstractTokens, Set<String> used)
     {
         //TODO
@@ -191,129 +194,356 @@ public class Preprocessor
         List<AbstractToken> abstractTokens=tokenParser(lexer(sourceFile));
         List<AbstractToken> ret=new ArrayList<>();
         Iterator<AbstractToken> it=abstractTokens.iterator();
-        Stack<Boolean> ifStack=new Stack<>();
+        Stack<Pair<Boolean,Pair<Boolean,Boolean>>> ifStack=new Stack<>();
+        ifStack.push(new Pair<>(true,new Pair<>(false,false)));
+        int falseCnt=0;
         List<AbstractToken> cur=new ArrayList<>();
         while(it.hasNext())
         {
             AbstractToken token=it.next();
             if(token==PreprocessorToken.SHARP)
             {
-                ret.addAll(parseDefine(cur,new HashSet<>()));
+                if(ifStack.peek().first())ret.addAll(parseDefine(cur,new HashSet<>()));
                 cur.clear();
                 token= it.next();
-                if(token instanceof IdentifierToken identifierToken)
+                String id;
+                if(token instanceof IdentifierToken identifierToken)id=identifierToken.id;
+                else if(token instanceof KeywordToken keywordToken)id=keywordToken.type.symbol;
+                else throw new RuntimeException("invalid instruction");
+                switch (id)
                 {
-                    switch (identifierToken.id)
+                    case "include" ->
                     {
-                        case "include"->
+                        token = it.next();
+                        List<AbstractToken> headerTokens = new ArrayList<>();
+                        while (token != PreprocessorToken.EOL)
                         {
-                            token=it.next();
-                            List<AbstractToken> headerTokens=new ArrayList<>();
-                            while(token!=PreprocessorToken.EOL)
+                            headerTokens.add(token);
+                            token = it.next();
+                        }
+                        if(!ifStack.peek().first())continue;
+                        headerTokens = parseDefine(headerTokens, new HashSet<>());
+                        if (headerTokens.size() == 1 && headerTokens.getFirst() instanceof StringToken stringToken)
+                        {
+                            Path header = sourceFile.getParent().resolve(stringToken.content);
+                            if (header.toFile().exists() && header.toFile().isFile())
                             {
-                                headerTokens.add(token);
-                                token=it.next();
+                                ret.addAll(preprocessor(header));
+                                continue;
                             }
-                            headerTokens=parseDefine(headerTokens,new HashSet<>());
-                            if(headerTokens.size()==1&&headerTokens.getFirst() instanceof StringToken stringToken)
+                            header = libraryPath.resolve(stringToken.content);
+                            if (header.toFile().exists() && header.toFile().isFile())
                             {
-                                Path header=sourceFile.getParent().resolve(stringToken.content);
-                                if(header.toFile().exists()&&header.toFile().isFile())
-                                {
-                                    ret.addAll(preprocessor(header));
-                                    continue;
-                                }
-                                header=libraryPath.resolve(stringToken.content);
-                                if(header.toFile().exists()&&header.toFile().isFile())
-                                {
-                                    ret.addAll(preprocessor(header));
-                                    continue;
-                                }
-                                throw new RuntimeException("file not found");
-                            }
-                            if(headerTokens.size()>=2&&headerTokens.getFirst() instanceof OperatorToken o1&&o1.type==OperatorType.LESS&&headerTokens.getLast() instanceof OperatorToken o2&&o2.type==OperatorType.GREATER)
-                            {
-                                StringBuilder stringBuilder=new StringBuilder();
-                                for(int i=1;i<headerTokens.size()-1;i++)stringBuilder.append(asString(headerTokens.get(i)));
-                                Path header=libraryPath.resolve(stringBuilder.toString());
-                                if(header.toFile().exists()&&header.toFile().isFile())
-                                {
-                                    ret.addAll(preprocessor(header));
-                                    continue;
-                                }
-                                throw new RuntimeException("file not found");
+                                ret.addAll(preprocessor(header));
+                                continue;
                             }
                             throw new RuntimeException("file not found");
                         }
-                        case "undef"->
+                        if (headerTokens.size() >= 2 && headerTokens.getFirst() instanceof OperatorToken o1 && o1.type == OperatorType.LESS && headerTokens.getLast() instanceof OperatorToken o2 && o2.type == OperatorType.GREATER)
                         {
-                            token=it.next();
-                            List<AbstractToken> tokens=new ArrayList<>();
-                            while(token!=PreprocessorToken.EOL)
+                            StringBuilder stringBuilder = new StringBuilder();
+                            for (int i = 1; i < headerTokens.size() - 1; i++)
+                                stringBuilder.append(asString(headerTokens.get(i)));
+                            Path header = libraryPath.resolve(stringBuilder.toString());
+                            if (header.toFile().exists() && header.toFile().isFile())
                             {
-                                tokens.add(token);
-                                token=it.next();
+                                ret.addAll(preprocessor(header));
+                                continue;
                             }
-                            if(tokens.size()!=1||!(tokens.getFirst() instanceof IdentifierToken identifierToken1))throw new RuntimeException("invalid undef");
-                            definitions.remove(identifierToken1.id);
+                            throw new RuntimeException("file not found");
                         }
-                        case "define" ->
-                        {
-                            token=it.next();
-                            if(!(token instanceof IdentifierToken identifierToken1))throw new RuntimeException("invalid define");
-                            token=it.next();
-                            List<AbstractToken> tokens=new ArrayList<>();
-                            while(token!=PreprocessorToken.EOL)
-                            {
-                                tokens.add(token);
-                                token=it.next();
-                            }
-                            if(tokens.getFirst() instanceof OperatorToken operatorToken
-                                    &&operatorToken.type==OperatorType.L_PARENTHESES
-                                    &&operatorToken.line== identifierToken1.line
-                                    &&operatorToken.pos==identifierToken1.pos+identifierToken1.id.length())
-                            {
-                                FunctionRule functionRule=new FunctionRule();
-                                Iterator<AbstractToken> it2=tokens.iterator();
-                                AbstractToken token1,token2;
-                                it2.next();
-                                while(true)
-                                {
-                                    token1=it2.next();
-                                    token2=it2.next();
-                                    if(token1 instanceof OperatorToken operatorToken1&&operatorToken1.type==OperatorType.ELLIPSIS)
-                                    {
-                                        functionRule.parameters.add(OperatorType.ELLIPSIS.symbol);
-                                        if((!(token2 instanceof OperatorToken operatorToken2))||operatorToken2.type!=OperatorType.R_PARENTHESES)throw new RuntimeException("invalid define");
-                                        break;
-                                    }
-                                    if(!(token1 instanceof IdentifierToken identifierToken2))throw new RuntimeException("invalid define");
-                                    functionRule.parameters.add(identifierToken2.id);
-                                    if(token2 instanceof OperatorToken operatorToken1&&operatorToken1.type==OperatorType.R_PARENTHESES)break;
-                                }
-                                while(it2.hasNext())functionRule.result.add(it2.next());
-                                definitions.put(identifierToken1.id, functionRule);
-                            }
-                            else
-                            {
-                                SimpleRule rule=new SimpleRule();
-                                rule.result.addAll(tokens);
-                                definitions.put(identifierToken1.id,rule);
-                            }
-                        }
-                        default -> throw new InvalidTokenException("unknown instruction");
+                        throw new RuntimeException("file not found");
                     }
+                    case "undef" ->
+                    {
+                        token = it.next();
+                        List<AbstractToken> tokens = new ArrayList<>();
+                        while (token != PreprocessorToken.EOL)
+                        {
+                            tokens.add(token);
+                            token = it.next();
+                        }
+                        if(!ifStack.peek().first())continue;
+                        if (tokens.size() != 1 || !(tokens.getFirst() instanceof IdentifierToken identifierToken1))
+                            throw new RuntimeException("invalid undef");
+                        definitions.remove(identifierToken1.id);
+                    }
+                    case "define" ->
+                    {
+                        if(!ifStack.peek().first())
+                        {
+                            token = it.next();
+                            while (token != PreprocessorToken.EOL)
+                            {
+                                token = it.next();
+                            }
+                            continue;
+                        }
+                        token = it.next();
+                        if (!(token instanceof IdentifierToken identifierToken1))
+                            throw new RuntimeException("invalid define");
+                        token = it.next();
+                        List<AbstractToken> tokens = new ArrayList<>();
+                        while (token != PreprocessorToken.EOL)
+                        {
+                            tokens.add(token);
+                            token = it.next();
+                        }
+                        if (tokens.getFirst() instanceof OperatorToken operatorToken
+                                && operatorToken.type == OperatorType.L_PARENTHESES
+                                && operatorToken.line == identifierToken1.line
+                                && operatorToken.pos == identifierToken1.pos + identifierToken1.id.length())
+                        {
+                            FunctionRule functionRule = new FunctionRule();
+                            Iterator<AbstractToken> it2 = tokens.iterator();
+                            AbstractToken token1, token2;
+                            it2.next();
+                            while (true)
+                            {
+                                token1 = it2.next();
+                                token2 = it2.next();
+                                if (token1 instanceof OperatorToken operatorToken1 && operatorToken1.type == OperatorType.ELLIPSIS)
+                                {
+                                    functionRule.parameters.add(OperatorType.ELLIPSIS.symbol);
+                                    if ((!(token2 instanceof OperatorToken operatorToken2)) || operatorToken2.type != OperatorType.R_PARENTHESES)
+                                        throw new RuntimeException("invalid define");
+                                    break;
+                                }
+                                if (!(token1 instanceof IdentifierToken identifierToken2))
+                                    throw new RuntimeException("invalid define");
+                                functionRule.parameters.add(identifierToken2.id);
+                                if (token2 instanceof OperatorToken operatorToken1 && operatorToken1.type == OperatorType.R_PARENTHESES)
+                                    break;
+                            }
+                            while (it2.hasNext()) functionRule.result.add(it2.next());
+                            definitions.put(identifierToken1.id, functionRule);
+                        }
+                        else
+                        {
+                            SimpleRule rule = new SimpleRule();
+                            rule.result.addAll(tokens);
+                            definitions.put(identifierToken1.id, rule);
+                        }
+                    }
+                    case "if" ->
+                    {
+                        token = it.next();
+                        List<AbstractToken> tokens = new ArrayList<>();
+                        while (token != PreprocessorToken.EOL)
+                        {
+                            tokens.add(token);
+                            token = it.next();
+                        }
+                        if(!ifStack.peek().first())falseCnt++;
+                        if(falseCnt!=0)
+                        {
+                            ifStack.push(new Pair<>(false,new Pair<>(true,false)));
+                            continue;
+                        }
+                        Pair<PrimitiveType,Object> pr=parseConstExpr(parseDefine(tokens,new HashSet<>()));
+                        boolean result=(boolean)castPrimitiveType(pr.second(),BOOL,pr.first());
+                        if(result)
+                        {
+                            ifStack.push(new Pair<>(true,new Pair<>(true,false)));
+                        }
+                        else
+                        {
+                            ifStack.push(new Pair<>(false,new Pair<>(false,false)));
+                        }
+                    }
+                    case "ifdef" ->
+                    {
+                        token = it.next();
+                        List<AbstractToken> tokens = new ArrayList<>();
+                        while (token != PreprocessorToken.EOL)
+                        {
+                            tokens.add(token);
+                            token = it.next();
+                        }
+                        if(!ifStack.peek().first())falseCnt++;
+                        if(falseCnt!=0)
+                        {
+                            ifStack.push(new Pair<>(false,new Pair<>(true,false)));
+                            continue;
+                        }
+                        if(tokens.size()!=1||!(tokens.getFirst() instanceof IdentifierToken identifierToken))throw new RuntimeException("invalid ifdef");
+                        boolean result= definitions.containsKey(identifierToken.id);
+                        if(result)
+                        {
+                            ifStack.push(new Pair<>(true,new Pair<>(true,false)));
+                        }
+                        else
+                        {
+                            ifStack.push(new Pair<>(false,new Pair<>(false,false)));
+                        }
+                    }
+                    case "ifndef" ->
+                    {
+                        token = it.next();
+                        List<AbstractToken> tokens = new ArrayList<>();
+                        while (token != PreprocessorToken.EOL)
+                        {
+                            tokens.add(token);
+                            token = it.next();
+                        }
+                        if(!ifStack.peek().first())falseCnt++;
+                        if(falseCnt!=0)
+                        {
+                            ifStack.push(new Pair<>(false,new Pair<>(true,false)));
+                            continue;
+                        }
+                        if(tokens.size()!=1||!(tokens.getFirst() instanceof IdentifierToken identifierToken))throw new RuntimeException("invalid ifndef");
+                        boolean result= !definitions.containsKey(identifierToken.id);
+                        if(result)
+                        {
+                            ifStack.push(new Pair<>(true,new Pair<>(true,false)));
+                        }
+                        else
+                        {
+                            ifStack.push(new Pair<>(false,new Pair<>(false,false)));
+                        }
+                    }
+                    case "elif" ->
+                    {
+                        token = it.next();
+                        List<AbstractToken> tokens = new ArrayList<>();
+                        while (token != PreprocessorToken.EOL)
+                        {
+                            tokens.add(token);
+                            token = it.next();
+                        }
+                        if(falseCnt!=0)
+                        {
+                            continue;
+                        }
+                        if(ifStack.peek().second().second())throw new RuntimeException("else after else");
+                        if(ifStack.peek().second().first())
+                        {
+                            ifStack.pop();
+                            ifStack.push(new Pair<>(false,new Pair<>(true,false)));
+                            continue;
+                        }
+                        ifStack.pop();
+                        Pair<PrimitiveType,Object> pr=parseConstExpr(parseDefine(tokens,new HashSet<>()));
+                        boolean result=(boolean)castPrimitiveType(pr.second(),BOOL,pr.first());
+                        if(result)
+                        {
+                            ifStack.push(new Pair<>(true,new Pair<>(true,false)));
+                        }
+                        else
+                        {
+                            ifStack.push(new Pair<>(false,new Pair<>(false,false)));
+                        }
+                    }
+                    case "elifdef" ->
+                    {
+                        token = it.next();
+                        List<AbstractToken> tokens = new ArrayList<>();
+                        while (token != PreprocessorToken.EOL)
+                        {
+                            tokens.add(token);
+                            token = it.next();
+                        }
+                        if(falseCnt!=0)
+                        {
+                            continue;
+                        }
+                        if(ifStack.peek().second().second())throw new RuntimeException("else after else");
+                        if(ifStack.peek().second().first())
+                        {
+                            ifStack.pop();
+                            ifStack.push(new Pair<>(false,new Pair<>(true,false)));
+                            continue;
+                        }
+                        ifStack.pop();
+                        if(tokens.size()!=1||!(tokens.getFirst() instanceof IdentifierToken identifierToken))throw new RuntimeException("invalid elifdef");
+                        boolean result= definitions.containsKey(identifierToken.id);
+                        if(result)
+                        {
+                            ifStack.push(new Pair<>(true,new Pair<>(true,false)));
+                        }
+                        else
+                        {
+                            ifStack.push(new Pair<>(false,new Pair<>(false,false)));
+                        }
+                    }
+                    case "elifndef" ->
+                    {
+                        token = it.next();
+                        List<AbstractToken> tokens = new ArrayList<>();
+                        while (token != PreprocessorToken.EOL)
+                        {
+                            tokens.add(token);
+                            token = it.next();
+                        }
+                        if(falseCnt!=0)
+                        {
+                            continue;
+                        }
+                        if(ifStack.peek().second().second())throw new RuntimeException("else after else");
+                        if(ifStack.peek().second().first())
+                        {
+                            ifStack.pop();
+                            ifStack.push(new Pair<>(false,new Pair<>(true,false)));
+                            continue;
+                        }
+                        ifStack.pop();
+                        if(tokens.size()!=1||!(tokens.getFirst() instanceof IdentifierToken identifierToken))throw new RuntimeException("invalid elifndef");
+                        boolean result= !definitions.containsKey(identifierToken.id);
+                        if(result)
+                        {
+                            ifStack.push(new Pair<>(true,new Pair<>(true,false)));
+                        }
+                        else
+                        {
+                            ifStack.push(new Pair<>(false,new Pair<>(false,false)));
+                        }
+                    }
+                    case "else" ->
+                    {
+                        token = it.next();
+                        List<AbstractToken> tokens = new ArrayList<>();
+                        while (token != PreprocessorToken.EOL)
+                        {
+                            tokens.add(token);
+                            token = it.next();
+                        }
+                        if(falseCnt!=0)
+                        {
+                            continue;
+                        }
+                        if(ifStack.peek().second().second())throw new RuntimeException("else after else");
+                        if(ifStack.peek().second().first())
+                        {
+                            ifStack.pop();
+                            ifStack.push(new Pair<>(false,new Pair<>(true,false)));
+                            continue;
+                        }
+                        ifStack.pop();
+                        if(!tokens.isEmpty())throw new RuntimeException("invalid else");
+                        ifStack.push(new Pair<>(true,new Pair<>(true,false)));
+                    }
+                    case "endif" ->
+                    {
+                        it.next();
+                        ifStack.pop();
+                        if(!ifStack.peek().first())falseCnt--;
+                    }
+                    default -> throw new InvalidTokenException("unknown instruction");
                 }
-                continue;
-                //TODO if
             }
-            while(token!=PreprocessorToken.EOL)
+            else
             {
-                cur.add(token);
-                token=it.next();
+                while (token != PreprocessorToken.EOL)
+                {
+                    cur.add(token);
+                    token = it.next();
+                }
             }
         }
         ret.addAll(parseDefine(cur,new HashSet<>()));
+        ifStack.pop();
+        if(!ifStack.empty())throw new RuntimeException("if not terminated");
         return ret;
     }
 }

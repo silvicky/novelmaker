@@ -4,13 +4,14 @@ import io.silvicky.novel.compiler.code.raw.AssignCode;
 import io.silvicky.novel.compiler.parser.operation.ResolveOperation;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
+import io.silvicky.novel.compiler.types.PrimitiveType;
+import io.silvicky.novel.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static io.silvicky.novel.compiler.Compiler.requestInternalVariable;
-import static io.silvicky.novel.util.Util.getResultType;
-import static io.silvicky.novel.util.Util.rotateLeft;
+import static io.silvicky.novel.util.Util.*;
 
 public class AndExpression extends LTRExpression
 {
@@ -50,5 +51,18 @@ public class AndExpression extends LTRExpression
             isDirect=left.isDirect;
             resultId=left.resultId;
         }
+    }
+
+    @Override
+    public Pair<PrimitiveType, Object> evaluateConstExpr()
+    {
+        if(left instanceof EqualityExpression left2&&left2.right instanceof EqualityExpression)left= rotateLeft(left2);
+        if(right!=null)
+        {
+            EqualityExpression right2=(EqualityExpression) right;
+            if(right2.right instanceof EqualityExpression)right= rotateLeft(right2);
+            return calculateConstExpr(left.evaluateConstExpr(),right.evaluateConstExpr(),OperatorType.AND);
+        }
+        else return left.evaluateConstExpr();
     }
 }

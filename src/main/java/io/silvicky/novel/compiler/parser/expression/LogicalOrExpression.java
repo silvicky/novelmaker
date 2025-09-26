@@ -8,11 +8,13 @@ import io.silvicky.novel.compiler.parser.operation.ResolveOperation;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
 import io.silvicky.novel.compiler.types.PrimitiveType;
+import io.silvicky.novel.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static io.silvicky.novel.compiler.Compiler.requestInternalVariable;
+import static io.silvicky.novel.util.Util.calculateConstExpr;
 import static io.silvicky.novel.util.Util.rotateLeft;
 
 public class LogicalOrExpression extends LTRExpression
@@ -60,5 +62,18 @@ public class LogicalOrExpression extends LTRExpression
             isDirect=left.isDirect;
             resultId=left.resultId;
         }
+    }
+
+    @Override
+    public Pair<PrimitiveType, Object> evaluateConstExpr()
+    {
+        if(left instanceof LogicalAndExpression left2&&left2.right instanceof LogicalAndExpression)left= rotateLeft(left2);
+        if(right!=null)
+        {
+            LogicalAndExpression right2=(LogicalAndExpression) right;
+            if(right2.right instanceof LogicalAndExpression)right= rotateLeft(right2);
+            return calculateConstExpr(left.evaluateConstExpr(),right.evaluateConstExpr(),OperatorType.OR_OR);
+        }
+        else return left.evaluateConstExpr();
     }
 }

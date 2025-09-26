@@ -1,14 +1,18 @@
 package io.silvicky.novel.compiler.parser.expression;
 
 import io.silvicky.novel.compiler.code.raw.AssignCode;
+import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.declaration.BaseTypeBuilderRoot;
 import io.silvicky.novel.compiler.parser.declaration.UnaryDeclaration;
 import io.silvicky.novel.compiler.tokens.*;
+import io.silvicky.novel.compiler.types.PrimitiveType;
+import io.silvicky.novel.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static io.silvicky.novel.compiler.Compiler.requestInternalVariable;
+import static io.silvicky.novel.util.Util.castPrimitiveType;
 
 public class CastExpression extends AbstractExpression
 {
@@ -72,5 +76,17 @@ public class CastExpression extends AbstractExpression
         child.travel();
         codes.addAll(child.codes);
         codes.add(new AssignCode(resultId,child.resultId,0,type,child.type,child.type,OperatorType.NOP));
+    }
+
+    @Override
+    public Pair<PrimitiveType, Object> evaluateConstExpr()
+    {
+        if(nextExpression!=null)return nextExpression.evaluateConstExpr();
+        baseTypeBuilderRoot.travel();
+        unaryDeclaration.receivedType= baseTypeBuilderRoot.type;
+        unaryDeclaration.travel();
+        if(!(unaryDeclaration.type instanceof PrimitiveType primitiveType))throw new GrammarException("casting into non-primitive type in constexpr");
+        Pair<PrimitiveType,Object> pr=child.evaluateConstExpr();
+        return new Pair<>(primitiveType,castPrimitiveType(pr.second(),primitiveType,pr.first()));
     }
 }

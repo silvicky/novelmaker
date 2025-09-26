@@ -4,6 +4,8 @@ import io.silvicky.novel.compiler.parser.ASTNode;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
+import io.silvicky.novel.compiler.types.PrimitiveType;
+import io.silvicky.novel.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,5 +37,13 @@ public class ExpressionRoot extends AbstractExpression implements ASTNode
         leftId=child.leftId;
         isDirect=child.isDirect;
         resultId=child.resultId;
+    }
+
+    @Override
+    public Pair<PrimitiveType, Object> evaluateConstExpr()
+    {
+        if(child==null)return null;
+        if(child.right instanceof ExpressionNew)child= rotateLeft(child);
+        return child.evaluateConstExpr();
     }
 }

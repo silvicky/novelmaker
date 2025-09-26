@@ -1,5 +1,6 @@
 package io.silvicky.novel.compiler.parser.expression;
 
+import io.silvicky.novel.compiler.Preprocessor;
 import io.silvicky.novel.compiler.code.raw.DereferenceCode;
 import io.silvicky.novel.compiler.code.raw.IndirectAssignCode;
 import io.silvicky.novel.compiler.code.ReferenceCode;
@@ -11,11 +12,13 @@ import io.silvicky.novel.compiler.parser.declaration.UnaryDeclaration;
 import io.silvicky.novel.compiler.parser.operation.ResolveOperation;
 import io.silvicky.novel.compiler.tokens.*;
 import io.silvicky.novel.compiler.types.*;
+import io.silvicky.novel.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static io.silvicky.novel.compiler.Compiler.requestInternalVariable;
+import static io.silvicky.novel.util.Util.calculateConstExpr;
 import static io.silvicky.novel.util.Util.getResultType;
 
 public class UnaryExpression extends AbstractExpression
@@ -27,6 +30,7 @@ public class UnaryExpression extends AbstractExpression
     public BaseTypeBuilderRoot baseTypeBuilderRoot=null;
     public UnaryDeclaration unaryDeclaration=null;
     public UnaryExpression sizeofExpression=null;
+    public String id=null;
     @Override
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
@@ -63,6 +67,14 @@ public class UnaryExpression extends AbstractExpression
             ret.add(new ResolveOperation(sizeofResidue));
             ret.add(sizeofResidue);
             ret.add(new KeywordToken(KeywordType.SIZEOF));
+            return ret;
+        }
+        else if(Preprocessor.isPreprocessing&&(next instanceof IdentifierToken identifierToken)&&identifierToken.id.equals("defined"))
+        {
+            DefinedResidue definedResidue=new DefinedResidue(this);
+            ret.add(new ResolveOperation(definedResidue));
+            ret.add(definedResidue);
+            ret.add(new IdentifierToken("defined"));
             return ret;
         }
         nextExpression=new PostfixExpression();
@@ -155,6 +167,45 @@ public class UnaryExpression extends AbstractExpression
                 type=getResultType(castExpression.type, castExpression.type, op);
                 resultId=requestInternalVariable(type);
                 codes.add(new AssignCode(resultId,castExpression.resultId,castExpression.resultId,type, castExpression.type, castExpression.type, op));
+            }
+        }
+    }
+
+    @Override
+    public Pair<PrimitiveType, Object> evaluateConstExpr()
+    {
+        if(id!=null)
+        {
+            return new Pair<>(PrimitiveType.BOOL,Preprocessor.definitions.containsKey(id));
+        }
+        else if (nextExpression != null)
+        {
+            return nextExpression.evaluateConstExpr();
+        }
+        else if(sizeofExpression!=null)
+        {
+            return new Pair<>(Type.ADDRESS_TYPE,sizeofExpression.evaluateConstExpr().first().getSize());
+        }
+        else if(baseTypeBuilderRoot!=null)
+        {
+            baseTypeBuilderRoot.travel();
+            unaryDeclaration.receivedType=baseTypeBuilderRoot.type;
+            unaryDeclaration.travel();
+            return new Pair<>(Type.ADDRESS_TYPE,unaryDeclaration.type.getSize());
+        }
+        else if(child!=null)
+        {
+            throw new GrammarException("++/-- forbidden in constexpr");
+        }
+        else
+        {
+            if(op==OperatorType.MULTIPLY||op==OperatorType.AND)
+            {
+                throw new GrammarException("*/& forbidden in constexpr");
+            }
+            else
+            {
+                return calculateConstExpr(castExpression.evaluateConstExpr(),castExpression.evaluateConstExpr(),op);
             }
         }
     }

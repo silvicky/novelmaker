@@ -1,12 +1,20 @@
 package io.silvicky.novel.util;
 
 import io.silvicky.novel.compiler.parser.GrammarException;
+import io.silvicky.novel.compiler.parser.NonTerminal;
+import io.silvicky.novel.compiler.parser.expression.ConditionalExpression;
 import io.silvicky.novel.compiler.parser.expression.LTRExpression;
+import io.silvicky.novel.compiler.parser.operation.Operation;
+import io.silvicky.novel.compiler.parser.operation.Skip;
+import io.silvicky.novel.compiler.tokens.AbstractToken;
+import io.silvicky.novel.compiler.tokens.OperatorToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
 import io.silvicky.novel.compiler.types.*;
 
 import java.util.List;
+import java.util.Stack;
 
+import static io.silvicky.novel.compiler.Compiler.match;
 import static io.silvicky.novel.compiler.types.PrimitiveType.BOOL;
 import static io.silvicky.novel.compiler.types.Type.ADDRESS_TYPE;
 
@@ -116,10 +124,55 @@ public class Util
             {
                 return number.doubleValue();
             }
-            default ->
-            {
-                return null;
-            }
+            default -> throw new RuntimeException("invalid cast");
         }
+    }
+    public static Pair<PrimitiveType,Object> calculateConstExpr(Pair<PrimitiveType,Object> a,Pair<PrimitiveType,Object> b, OperatorType op)
+    {
+        PrimitiveType commonType=PrimitiveType.values()[Math.max(a.first().ordinal(),b.first().ordinal())];
+        return switch (op)
+        {
+            case OR_OR -> new Pair<>(BOOL,((boolean)castPrimitiveType(a.second(),BOOL,a.first()))||((boolean) castPrimitiveType(b.second(),BOOL,b.first())));
+            case AND_AND -> new Pair<>(BOOL,((boolean)castPrimitiveType(a.second(),BOOL,a.first()))&&((boolean) castPrimitiveType(b.second(),BOOL,b.first())));
+            default -> new Pair<>((PrimitiveType) getResultType(a.first(),b.first(),op),
+                    op.operation.cal(
+                            castPrimitiveType(a.second(),commonType,a.first()),
+                            castPrimitiveType(b.second(),commonType,b.first()),
+                            commonType));
+        };
+    }
+    public static Pair<PrimitiveType,Object> parseConstExpr(List<AbstractToken> tokens)
+    {
+        ConditionalExpression conditionalExpression=new ConditionalExpression();
+        tokens.add(new OperatorToken(OperatorType.SEMICOLON));
+        tokens.add(new OperatorToken(OperatorType.SEMICOLON));
+        int rul=0;
+        Stack<AbstractToken> stack=new Stack<>();
+        stack.push(conditionalExpression);
+        while(!stack.empty())
+        {
+            AbstractToken top=stack.pop();
+            if(top instanceof Operation operation)
+            {
+                operation.execute();
+                continue;
+            }
+            if(top instanceof Skip)
+            {
+                stack.pop();
+                continue;
+            }
+            AbstractToken next= tokens.get(rul);
+            AbstractToken second= tokens.get(rul+1);
+            if(!(top instanceof NonTerminal nonTerminal))
+            {
+                if(!match(top,next))throw new GrammarException("Mismatch: "+top+" and "+next);
+                rul++;
+                continue;
+            }
+            List<AbstractToken> list=nonTerminal.lookup(next,second);
+            for(AbstractToken abstractToken :list)stack.push(abstractToken);
+        }
+        return conditionalExpression.evaluateConstExpr();
     }
 }

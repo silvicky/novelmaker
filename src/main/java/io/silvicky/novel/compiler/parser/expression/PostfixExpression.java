@@ -10,6 +10,7 @@ import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
 import io.silvicky.novel.compiler.types.*;
+import io.silvicky.novel.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -131,5 +132,12 @@ public class PostfixExpression extends AbstractExpression
             }
         }
         resultId=curResult;
+    }
+
+    @Override
+    public Pair<PrimitiveType, Object> evaluateConstExpr()
+    {
+        if(!postfixes.isEmpty())throw new GrammarException("postfix forbidden in constexpr");
+        return nextExpression.evaluateConstExpr();
     }
 }

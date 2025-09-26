@@ -7,14 +7,15 @@ import io.silvicky.novel.compiler.code.UnconditionalGotoCode;
 import io.silvicky.novel.compiler.parser.operation.ResolveOperation;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
+import io.silvicky.novel.compiler.types.PrimitiveType;
+import io.silvicky.novel.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static io.silvicky.novel.compiler.Compiler.requestLabel;
 import static io.silvicky.novel.compiler.Compiler.requestInternalVariable;
-import static io.silvicky.novel.util.Util.getResultType;
-import static io.silvicky.novel.util.Util.rotateLeft;
+import static io.silvicky.novel.util.Util.*;
 
 public class ConditionalExpression extends AbstractExpression
 {
@@ -66,5 +67,19 @@ public class ConditionalExpression extends AbstractExpression
             isDirect=left.isDirect;
             resultId=left.resultId;
         }
+    }
+
+    @Override
+    public Pair<PrimitiveType, Object> evaluateConstExpr()
+    {
+        if(left.right instanceof LogicalOrExpression)left= rotateLeft(left);
+        if(middle!=null)
+        {
+            if(middle.right instanceof ExpressionNew)middle= rotateLeft(middle);
+            Pair<PrimitiveType,Object> pr=left.evaluateConstExpr();
+            if((boolean) castPrimitiveType(pr.second(),PrimitiveType.BOOL,pr.first()))return middle.evaluateConstExpr();
+            return right.evaluateConstExpr();
+        }
+        else return left.evaluateConstExpr();
     }
 }
