@@ -88,7 +88,7 @@ public class PrimaryExpression extends AbstractExpression
         else if(variableName!=null)
         {
             //TODO const value
-            if(Preprocessor.isPreprocessing)return new Pair<>(PrimitiveType.BOOL,0);
+            if(Preprocessor.isPreprocessing)return new Pair<>(PrimitiveType.BOOL,false);
             throw new GrammarException("not a constant value");
         }
         else
