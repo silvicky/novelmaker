@@ -176,7 +176,7 @@ public class UnaryExpression extends AbstractExpression
     {
         if(id!=null)
         {
-            return new Pair<>(PrimitiveType.BOOL,Preprocessor.definitions.containsKey(id));
+            return new Pair<>(PrimitiveType.BOOL,Preprocessor.isDefined(id));
         }
         else if (nextExpression != null)
         {

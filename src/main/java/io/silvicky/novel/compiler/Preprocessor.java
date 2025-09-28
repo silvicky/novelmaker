@@ -16,7 +16,8 @@ import static io.silvicky.novel.util.Util.*;
 public class Preprocessor
 {
     public static boolean isPreprocessing=false;
-    public static final Map<String,Rule> definitions=new HashMap<>();
+    private static final Map<String,Rule> definitions=new HashMap<>();
+    public static boolean isDefined(String s){return definitions.containsKey(s);}
     public static final Path libraryPath=Path.of(".");//TODO
     private static List<AbstractToken> lexer(Path input)
     {
@@ -174,18 +175,134 @@ public class Preprocessor
     }
     private static List<AbstractToken> parseDefine(List<AbstractToken> abstractTokens, Set<String> used)
     {
-        //TODO
-        return abstractTokens;
+        List<AbstractToken> ret=new ArrayList<>();
+        Stack<Pair<AbstractToken,Set<String>>> stack=new Stack<>();
+        for(AbstractToken i:abstractTokens.reversed())stack.push(new Pair<>(i,used));
+        while(!stack.empty())
+        {
+            Pair<AbstractToken,Set<String>> pr=stack.peek();
+            stack.pop();
+            if((!(pr.first() instanceof IdentifierToken identifierToken))||(!definitions.containsKey(identifierToken.id))||pr.second().contains(identifierToken.id))
+            {
+                ret.add(pr.first());
+                continue;
+            }
+            Rule rule=definitions.get(identifierToken.id);
+            //TODO ##
+            List<AbstractToken> result;
+            Set<String> set=new HashSet<>(pr.second());
+            if(rule instanceof SimpleRule simpleRule)
+            {
+                result=simpleRule.result;
+            }
+            else
+            {
+                FunctionRule functionRule=(FunctionRule) rule;
+                if((!(stack.pop().first() instanceof OperatorToken operatorToken))||operatorToken.type!=OperatorType.L_PARENTHESES)throw new RuntimeException("function not called");
+                int lvl=1;
+                List<List<AbstractToken>> args=new ArrayList<>();
+                List<List<AbstractToken>> rawArgs=new ArrayList<>();
+                List<AbstractToken> tmp=new ArrayList<>();
+                AbstractToken cur=stack.pop().first();
+                while(true)
+                {
+                    if(cur instanceof OperatorToken operatorToken1&&operatorToken1.type==OperatorType.L_PARENTHESES)lvl++;
+                    if(cur instanceof OperatorToken operatorToken1&&operatorToken1.type==OperatorType.R_PARENTHESES)lvl--;
+                    if(lvl==0)
+                    {
+                        args.add(parseDefine(tmp,set));
+                        rawArgs.add(tmp);
+                        break;
+                    }
+                    if(cur instanceof OperatorToken operatorToken1&&operatorToken1.type==OperatorType.COMMA&&lvl==1)
+                    {
+                        args.add(parseDefine(tmp,set));
+                        rawArgs.add(tmp);
+                        tmp=new ArrayList<>();
+                    }
+                    else
+                    {
+                        tmp.add(cur);
+                    }
+                    cur=stack.pop().first();
+                }
+                boolean isVariadic=(!functionRule.parameters.isEmpty())&&functionRule.parameters.getLast().equals("...");
+                int paramsSize=functionRule.parameters.size();
+                int argsSize=args.size();
+                if(isVariadic)paramsSize--;
+                if(isVariadic?(argsSize<paramsSize):(argsSize!=paramsSize))throw new RuntimeException("args mismatch");
+                Map<String,List<AbstractToken>> replacementMap=new HashMap<>();
+                for(int i=0;i<paramsSize;i++)replacementMap.put(functionRule.parameters.get(i),args.get(i));
+                if(isVariadic)
+                {
+                    List<AbstractToken> tmpList=new ArrayList<>();
+                    for(int i=paramsSize;i<argsSize;i++)
+                    {
+                        if(i>paramsSize)tmpList.add(new OperatorToken(OperatorType.COMMA));
+                        tmpList.addAll(rawArgs.get(i));
+                    }
+                    replacementMap.put("__VA_ARGS__",tmpList);
+                }
+                Iterator<AbstractToken> it=functionRule.result.iterator();
+                result=new ArrayList<>();
+                while(it.hasNext())
+                {
+                    AbstractToken token=it.next();
+                    if(token==PreprocessorToken.SHARP)
+                    {
+                        token=it.next();
+                        String id=((IdentifierToken)token).id;
+                        result.add(new StringToken(asString(replacementMap.get(id))));
+                        continue;
+                    }
+                    if(token instanceof IdentifierToken identifierToken1&&replacementMap.containsKey(identifierToken1.id))
+                    {
+                        result.addAll(replacementMap.get(identifierToken1.id));
+                        continue;
+                    }
+                    if(token instanceof IdentifierToken identifierToken1&&identifierToken1.id.equals("__VA_OPT__"))
+                    {
+                        if(!isVariadic)throw new RuntimeException("not variadic");
+                        List<AbstractToken> optional=new ArrayList<>();
+                        token=it.next();
+                        if((!(token instanceof OperatorToken operatorToken1))||operatorToken1.type!=OperatorType.L_PARENTHESES)throw new RuntimeException("invalid __VA_OPT__");
+                        int lvl2=1;
+                        token=it.next();
+                        while(true)
+                        {
+                            if(token instanceof OperatorToken operatorToken2&&operatorToken2.type==OperatorType.L_PARENTHESES)lvl2++;
+                            if(token instanceof OperatorToken operatorToken2&&operatorToken2.type==OperatorType.R_PARENTHESES)lvl2--;
+                            if(lvl2==0)break;
+                            optional.add(token);
+                            token=it.next();
+                        }
+                        if(argsSize>paramsSize)result.addAll(optional);
+                        continue;
+                    }
+                    result.add(token);
+                }
+            }
+            set.add(identifierToken.id);
+            for(AbstractToken i:result.reversed())stack.push(new Pair<>(i,set));
+        }
+        return ret;
+    }
+    private static String asString(List<AbstractToken> tokens)
+    {
+        StringBuilder stringBuilder=new StringBuilder();
+        for(AbstractToken token:tokens)stringBuilder.append(asString(token));
+        return stringBuilder.toString();
     }
     private static String asString(AbstractToken token)
     {
         return switch (token)
         {
-            case StringToken stringToken->stringToken.content;
+            case StringToken stringToken->"\""+stringToken.content+"\"";
             case IdentifierToken identifierToken->identifierToken.id;
             case OperatorToken operatorToken->operatorToken.type.symbol;
             case NumberToken<?> numberToken->numberToken.value.toString();
             case KeywordToken keywordToken->keywordToken.type.symbol;
+            case PreprocessorToken preprocessorToken->preprocessorToken.symbol;
             default -> throw new InvalidTokenException("unknown token");
         };
     }

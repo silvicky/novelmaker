@@ -3,7 +3,11 @@ package io.silvicky.novel.compiler.tokens;
 public class StringToken extends Token
 {
     public final String content;
-
+    public StringToken(String content)
+    {
+        super();
+        this.content=content;
+    }
     public StringToken(String content, String fileName, int line, int pos)
     {
         super(fileName,line,pos);
