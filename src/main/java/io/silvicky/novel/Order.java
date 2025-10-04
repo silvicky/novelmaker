@@ -22,10 +22,14 @@ public class Order
     public final HashSet<Path> optional=new HashSet<>();
     public Order(Path root)
     {
-        RawOrder rawOrder= (RawOrder) JsonParser.parseJson(root.resolve("order.json"), RawOrder.class);
-        for(String i: rawOrder.before)before.add(root.resolve(i).toAbsolutePath());
-        for(String i: rawOrder.after)after.add(root.resolve(i).toAbsolutePath());
-        for(String i: rawOrder.ignore)ignore.add(root.resolve(i).toAbsolutePath());
-        for(String i: rawOrder.optional)optional.add(root.resolve(i).toAbsolutePath());
+        try
+        {
+            RawOrder rawOrder = (RawOrder) JsonParser.parseJson(root.resolve("order.json"), RawOrder.class);
+            for (String i : rawOrder.before) before.add(root.resolve(i).toAbsolutePath());
+            for (String i : rawOrder.after) after.add(root.resolve(i).toAbsolutePath());
+            for (String i : rawOrder.ignore) ignore.add(root.resolve(i).toAbsolutePath());
+            for (String i : rawOrder.optional) optional.add(root.resolve(i).toAbsolutePath());
+        }
+        catch (Exception ignored){}
     }
 }
