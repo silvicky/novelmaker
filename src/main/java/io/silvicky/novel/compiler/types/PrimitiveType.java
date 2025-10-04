@@ -43,4 +43,9 @@ public enum PrimitiveType implements Type
     {
         return this==AUTO;
     }
+    public static PrimitiveType getPrimitiveTypeByJava(Class<?> clazz)
+    {
+        for(PrimitiveType type:values())if(clazz.equals(type.javaType))return type;
+        throw new RuntimeException("unknown primitive type");
+    }
 }

@@ -137,7 +137,7 @@ public class Compiler
         if(a instanceof IdentifierToken)return ((IdentifierToken) a).id.equals(((IdentifierToken) b).id);
         if(a instanceof KeywordToken)return ((KeywordToken) a).type.equals(((KeywordToken) b).type);
         if(a instanceof OperatorToken)return ((OperatorToken) a).type.equals(((OperatorToken) b).type);
-        return a instanceof NumberToken;
+        return a instanceof NumberToken||a instanceof StringToken;
     }
     public static List<Code> parser(List<AbstractToken> abstractTokens)
     {

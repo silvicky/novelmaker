@@ -1,12 +1,10 @@
 package io.silvicky.novel;
 
-import com.google.gson.Gson;
+import io.silvicky.novel.json.JsonParser;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 class CharItem
 {
@@ -16,20 +14,19 @@ class CharItem
 class Cfg
 {
     boolean replaceChars=true;
-    List<CharItem> chars;
+    ArrayList<CharItem> chars;
     String left;
     String right;
 }
 public class CfgLoader
 {
-    private static final Gson gson=new Gson();
     public static boolean replaceChars=true;
     public static final Map<String,String> charMap=new HashMap<>();
     public static String left="\\(",right="\\)";
-    public static void load(Path path) throws FileNotFoundException
+    public static void load(Path path)
     {
         if(!path.toFile().isFile())return;
-        Cfg cfg=gson.fromJson(new FileReader(path.toFile()),Cfg.class);
+        Cfg cfg= (Cfg)JsonParser.parseJson(path,Cfg.class);
         replaceChars=cfg.replaceChars;
         if(cfg.chars!=null)for(CharItem i:cfg.chars)charMap.put(i.id,i.name);
         if(cfg.left!=null)left=cfg.left;

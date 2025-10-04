@@ -6,10 +6,9 @@ import io.silvicky.novel.compiler.parser.expression.ConditionalExpression;
 import io.silvicky.novel.compiler.parser.expression.LTRExpression;
 import io.silvicky.novel.compiler.parser.operation.Operation;
 import io.silvicky.novel.compiler.parser.operation.Skip;
-import io.silvicky.novel.compiler.tokens.AbstractToken;
-import io.silvicky.novel.compiler.tokens.OperatorToken;
-import io.silvicky.novel.compiler.tokens.OperatorType;
+import io.silvicky.novel.compiler.tokens.*;
 import io.silvicky.novel.compiler.types.*;
+import io.silvicky.novel.json.entities.*;
 
 import java.util.List;
 import java.util.Stack;
@@ -174,5 +173,21 @@ public class Util
             for(AbstractToken abstractToken :list)stack.push(abstractToken);
         }
         return conditionalExpression.evaluateConstExpr();
+    }
+    public static JsonEntity findJsonEntity(AbstractToken next)
+    {
+        if(next instanceof StringToken stringToken)return new StringEntity(stringToken.content);
+        if(next instanceof IdentifierToken identifierToken)
+        {
+            if(identifierToken.id.equals("true"))return new BoolEntity(true);
+            if(identifierToken.id.equals("false"))return new BoolEntity(false);
+            if(identifierToken.id.equals("null"))return new NullEntity();
+        }
+        if(next instanceof OperatorToken operatorToken)
+        {
+            if(operatorToken.type==OperatorType.L_BRACE)return new MapEntity();
+            if(operatorToken.type==OperatorType.L_BRACKET)return new ListEntity();
+        }
+        return new NumberEntity();
     }
 }

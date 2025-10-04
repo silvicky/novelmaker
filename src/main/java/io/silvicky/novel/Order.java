@@ -1,37 +1,28 @@
 package io.silvicky.novel;
 
-import com.google.gson.Gson;
+import io.silvicky.novel.json.JsonParser;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 class RawOrder
 {
-    List<String> before=new ArrayList<>();
-    List<String> after=new ArrayList<>();
-    List<String> ignore=new ArrayList<>();
-
-    List<String> optional=new ArrayList<>();
+    ArrayList<String> before=new ArrayList<>();
+    ArrayList<String> after=new ArrayList<>();
+    ArrayList<String> ignore=new ArrayList<>();
+    ArrayList<String> optional=new ArrayList<>();
 }
 public class Order
 {
     public final List<Path> before=new ArrayList<>();
     public final List<Path> after=new ArrayList<>();
-    public final Set<Path> ignore=new HashSet<>();
-    public final Set<Path> optional=new HashSet<>();
-    public Order(Path root) throws FileNotFoundException
+    public final HashSet<Path> ignore=new HashSet<>();
+    public final HashSet<Path> optional=new HashSet<>();
+    public Order(Path root)
     {
-        Gson gson=new Gson();
-        File orderFile=root.resolve("order.json").toFile();
-        if(!orderFile.exists())return;
-        if(!orderFile.isFile())return;
-        RawOrder rawOrder=gson.fromJson(new FileReader(orderFile), RawOrder.class);
+        RawOrder rawOrder= (RawOrder) JsonParser.parseJson(root.resolve("order.json"), RawOrder.class);
         for(String i: rawOrder.before)before.add(root.resolve(i).toAbsolutePath());
         for(String i: rawOrder.after)after.add(root.resolve(i).toAbsolutePath());
         for(String i: rawOrder.ignore)ignore.add(root.resolve(i).toAbsolutePath());

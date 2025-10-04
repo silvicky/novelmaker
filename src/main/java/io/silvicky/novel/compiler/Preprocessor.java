@@ -19,7 +19,7 @@ public class Preprocessor
     private static final Map<String,Rule> definitions=new HashMap<>();
     public static boolean isDefined(String s){return definitions.containsKey(s);}
     public static final Path libraryPath=Path.of(".");//TODO
-    private static List<AbstractToken> lexer(Path input)
+    public static List<AbstractToken> lexer(Path input)
     {
         List<AbstractToken> ret=new ArrayList<>();
         TokenBuilder tokenBuilder=null;
@@ -98,6 +98,11 @@ public class Preprocessor
         List<AbstractToken> ret=new ArrayList<>();
         for (AbstractToken abstractToken : abstractTokens)
         {
+            if(abstractToken instanceof IdentifierToken identifierToken)
+            {
+                KeywordType type=KeywordType.find(identifierToken.id);
+                if(type!=null)abstractToken=new KeywordToken(type,identifierToken.fileName,identifierToken.line,identifierToken.pos);
+            }
             if (abstractToken instanceof KeywordToken keywordToken)
             {
                 switch (keywordToken.type)

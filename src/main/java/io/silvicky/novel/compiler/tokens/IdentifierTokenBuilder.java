@@ -22,8 +22,6 @@ public class IdentifierTokenBuilder extends TokenBuilder
     @Override
     public AbstractToken build()
     {
-        KeywordType type=KeywordType.find(stringBuilder.toString());
-        if(type!=null)return new KeywordToken(type,fileName,line,pos);
         return new IdentifierToken(stringBuilder.toString(),fileName,line,pos);
     }
 }
