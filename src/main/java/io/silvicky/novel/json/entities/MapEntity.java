@@ -23,7 +23,14 @@ public class MapEntity implements JsonEntity
         {
             try
             {
-                Map<String,Object> result = (Map<String,Object>) ((Class<?>)parameterizedType.getRawType()).getDeclaredConstructor().newInstance();
+                Map<String,Object> result;
+                if(((Class<?>) parameterizedType.getRawType()).isAssignableFrom(HashMap.class)) result=new HashMap<>();
+                else
+                {
+                    Constructor<?> constructor=((Class<?>)parameterizedType.getRawType()).getDeclaredConstructor();
+                    constructor.setAccessible(true);
+                    result = (Map<String, Object>) constructor.newInstance();
+                }
                 Class<?> clazz2 = (Class<?>)parameterizedType.getActualTypeArguments()[1];
                 for (Map.Entry<String, JsonEntity> entry : map.entrySet())
                 {

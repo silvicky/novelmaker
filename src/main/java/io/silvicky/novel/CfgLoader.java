@@ -3,8 +3,8 @@ package io.silvicky.novel;
 import io.silvicky.novel.json.JsonParser;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 class CharItem
 {
@@ -14,7 +14,7 @@ class CharItem
 class Cfg
 {
     boolean replaceChars=true;
-    ArrayList<CharItem> chars;
+    List<CharItem> chars;
     String left;
     String right;
 }

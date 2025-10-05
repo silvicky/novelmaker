@@ -9,10 +9,10 @@ import java.util.List;
 
 class RawOrder
 {
-    ArrayList<String> before=new ArrayList<>();
-    ArrayList<String> after=new ArrayList<>();
-    ArrayList<String> ignore=new ArrayList<>();
-    ArrayList<String> optional=new ArrayList<>();
+    List<String> before=new ArrayList<>();
+    List<String> after=new ArrayList<>();
+    List<String> ignore=new ArrayList<>();
+    List<String> optional=new ArrayList<>();
 }
 public class Order
 {

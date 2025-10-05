@@ -30,9 +30,14 @@ public class ListEntity implements JsonEntity
         try
         {
             ParameterizedType parameterizedType=(ParameterizedType)type;
-            Constructor<?> constructor=((Class<?>)parameterizedType.getRawType()).getDeclaredConstructor();
-            constructor.setAccessible(true);
-            Collection<Object> result = (Collection<Object>) constructor.newInstance();
+            Collection<Object> result;
+            if(((Class<?>) parameterizedType.getRawType()).isAssignableFrom(ArrayList.class))result=new ArrayList<>();
+            else
+            {
+                Constructor<?> constructor=((Class<?>)parameterizedType.getRawType()).getDeclaredConstructor();
+                constructor.setAccessible(true);
+                result = (Collection<Object>) constructor.newInstance();
+            }
             Type parameterType=parameterizedType.getActualTypeArguments()[0];
             for(JsonEntity jsonEntity:list)
             {
