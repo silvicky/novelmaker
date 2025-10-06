@@ -4,7 +4,7 @@ import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.PreprocessorToken;
 import io.silvicky.novel.json.entities.AbstractJsonEntity;
-import io.silvicky.novel.json.entities.MapEntity;
+import io.silvicky.novel.json.entities.JsonEntity;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -13,6 +13,7 @@ import java.util.Stack;
 
 import static io.silvicky.novel.compiler.Compiler.match;
 import static io.silvicky.novel.compiler.Preprocessor.lexer;
+import static io.silvicky.novel.util.Util.findJsonEntity;
 
 public class JsonParser
 {
@@ -21,7 +22,7 @@ public class JsonParser
         List<AbstractToken> tokens=lexer(path);
         List<AbstractToken> tokens1=new ArrayList<>();
         for(AbstractToken token:tokens)if(token!= PreprocessorToken.EOL)tokens1.add(token);
-        MapEntity root=new MapEntity();
+        JsonEntity root=findJsonEntity(tokens1.getFirst());
         int rul=0;
         Stack<AbstractToken> stack=new Stack<>();
         stack.push(root);
