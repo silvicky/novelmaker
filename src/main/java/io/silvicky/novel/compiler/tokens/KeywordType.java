@@ -36,11 +36,16 @@ public enum KeywordType
     GOTO("goto"),
     BREAK("break"),
     CONTINUE("continue"),
+    SWITCH("switch"),
+    CASE("case"),
+    DEFAULT("default"),
     DECLTYPE("decltype"),//TODO
     STRUCT("struct"),//TODO
     CLASS("class"),//TODO
     ENUM("enum"),//TODO
     UNION("union"),//TODO
+    TYPEDEF("typedef"),//TODO
+    STATIC("static"),//TODO
     SIZEOF("sizeof");
     public final String symbol;
     KeywordType(String symbol)

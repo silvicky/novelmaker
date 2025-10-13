@@ -25,7 +25,7 @@ public class Line extends NonTerminal implements ASTNode
         List<AbstractToken> ret=new ArrayList<>();
         if(next instanceof OperatorToken operatorToken&&operatorToken.type==OperatorType.L_BRACE)
         {
-            content = new Block(breakLabel, continueLabel, this);
+            content = new Block(breakLabel, continueLabel, Objects.requireNonNullElse(this.directParent,this));
             ret.add(new OperatorToken(OperatorType.R_BRACE));
             ret.add(content);
             ret.add(new OperatorToken(OperatorType.L_BRACE));
@@ -84,7 +84,26 @@ public class Line extends NonTerminal implements ASTNode
                 ret.add(content);
                 return ret;
             }
-            //TODO idk
+            if(type==KeywordType.SWITCH)
+            {
+                content=new SwitchLine();
+                ret.add(content);
+                return ret;
+            }
+            if(type==KeywordType.DEFAULT)
+            {
+                if(!(directParent instanceof SwitchLine switchLine))throw new GrammarException("not in a switch");
+                content=new DefaultLine(switchLine);
+                ret.add(content);
+                return ret;
+            }
+            if(type==KeywordType.CASE)
+            {
+                if(!(directParent instanceof SwitchLine switchLine))throw new GrammarException("not in a switch");
+                content=new CaseLine(switchLine);
+                ret.add(content);
+                return ret;
+            }
             content=new DeclarationRoot(Objects.requireNonNullElse(this.directParent, this));
             ret.add(content);
             return ret;
