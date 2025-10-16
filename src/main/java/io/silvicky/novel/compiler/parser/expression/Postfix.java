@@ -3,6 +3,7 @@ package io.silvicky.novel.compiler.parser.expression;
 import io.silvicky.novel.compiler.parser.ASTNode;
 import io.silvicky.novel.compiler.parser.NonTerminal;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
+import io.silvicky.novel.compiler.tokens.IdentifierToken;
 import io.silvicky.novel.compiler.tokens.OperatorToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
 import io.silvicky.novel.compiler.types.Type;
@@ -17,6 +18,7 @@ public class Postfix extends NonTerminal implements ASTNode
     public ExpressionNew nextExpression;
     public final List<Pair<Type,Integer>> arguments =new ArrayList<>();
     private Arguments pr;
+    public String memberName;
     @Override
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
@@ -33,12 +35,24 @@ public class Postfix extends NonTerminal implements ASTNode
             ret.add(nextExpression);
             ret.add(new OperatorToken(OperatorType.L_BRACKET));
         }
-        else
+        else if(operatorType==OperatorType.L_PARENTHESES)
         {
             ret.add(new OperatorToken(OperatorType.R_PARENTHESES));
             pr=new Arguments(this);
             ret.add(pr);
             ret.add(new OperatorToken(OperatorType.L_PARENTHESES));
+        }
+        else if(operatorType==OperatorType.DOT)
+        {
+            memberName=((IdentifierToken)second).id;
+            ret.add(new IdentifierToken(memberName));
+            ret.add(new OperatorToken(OperatorType.DOT));
+        }
+        else
+        {
+            memberName=((IdentifierToken)second).id;
+            ret.add(new IdentifierToken(memberName));
+            ret.add(new OperatorToken(OperatorType.INDIRECT_ACCESS));
         }
         return ret;
     }

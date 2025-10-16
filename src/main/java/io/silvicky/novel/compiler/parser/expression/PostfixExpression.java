@@ -69,6 +69,7 @@ public class PostfixExpression extends AbstractExpression
                 }
                 case L_BRACKET->
                 {
+                    if(type instanceof ConstType constType)type=constType.baseType();
                     Type resultType=getResultType(type,postfix.nextExpression.type,OperatorType.PLUS);
                     if(!(resultType instanceof AbstractPointer abstractPointer))throw new GrammarException("not a pointer/array");
                     int tmp1=requestInternalVariable(resultType);
@@ -84,6 +85,7 @@ public class PostfixExpression extends AbstractExpression
                 }
                 case L_PARENTHESES->
                 {
+                    if(type instanceof ConstType constType)type=constType.baseType();
                     int tmp=curResult,tmp2;
                     while(type instanceof PointerType pointerType)
                     {
@@ -128,6 +130,65 @@ public class PostfixExpression extends AbstractExpression
                     codes.add(new FetchReturnValueCode(curResult,type));
                     leftId=-1;
                     isDirect=false;
+                }
+                case DOT ->
+                {
+                    boolean isConst=false;
+                    if(type instanceof ConstType constType)
+                    {
+                        type=constType.baseType();
+                        isConst=true;
+                    }
+                    Pair<Type,Integer> pr=((CompoundType) type).lookupMember(postfix.memberName);
+                    type=pr.first();
+                    if(isConst)type=new ConstType(type);
+                    int tmp1=requestInternalVariable(Type.ADDRESS_TYPE);
+                    nextResult=requestInternalVariable(Type.ADDRESS_TYPE);
+                    if(isDirect)
+                    {
+                        leftId+=pr.second();
+                        codes.add(new AssignCode(nextResult,leftId,0,type,type,type,OperatorType.NOP));
+                    }
+                    else
+                    {
+                        codes.add(new AssignVariableNumberCode(tmp1,leftId,pr.second(),Type.ADDRESS_TYPE,Type.ADDRESS_TYPE,Type.ADDRESS_TYPE,OperatorType.PLUS));
+                        leftId=tmp1;
+                        codes.add(new DereferenceCode(nextResult,leftId,new PointerType(type)));
+                    }
+                    curResult=nextResult;
+                }
+                case INDIRECT_ACCESS ->
+                {
+                    if(type instanceof ConstType constType)type=constType.baseType();
+                    int tmp0=requestInternalVariable(Type.ADDRESS_TYPE);
+                    if(isDirect)codes.add(new AssignCode(tmp0,leftId,0,Type.ADDRESS_TYPE,type,type,OperatorType.NOP));
+                    else codes.add(new DereferenceCode(tmp0,leftId,type));
+                    type=((AbstractPointer)type).baseType();
+                    leftId=tmp0;
+                    isDirect=false;
+                    boolean isConst=false;
+                    if(type instanceof ConstType constType)
+                    {
+                        type=constType.baseType();
+                        isConst=true;
+                    }
+                    Pair<Type,Integer> pr=((CompoundType) type).lookupMember(postfix.memberName);
+                    type=pr.first();
+                    if(isConst)type=new ConstType(type);
+                    int tmp1=requestInternalVariable(Type.ADDRESS_TYPE);
+                    nextResult=requestInternalVariable(Type.ADDRESS_TYPE);
+                    if(isDirect)
+                    {
+                        leftId+=pr.second();
+                        codes.add(new AssignCode(nextResult,leftId,0,type,type,type,OperatorType.NOP));
+                    }
+                    else
+                    {
+                        codes.add(new AssignVariableNumberCode(tmp1,leftId,pr.second(),Type.ADDRESS_TYPE,Type.ADDRESS_TYPE,Type.ADDRESS_TYPE,OperatorType.PLUS));
+                        leftId=tmp1;
+                        codes.add(new DereferenceCode(nextResult,leftId,new PointerType(type)));
+                    }
+                    curResult=nextResult;
                 }
             }
         }

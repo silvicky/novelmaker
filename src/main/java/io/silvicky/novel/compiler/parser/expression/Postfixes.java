@@ -21,7 +21,13 @@ public class Postfixes extends NonTerminal
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
         List<AbstractToken> ret=new ArrayList<>();
-        if(next instanceof OperatorToken operatorToken&&(operatorToken.type==OperatorType.PLUS_PLUS||operatorToken.type==OperatorType.MINUS_MINUS||operatorToken.type==OperatorType.L_PARENTHESES||operatorToken.type==OperatorType.L_BRACKET))
+        if(next instanceof OperatorToken operatorToken&&(
+                operatorToken.type==OperatorType.PLUS_PLUS
+                        ||operatorToken.type==OperatorType.MINUS_MINUS
+                        ||operatorToken.type==OperatorType.L_PARENTHESES
+                        ||operatorToken.type==OperatorType.L_BRACKET
+                        ||operatorToken.type==OperatorType.DOT
+                        ||operatorToken.type==OperatorType.INDIRECT_ACCESS))
         {
             ret.add(new Postfixes(root));
             Postfix postfix=new Postfix();

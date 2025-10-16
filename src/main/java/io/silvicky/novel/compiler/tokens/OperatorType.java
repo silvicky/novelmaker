@@ -168,6 +168,7 @@ public enum OperatorType
     SEMICOLON(";"),
     COMMA(",", OperatorProperties.BINARY,(a, b, t)->b),
     DOT("."),
+    INDIRECT_ACCESS("->"),
     DOT_DOT(".."),
     ELLIPSIS("..."),
     MULTIPLY("*", OperatorProperties.BINARY,(a, b, t)->
