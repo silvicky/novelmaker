@@ -146,7 +146,7 @@ public class Compiler
         if(!localStructMap.get(ctx).containsKey(s))localStructMap.get(ctx).put(s,new Stack<>());
         localStructMap.get(ctx).get(s).push(type);
     }
-    public static void revokeLocalStruct(String s)//TODO
+    public static void revokeLocalStruct(String s)//TODO revoke local structs
     {
         if(!localStructMap.containsKey(ctx))throw new DeclarationException("Undefined:"+s);
         if(!localStructMap.get(ctx).containsKey(s))throw new DeclarationException("Undefined:"+s);

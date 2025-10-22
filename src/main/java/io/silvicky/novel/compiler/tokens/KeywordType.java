@@ -40,10 +40,10 @@ public enum KeywordType
     CASE("case"),
     DEFAULT("default"),
     DECLTYPE("decltype"),//TODO
-    STRUCT("struct"),//TODO
+    STRUCT("struct"),
     CLASS("class"),//TODO
     ENUM("enum"),//TODO
-    UNION("union"),//TODO
+    UNION("union"),
     TYPEDEF("typedef"),//TODO
     STATIC("static"),//TODO
     SIZEOF("sizeof");
