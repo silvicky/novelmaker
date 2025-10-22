@@ -1,11 +1,7 @@
 package io.silvicky.novel.compiler.parser.expression;
 
-import io.silvicky.novel.compiler.code.raw.CallCode;
-import io.silvicky.novel.compiler.code.raw.DereferenceCode;
-import io.silvicky.novel.compiler.code.raw.FetchReturnValueCode;
-import io.silvicky.novel.compiler.code.raw.IndirectAssignCode;
-import io.silvicky.novel.compiler.code.raw.AssignCode;
-import io.silvicky.novel.compiler.code.raw.AssignVariableNumberCode;
+import io.silvicky.novel.compiler.code.LeaCode;
+import io.silvicky.novel.compiler.code.raw.*;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
@@ -146,15 +142,15 @@ public class PostfixExpression extends AbstractExpression
                     nextResult=requestInternalVariable(Type.ADDRESS_TYPE);
                     if(isDirect)
                     {
-                        leftId+=pr.second();
-                        codes.add(new AssignCode(nextResult,leftId,0,type,type,type,OperatorType.NOP));
+                        codes.add(new LeaCode(tmp1,leftId,pr.second()));
+                        isDirect=false;
                     }
                     else
                     {
                         codes.add(new AssignVariableNumberCode(tmp1,leftId,pr.second(),Type.ADDRESS_TYPE,Type.ADDRESS_TYPE,Type.ADDRESS_TYPE,OperatorType.PLUS));
-                        leftId=tmp1;
-                        codes.add(new DereferenceCode(nextResult,leftId,new PointerType(type)));
                     }
+                    leftId=tmp1;
+                    codes.add(new DereferenceCode(nextResult,leftId,new PointerType(type)));
                     curResult=nextResult;
                 }
                 case INDIRECT_ACCESS ->
@@ -179,15 +175,15 @@ public class PostfixExpression extends AbstractExpression
                     nextResult=requestInternalVariable(Type.ADDRESS_TYPE);
                     if(isDirect)
                     {
-                        leftId+=pr.second();
-                        codes.add(new AssignCode(nextResult,leftId,0,type,type,type,OperatorType.NOP));
+                        codes.add(new LeaCode(tmp1,leftId,pr.second()));
+                        isDirect=false;
                     }
                     else
                     {
                         codes.add(new AssignVariableNumberCode(tmp1,leftId,pr.second(),Type.ADDRESS_TYPE,Type.ADDRESS_TYPE,Type.ADDRESS_TYPE,OperatorType.PLUS));
-                        leftId=tmp1;
-                        codes.add(new DereferenceCode(nextResult,leftId,new PointerType(type)));
                     }
+                    leftId=tmp1;
+                    codes.add(new DereferenceCode(nextResult,leftId,new PointerType(type)));
                     curResult=nextResult;
                 }
             }

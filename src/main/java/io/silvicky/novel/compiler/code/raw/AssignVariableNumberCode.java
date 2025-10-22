@@ -4,6 +4,7 @@ import io.silvicky.novel.compiler.code.Code;
 import io.silvicky.novel.compiler.code.primitive.AssignMICodeP;
 import io.silvicky.novel.compiler.code.primitive.AssignMMCodeP;
 import io.silvicky.novel.compiler.code.primitive.CastMMCodeP;
+import io.silvicky.novel.compiler.code.primitive.MoveCodeP;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.tokens.OperatorType;
 import io.silvicky.novel.compiler.types.*;
@@ -15,6 +16,7 @@ import java.util.List;
 import static io.silvicky.novel.compiler.Compiler.lookupVariableName;
 import static io.silvicky.novel.compiler.Compiler.requestInternalVariable;
 import static io.silvicky.novel.compiler.tokens.OperatorType.COMMA;
+import static io.silvicky.novel.compiler.tokens.OperatorType.NOP;
 import static io.silvicky.novel.compiler.types.PrimitiveType.BOOL;
 import static io.silvicky.novel.compiler.types.PrimitiveType.VOID;
 import static io.silvicky.novel.compiler.types.Type.ADDRESS_TYPE;
@@ -32,15 +34,22 @@ public record AssignVariableNumberCode(int target, int left, Object right, Type 
     {
         List<Code> ret=new ArrayList<>();
         //TODO in fact some are impossible
-        PrimitiveType targetType= Util.getPrimitiveType(this.targetType());
         Type ta= this.leftType();
         Type tb= this.rightType();
         while(ta instanceof ConstType ca)ta=ca.baseType();
         while(tb instanceof ConstType cb)tb=cb.baseType();
+        Type tt= this.targetType;
+        while(tt instanceof ConstType ct)tt=ct.baseType();
+        if(op==NOP&&ta.equals(tt))
+        {
+            ret.add(new MoveCodeP(target,left,tt.getSize()));
+            return ret;
+        }
         if((op!=COMMA)&&ta==VOID)throw new GrammarException("using void value");
         int a=this.left();
         Object b=this.right();
         int target=this.target();
+        PrimitiveType targetType= Util.getPrimitiveType(this.targetType());
         switch(this.op())
         {
             case PLUS ->

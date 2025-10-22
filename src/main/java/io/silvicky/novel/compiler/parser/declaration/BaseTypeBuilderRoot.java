@@ -91,7 +91,12 @@ public class BaseTypeBuilderRoot extends NonTerminal implements ASTNode
             else if(primitiveType==PrimitiveType.SHORT)primitiveType=PrimitiveType.UNSIGNED_SHORT;
             else throw new GrammarException("Unknown type: unsigned "+primitiveType.symbol);
         }
-        if(isConst)type=new ConstType(primitiveType);
+        if(structDeclaration!=null)
+        {
+            structDeclaration.travel();
+            type=structDeclaration.structType;
+        }
         else type=primitiveType;
+        if(isConst)type=new ConstType(type);
     }
 }

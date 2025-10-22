@@ -2,10 +2,12 @@ package io.silvicky.novel.compiler.types;
 
 import io.silvicky.novel.util.Pair;
 
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
-public class StructType implements CompoundType
+public class StructType implements CompoundType, Iterable<Map.Entry<String,Pair<Type,Integer>>>
 {
     private final LinkedHashMap<String,Pair<Type,Integer>> members=new LinkedHashMap<>();
     private final int size;
@@ -38,5 +40,16 @@ public class StructType implements CompoundType
     public boolean isAuto()
     {
         return false;
+    }
+
+    /**
+     * Returns an iterator over elements of type {@code T}.
+     *
+     * @return an Iterator.
+     */
+    @Override
+    public Iterator<Map.Entry<String, Pair<Type, Integer>>> iterator()
+    {
+        return members.entrySet().iterator();
     }
 }

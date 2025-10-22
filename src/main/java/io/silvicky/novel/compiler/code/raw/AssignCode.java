@@ -4,6 +4,7 @@ import io.silvicky.novel.compiler.code.Code;
 import io.silvicky.novel.compiler.code.primitive.AssignMICodeP;
 import io.silvicky.novel.compiler.code.primitive.AssignMMCodeP;
 import io.silvicky.novel.compiler.code.primitive.CastMMCodeP;
+import io.silvicky.novel.compiler.code.primitive.MoveCodeP;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.tokens.OperatorType;
 import io.silvicky.novel.compiler.types.*;
@@ -30,15 +31,27 @@ public record AssignCode(int target, int left, int right, Type targetType, Type 
     public List<Code> analyze()
     {
         List<Code> ret=new ArrayList<>();
-        PrimitiveType targetType= Util.getPrimitiveType(this.targetType());
         Type ta= this.leftType();
         Type tb= this.rightType();
         while(ta instanceof ConstType ca)ta=ca.baseType();
         while(tb instanceof ConstType cb)tb=cb.baseType();
+        Type tt= this.targetType;
+        while(tt instanceof ConstType ct)tt=ct.baseType();
+        if(op==NOP&&ta.equals(tt))
+        {
+            ret.add(new MoveCodeP(target,left,tt.getSize()));
+            return ret;
+        }
+        if(op==COMMA&&tb.equals(tt))
+        {
+            ret.add(new MoveCodeP(target,right,tt.getSize()));
+            return ret;
+        }
         if(((op!=COMMA)&&ta==VOID)||((op!=NOP&&op!=NOT&&op!=REVERSE)&&tb==VOID))throw new GrammarException("using void value");
         int a=this.left();
         int b=this.right();
         int target=this.target();
+        PrimitiveType targetType= Util.getPrimitiveType(this.targetType());
         switch(this.op())
         {
             case PLUS ->

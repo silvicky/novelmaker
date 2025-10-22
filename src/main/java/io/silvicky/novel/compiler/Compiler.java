@@ -19,6 +19,7 @@ import java.util.*;
 
 import static io.silvicky.novel.compiler.types.PrimitiveType.BOOL;
 import static io.silvicky.novel.compiler.types.PrimitiveType.INT;
+import static io.silvicky.novel.compiler.types.Type.ADDRESS_TYPE;
 import static io.silvicky.novel.compiler.types.Type.ADDRESS_WIDTH;
 
 public class Compiler
@@ -374,6 +375,10 @@ public class Compiler
             {
                 ret.add(new MoveCodeP(lookupAddress(moveCodeP.target()),lookupAddress(moveCodeP.source()), moveCodeP.size()));
             }
+            if(code instanceof LeaCode leaCode)
+            {
+                ret.add(new LeaCode(lookupAddress(leaCode.target()),lookupAddress(leaCode.base()),leaCode.offset()));
+            }
         }
         return ret;
     }
@@ -469,25 +474,54 @@ public class Compiler
                 VirtualMemory.moveBytes(addressTransformer(bp,moveCodeP.target()),addressTransformer(bp, moveCodeP.source()),moveCodeP.size());
                 continue;
             }
+            if(code instanceof LeaCode leaCode)
+            {
+                VirtualMemory.writeToMemory(addressTransformer(bp,leaCode.target()),addressTransformer(bp,leaCode.base())+leaCode.offset());
+                continue;
+            }
             System.out.println("Unknown TAC: "+code.toString());
         }
         printResult();
     }
     private static void printVariable(int id,Type type)
     {
-        if(type instanceof ArrayType arrayType)
+        switch (type)
         {
-            System.out.print('{');
-            for(int i=0;i<arrayType.size();i++)
+            case ArrayType arrayType ->
             {
-                printVariable(id+i*arrayType.baseType().getSize(),arrayType.baseType());
-                if(i!=arrayType.size()-1)System.out.print(',');
+                System.out.print('[');
+                for (int i = 0; i < arrayType.size(); i++)
+                {
+                    printVariable(id + i * arrayType.baseType().getSize(), arrayType.baseType());
+                    if (i != arrayType.size() - 1) System.out.print(',');
+                }
+                System.out.print("]");
             }
-            System.out.print("}");
-        }
-        else
-        {
-            System.out.print(VirtualMemory.readFromMemory(id, Util.getPrimitiveType(type)));
+            case StructType structType ->
+            {
+                System.out.print('{');
+                Iterator<Map.Entry<String, Pair<Type, Integer>>> it = structType.iterator();
+                while (it.hasNext())
+                {
+                    Pair<Type, Integer> pr = it.next().getValue();
+                    printVariable(id + pr.second(), pr.first());
+                    if (it.hasNext()) System.out.print(",");
+                }
+                System.out.print("}");
+            }
+            case UnionType unionType ->
+            {
+                System.out.print('{');
+                Iterator<Map.Entry<String, Type>> it = unionType.iterator();
+                while (it.hasNext())
+                {
+                    Type pr = it.next().getValue();
+                    printVariable(id, pr);
+                    if (it.hasNext()) System.out.print(",");
+                }
+                System.out.print("}");
+            }
+            case null, default -> System.out.print(VirtualMemory.readFromMemory(id, Util.getPrimitiveType(type)));
         }
     }
     private static void printResult()
