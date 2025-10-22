@@ -29,6 +29,14 @@ public class BaseTypeBuilder extends NonTerminal
             ret.add(structDeclaration);
             ret.add(new KeywordToken(KeywordType.STRUCT));
         }
+        else if(next instanceof KeywordToken keywordToken&&keywordToken.type==KeywordType.UNION)
+        {
+            UnionDeclaration unionDeclaration=new UnionDeclaration();
+            root.unionDeclaration=unionDeclaration;
+            ret.add(new BaseTypeBuilder(root));
+            ret.add(unionDeclaration);
+            ret.add(new KeywordToken(KeywordType.UNION));
+        }
         else if(next instanceof KeywordToken keywordToken&&(
                 keywordToken.type== KeywordType.UNSIGNED
                 ||keywordToken.type==KeywordType.INT

@@ -2,14 +2,15 @@ package io.silvicky.novel.compiler;
 
 import io.silvicky.novel.compiler.code.*;
 import io.silvicky.novel.compiler.code.primitive.*;
-import io.silvicky.novel.compiler.code.raw.*;
+import io.silvicky.novel.compiler.code.raw.RawCode;
 import io.silvicky.novel.compiler.emulator.VirtualMemory;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.NonTerminal;
 import io.silvicky.novel.compiler.parser.Program;
 import io.silvicky.novel.compiler.parser.operation.Operation;
 import io.silvicky.novel.compiler.parser.operation.Skip;
-import io.silvicky.novel.compiler.tokens.*;
+import io.silvicky.novel.compiler.tokens.AbstractToken;
+import io.silvicky.novel.compiler.tokens.PreprocessorToken;
 import io.silvicky.novel.compiler.types.*;
 import io.silvicky.novel.util.Pair;
 import io.silvicky.novel.util.Util;
@@ -19,7 +20,6 @@ import java.util.*;
 
 import static io.silvicky.novel.compiler.types.PrimitiveType.BOOL;
 import static io.silvicky.novel.compiler.types.PrimitiveType.INT;
-import static io.silvicky.novel.compiler.types.Type.ADDRESS_TYPE;
 import static io.silvicky.novel.compiler.types.Type.ADDRESS_WIDTH;
 
 public class Compiler
@@ -42,6 +42,8 @@ public class Compiler
     private static final Map<Integer,Integer> localVariableCount=new HashMap<>();
     private static final Map<String,StructType> structMap=new HashMap<>();
     private static final Map<Integer,Map<String,Stack<StructType>>> localStructMap=new HashMap<>();
+    private static final Map<String,UnionType> unionMap=new HashMap<>();
+    private static final Map<Integer,Map<String,Stack<UnionType>>> localUnionMap=new HashMap<>();
     public static int registerVariable(String s, Type type)
     {
         if(type==PrimitiveType.VOID)throw new DeclarationException("declaring void variable");
@@ -144,7 +146,7 @@ public class Compiler
         if(!localStructMap.get(ctx).containsKey(s))localStructMap.get(ctx).put(s,new Stack<>());
         localStructMap.get(ctx).get(s).push(type);
     }
-    public static void revokeLocalStruct(String s)
+    public static void revokeLocalStruct(String s)//TODO
     {
         if(!localStructMap.containsKey(ctx))throw new DeclarationException("Undefined:"+s);
         if(!localStructMap.get(ctx).containsKey(s))throw new DeclarationException("Undefined:"+s);
@@ -157,7 +159,30 @@ public class Compiler
         if(structMap.containsKey(s))return structMap.get(s);
         return null;
     }
-
+    public static void registerUnion(String s, UnionType type)
+    {
+        if(unionMap.containsKey(s))throw new DeclarationException("Repeated:"+s);
+        unionMap.put(s,type);
+    }
+    public static void registerLocalUnion(String s, UnionType type)
+    {
+        if(!localUnionMap.containsKey(ctx))localUnionMap.put(ctx,new HashMap<>());
+        if(!localUnionMap.get(ctx).containsKey(s))localUnionMap.get(ctx).put(s,new Stack<>());
+        localUnionMap.get(ctx).get(s).push(type);
+    }
+    public static void revokeLocalUnion(String s)//TODO
+    {
+        if(!localUnionMap.containsKey(ctx))throw new DeclarationException("Undefined:"+s);
+        if(!localUnionMap.get(ctx).containsKey(s))throw new DeclarationException("Undefined:"+s);
+        if(localUnionMap.get(ctx).get(s).empty())throw new DeclarationException("Undefined:"+s);
+        localUnionMap.get(ctx).get(s).pop();
+    }
+    public static UnionType lookupUnion(String s)
+    {
+        if(localUnionMap.containsKey(ctx)&&localUnionMap.get(ctx).containsKey(s)&&!localUnionMap.get(ctx).get(s).empty())return localUnionMap.get(ctx).get(s).peek();
+        if(unionMap.containsKey(s))return unionMap.get(s);
+        return null;
+    }
     public static List<Code> parser(List<AbstractToken> abstractTokens)
     {
         abstractTokens.add(PreprocessorToken.EOF);

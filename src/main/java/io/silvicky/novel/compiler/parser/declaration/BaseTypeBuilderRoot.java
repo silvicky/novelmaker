@@ -15,6 +15,7 @@ public class BaseTypeBuilderRoot extends NonTerminal implements ASTNode
     public List<KeywordType> keywordTypeList=new ArrayList<>();
     public Type type;
     public StructDeclaration structDeclaration=null;
+    public UnionDeclaration unionDeclaration=null;
     @Override
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
@@ -95,6 +96,11 @@ public class BaseTypeBuilderRoot extends NonTerminal implements ASTNode
         {
             structDeclaration.travel();
             type=structDeclaration.structType;
+        }
+        else if(unionDeclaration!=null)
+        {
+            unionDeclaration.travel();
+            type=unionDeclaration.unionType;
         }
         else type=primitiveType;
         if(isConst)type=new ConstType(type);

@@ -33,7 +33,7 @@ public class Declaration extends NonTerminal implements ASTNode
             ret.add(new OperatorToken(OperatorType.SEMICOLON));
             return ret;
         }
-        if(baseTypeBuilderRoot.structDeclaration==null&&baseTypeBuilderRoot.keywordTypeList.isEmpty())throw new GrammarException("not a declaration");
+        if(baseTypeBuilderRoot.unionDeclaration==null&&baseTypeBuilderRoot.structDeclaration==null&&baseTypeBuilderRoot.keywordTypeList.isEmpty())throw new GrammarException("not a declaration");
         assignmentDeclaration =new AssignmentDeclaration(baseTypeBuilderRoot,directParent);
         DeclarationResidue declarationResidue =new DeclarationResidue(this,baseTypeBuilderRoot,directParent);
         ret.add(new ResolveOperation(declarationResidue));
