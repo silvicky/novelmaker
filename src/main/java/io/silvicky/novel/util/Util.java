@@ -15,6 +15,7 @@ import java.util.Stack;
 
 import static io.silvicky.novel.compiler.types.PrimitiveType.BOOL;
 import static io.silvicky.novel.compiler.types.Type.ADDRESS_TYPE;
+import static io.silvicky.novel.compiler.types.Type.ADDRESS_WIDTH;
 
 public class Util
 {
@@ -79,7 +80,16 @@ public class Util
         if(type instanceof PrimitiveType primitiveType)return primitiveType;
         throw new GrammarException("Unknown type");
     }
-
+    public static int getPrimitiveSize(Type type)
+    {
+        while(type instanceof ConstType constType)type=constType.baseType();
+        if(type instanceof PointerType||type instanceof ArrayType||type instanceof FunctionType)
+        {
+            return ADDRESS_WIDTH;
+        }
+        if(type instanceof PrimitiveType primitiveType)return primitiveType.getSize();
+        return type.getSize();
+    }
     public static Object castPrimitiveType(Object source, PrimitiveType targetType, PrimitiveType sourceType)
     {
         //TODO Consider unsigned

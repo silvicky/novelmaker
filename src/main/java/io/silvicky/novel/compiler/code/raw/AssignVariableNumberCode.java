@@ -42,7 +42,7 @@ public record AssignVariableNumberCode(int target, int left, Object right, Type 
         while(tt instanceof ConstType ct)tt=ct.baseType();
         if(op==NOP&&ta.equals(tt))
         {
-            ret.add(new MoveCodeP(target,left,tt.getSize()));
+            ret.add(new MoveCodeP(target,left,Util.getPrimitiveSize(tt)));
             return ret;
         }
         if((op!=COMMA)&&ta==VOID)throw new GrammarException("using void value");

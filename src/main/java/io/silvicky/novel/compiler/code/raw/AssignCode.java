@@ -13,7 +13,8 @@ import io.silvicky.novel.util.Util;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.silvicky.novel.compiler.Compiler.*;
+import static io.silvicky.novel.compiler.Compiler.lookupVariableName;
+import static io.silvicky.novel.compiler.Compiler.requestInternalVariable;
 import static io.silvicky.novel.compiler.tokens.OperatorType.*;
 import static io.silvicky.novel.compiler.types.PrimitiveType.BOOL;
 import static io.silvicky.novel.compiler.types.PrimitiveType.VOID;
@@ -39,12 +40,12 @@ public record AssignCode(int target, int left, int right, Type targetType, Type 
         while(tt instanceof ConstType ct)tt=ct.baseType();
         if(op==NOP&&ta.equals(tt))
         {
-            ret.add(new MoveCodeP(target,left,tt.getSize()));
+            ret.add(new MoveCodeP(target,left,Util.getPrimitiveSize(tt)));
             return ret;
         }
         if(op==COMMA&&tb.equals(tt))
         {
-            ret.add(new MoveCodeP(target,right,tt.getSize()));
+            ret.add(new MoveCodeP(target,right,Util.getPrimitiveSize(tt)));
             return ret;
         }
         if(((op!=COMMA)&&ta==VOID)||((op!=NOP&&op!=NOT&&op!=REVERSE)&&tb==VOID))throw new GrammarException("using void value");
