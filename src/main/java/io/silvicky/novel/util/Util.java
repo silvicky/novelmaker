@@ -13,7 +13,6 @@ import io.silvicky.novel.json.entities.*;
 import java.util.List;
 import java.util.Stack;
 
-import static io.silvicky.novel.compiler.Compiler.match;
 import static io.silvicky.novel.compiler.types.PrimitiveType.BOOL;
 import static io.silvicky.novel.compiler.types.Type.ADDRESS_TYPE;
 
@@ -189,5 +188,13 @@ public class Util
             if(operatorToken.type==OperatorType.L_BRACKET)return new ListEntity();
         }
         return new NumberEntity();
+    }
+
+    public static boolean match(AbstractToken a, AbstractToken b)
+    {
+        if(!(a.getClass().equals(b.getClass())))return false;
+        if(a instanceof KeywordToken)return ((KeywordToken) a).type.equals(((KeywordToken) b).type);
+        if(a instanceof OperatorToken)return ((OperatorToken) a).type.equals(((OperatorToken) b).type);
+        return a instanceof NumberToken||a instanceof StringToken||a instanceof IdentifierToken;
     }
 }

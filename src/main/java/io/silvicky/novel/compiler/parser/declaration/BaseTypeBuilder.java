@@ -21,7 +21,15 @@ public class BaseTypeBuilder extends NonTerminal
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
         List<AbstractToken> ret=new ArrayList<>();
-        if(next instanceof KeywordToken keywordToken&&(
+        if(next instanceof KeywordToken keywordToken&&keywordToken.type==KeywordType.STRUCT)
+        {
+            StructDeclaration structDeclaration=new StructDeclaration();
+            root.structDeclaration=structDeclaration;
+            ret.add(new BaseTypeBuilder(root));
+            ret.add(structDeclaration);
+            ret.add(new KeywordToken(KeywordType.STRUCT));
+        }
+        else if(next instanceof KeywordToken keywordToken&&(
                 keywordToken.type== KeywordType.UNSIGNED
                 ||keywordToken.type==KeywordType.INT
                 ||keywordToken.type==KeywordType.FLOAT

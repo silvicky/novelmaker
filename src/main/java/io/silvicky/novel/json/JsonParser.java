@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-import static io.silvicky.novel.compiler.Compiler.match;
+import static io.silvicky.novel.util.Util.match;
 import static io.silvicky.novel.compiler.Preprocessor.lexer;
 import static io.silvicky.novel.util.Util.findJsonEntity;
 

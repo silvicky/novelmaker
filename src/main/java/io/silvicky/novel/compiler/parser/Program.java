@@ -11,13 +11,20 @@ public class Program extends NonTerminal implements ASTNode
 {
     private DeclarationRoot declarationRoot=null;
     private Program program=null;
+    private final NonTerminal directParent;
+
+    public Program(NonTerminal directParent)
+    {
+        this.directParent = directParent;
+    }
+
     @Override
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {
         List<AbstractToken> ret=new ArrayList<>();
         if(next==null||next== PreprocessorToken.EOF)return ret;
-        declarationRoot =new DeclarationRoot(null);
-        program=new Program();
+        declarationRoot =new DeclarationRoot(directParent);
+        program=new Program(directParent);
         ret.add(program);
         ret.add(declarationRoot);
         return ret;

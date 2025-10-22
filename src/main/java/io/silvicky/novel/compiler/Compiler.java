@@ -39,6 +39,8 @@ public class Compiler
     private static final Map<Integer,Map<Integer,Integer>> localVariableAddress=new HashMap<>();
     private static final Map<Integer,Integer> localVariableSize=new HashMap<>();
     private static final Map<Integer,Integer> localVariableCount=new HashMap<>();
+    private static final Map<String,StructType> structMap=new HashMap<>();
+    private static final Map<Integer,Map<String,Stack<StructType>>> localStructMap=new HashMap<>();
     public static int registerVariable(String s, Type type)
     {
         if(type==PrimitiveType.VOID)throw new DeclarationException("declaring void variable");
@@ -130,22 +132,38 @@ public class Compiler
         return labelBackMap.get(l);
     }
     public static int requestLabel(){return labelCnt++;}
-
-    public static boolean match(AbstractToken a, AbstractToken b)
+    public static void registerStruct(String s, StructType type)
     {
-        if(!(a.getClass().equals(b.getClass())))return false;
-        if(a instanceof IdentifierToken)return ((IdentifierToken) a).id.equals(((IdentifierToken) b).id);
-        if(a instanceof KeywordToken)return ((KeywordToken) a).type.equals(((KeywordToken) b).type);
-        if(a instanceof OperatorToken)return ((OperatorToken) a).type.equals(((OperatorToken) b).type);
-        return a instanceof NumberToken||a instanceof StringToken;
+        if(structMap.containsKey(s))throw new DeclarationException("Repeated:"+s);
+        structMap.put(s,type);
     }
+    public static void registerLocalStruct(String s, StructType type)
+    {
+        if(!localStructMap.containsKey(ctx))localStructMap.put(ctx,new HashMap<>());
+        if(!localStructMap.get(ctx).containsKey(s))localStructMap.get(ctx).put(s,new Stack<>());
+        localStructMap.get(ctx).get(s).push(type);
+    }
+    public static void revokeLocalStruct(String s)
+    {
+        if(!localStructMap.containsKey(ctx))throw new DeclarationException("Undefined:"+s);
+        if(!localStructMap.get(ctx).containsKey(s))throw new DeclarationException("Undefined:"+s);
+        if(localStructMap.get(ctx).get(s).empty())throw new DeclarationException("Undefined:"+s);
+        localStructMap.get(ctx).get(s).pop();
+    }
+    public static StructType lookupStruct(String s)
+    {
+        if(localStructMap.containsKey(ctx)&&localStructMap.get(ctx).containsKey(s)&&!localStructMap.get(ctx).get(s).empty())return localStructMap.get(ctx).get(s).peek();
+        if(structMap.containsKey(s))return structMap.get(s);
+        return null;
+    }
+
     public static List<Code> parser(List<AbstractToken> abstractTokens)
     {
         abstractTokens.add(PreprocessorToken.EOF);
         abstractTokens.add(PreprocessorToken.EOF);
         int rul=0;
         Stack<AbstractToken> stack=new Stack<>();
-        Program root=new Program();
+        Program root=new Program(null);
         stack.push(root);
         while(!stack.empty())
         {
@@ -164,7 +182,7 @@ public class Compiler
             AbstractToken second= abstractTokens.get(rul+1);
             if(!(top instanceof NonTerminal nonTerminal))
             {
-                if(!match(top,next))throw new GrammarException("Mismatch: "+top+" and "+next);
+                if(!Util.match(top,next))throw new GrammarException("Mismatch: "+top+" and "+next);
                 rul++;
                 continue;
             }

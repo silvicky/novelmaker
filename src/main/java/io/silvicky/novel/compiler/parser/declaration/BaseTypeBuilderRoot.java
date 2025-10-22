@@ -5,9 +5,7 @@ import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.NonTerminal;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.KeywordType;
-import io.silvicky.novel.compiler.types.ConstType;
-import io.silvicky.novel.compiler.types.PrimitiveType;
-import io.silvicky.novel.compiler.types.Type;
+import io.silvicky.novel.compiler.types.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +14,7 @@ public class BaseTypeBuilderRoot extends NonTerminal implements ASTNode
 {
     public List<KeywordType> keywordTypeList=new ArrayList<>();
     public Type type;
+    public StructDeclaration structDeclaration=null;
     @Override
     public List<AbstractToken> lookup(AbstractToken next, AbstractToken second)
     {

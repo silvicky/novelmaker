@@ -1,9 +1,9 @@
 package io.silvicky.novel.compiler.parser.declaration;
 
-import io.silvicky.novel.compiler.DeclarationException;
-import io.silvicky.novel.compiler.code.*;
-import io.silvicky.novel.compiler.code.raw.AssignCode;
+import io.silvicky.novel.compiler.code.LabelCode;
 import io.silvicky.novel.compiler.code.ReturnCode;
+import io.silvicky.novel.compiler.code.UnconditionalGotoCode;
+import io.silvicky.novel.compiler.code.raw.AssignCode;
 import io.silvicky.novel.compiler.code.raw.AssignNumberCode;
 import io.silvicky.novel.compiler.parser.ASTNode;
 import io.silvicky.novel.compiler.parser.GrammarException;
@@ -50,6 +50,7 @@ public class AssignmentDeclaration extends NonTerminal implements ASTNode
     @Override
     public void travel()
     {
+        //TODO Register into root's field list
         unaryDeclaration.receivedType= baseTypeBuilderRoot.type;
         unaryDeclaration.travel();
         if(unaryDeclaration.name==null)throw new GrammarException("bare anonymous variable");
@@ -68,6 +69,11 @@ public class AssignmentDeclaration extends NonTerminal implements ASTNode
                     }
                     else throw new RuntimeException("conflict function declaration");
                 }
+            }
+            else if(directParent instanceof DeclarationBlock)
+            {
+                //TODO This is OOP methods, common in C++ and Java but not C
+                throw new RuntimeException("class method unsupported");
             }
             else
             {
@@ -127,6 +133,11 @@ public class AssignmentDeclaration extends NonTerminal implements ASTNode
             if(directParent==null)
             {
                 nid=registerVariable(unaryDeclaration.name, unaryDeclaration.type);
+            }
+            else if(directParent instanceof DeclarationBlock declarationBlock)
+            {
+                declarationBlock.fields.add(new Pair<>(unaryDeclaration.name,unaryDeclaration.type));
+                return;
             }
             else
             {
