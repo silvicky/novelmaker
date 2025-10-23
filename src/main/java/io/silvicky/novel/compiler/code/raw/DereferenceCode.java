@@ -4,6 +4,7 @@ import io.silvicky.novel.compiler.code.Code;
 import io.silvicky.novel.compiler.code.primitive.DereferenceCodeP;
 import io.silvicky.novel.compiler.code.primitive.MoveCodeP;
 import io.silvicky.novel.compiler.types.AbstractPointer;
+import io.silvicky.novel.compiler.types.ArrayType;
 import io.silvicky.novel.compiler.types.FunctionType;
 import io.silvicky.novel.compiler.types.Type;
 
@@ -26,6 +27,7 @@ public record DereferenceCode(int target, int left, Type type) implements RawCod
     {
         List<Code> ret=new ArrayList<>();
         if(type instanceof FunctionType)ret.add(new MoveCodeP(target,left,ADDRESS_WIDTH));
+        else if(((AbstractPointer)type).baseType() instanceof ArrayType)ret.add(new MoveCodeP(target,left,ADDRESS_WIDTH));
         else ret.add(new DereferenceCodeP(target,left,((AbstractPointer)type).baseType().getSize()));
         return ret;
     }
