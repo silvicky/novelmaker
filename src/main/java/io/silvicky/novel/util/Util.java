@@ -207,4 +207,10 @@ public class Util
         if(a instanceof OperatorToken)return ((OperatorToken) a).type.equals(((OperatorToken) b).type);
         return a instanceof NumberToken||a instanceof StringToken||a instanceof IdentifierToken;
     }
+    public static String getShortName(String s)
+    {
+        int i=s.indexOf('(');
+        if(i==-1)return s;
+        return s.substring(0,i);
+    }
 }

@@ -301,7 +301,7 @@ public class Compiler
                 if(pr2.getKey()>=0)
                 {
                     int siz;
-                    if((pr2.getValue().second() instanceof ArrayType)&&(!localVariableMap.get(pr.getKey()).containsKey(pr2.getValue().first())))
+                    if((pr2.getValue().second() instanceof ArrayType)&&(!localVariableMap.get(pr.getKey()).containsKey(Util.getShortName(pr2.getValue().first()))))
                     {
                         siz=ADDRESS_WIDTH;
                     }
@@ -552,11 +552,12 @@ public class Compiler
     }
     public static void printCodeList(List<Code> codeList)
     {
-        for(Code code:codeList)
+        for(int i=0;i<codeList.size();i++)
         {
+            Code code= codeList.get(i);
             if(code instanceof LabelCode labelCode&&labelBackMap.containsKey(labelCode.id())&&(labelMap.containsKey(labelBackMap.get(labelCode.id()))))ctx=labelCode.id();
             if(code instanceof ReturnCode)ctx=-1;
-            System.out.println(code);
+            System.out.println(i+" "+code);
         }
     }
     public static void main(String[] args)
