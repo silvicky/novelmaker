@@ -1,9 +1,9 @@
 package io.silvicky.novel.compiler.parser.expression;
 
 import io.silvicky.novel.compiler.Preprocessor;
+import io.silvicky.novel.compiler.code.LeaCode;
 import io.silvicky.novel.compiler.code.raw.AssignCode;
 import io.silvicky.novel.compiler.code.raw.AssignNumberCode;
-import io.silvicky.novel.compiler.code.ReferenceCode;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.tokens.*;
 import io.silvicky.novel.compiler.types.ArrayType;
@@ -67,7 +67,7 @@ public class PrimaryExpression extends AbstractExpression
             resultId=requestInternalVariable(type);
             leftId=pr.first();
             isDirect=true;
-            if(type instanceof ArrayType)codes.add(new ReferenceCode(resultId,leftId));
+            if(type instanceof ArrayType)codes.add(new LeaCode(resultId,leftId,0));
             else codes.add(new AssignCode(resultId,leftId,leftId,type,type,type,OperatorType.NOP));
         }
         else

@@ -354,11 +354,6 @@ public class Compiler
                 ret.add(new IndirectAssignCodeP(lookupAddress(indirectAssignCode.target()),lookupAddress(indirectAssignCode.source()),indirectAssignCode.size()));
                 continue;
             }
-            if(code instanceof ReferenceCode referenceCode)
-            {
-                ret.add(new ReferenceCode(lookupAddress(referenceCode.target()),lookupAddress(referenceCode.left())));
-                continue;
-            }
             if(code instanceof AssignMMCodeP assignMMCodeP)
             {
                 ret.add(new AssignMMCodeP(lookupAddress(assignMMCodeP.target()),lookupAddress(assignMMCodeP.left()),lookupAddress(assignMMCodeP.right()),assignMMCodeP.type(),assignMMCodeP.op()));
@@ -434,11 +429,6 @@ public class Compiler
             if(code instanceof IndirectAssignCodeP indirectAssignCode)
             {
                 VirtualMemory.moveBytes((int) VirtualMemory.readFromMemory(addressTransformer(bp,indirectAssignCode.target()),INT),addressTransformer(bp,indirectAssignCode.source()),indirectAssignCode.size());
-                continue;
-            }
-            if(code instanceof ReferenceCode referenceCode)
-            {
-                VirtualMemory.writeToMemory(addressTransformer(bp,referenceCode.target()),addressTransformer(bp,referenceCode.left()));
                 continue;
             }
             if(code instanceof AssignMMCodeP assignMMCodeP)

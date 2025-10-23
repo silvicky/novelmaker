@@ -1,11 +1,11 @@
 package io.silvicky.novel.compiler.parser.expression;
 
 import io.silvicky.novel.compiler.Preprocessor;
-import io.silvicky.novel.compiler.code.raw.DereferenceCode;
-import io.silvicky.novel.compiler.code.raw.IndirectAssignCode;
-import io.silvicky.novel.compiler.code.ReferenceCode;
+import io.silvicky.novel.compiler.code.LeaCode;
 import io.silvicky.novel.compiler.code.raw.AssignCode;
 import io.silvicky.novel.compiler.code.raw.AssignVariableNumberCode;
+import io.silvicky.novel.compiler.code.raw.DereferenceCode;
+import io.silvicky.novel.compiler.code.raw.IndirectAssignCode;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.declaration.BaseTypeBuilderRoot;
 import io.silvicky.novel.compiler.parser.declaration.UnaryDeclaration;
@@ -153,7 +153,7 @@ public class UnaryExpression extends AbstractExpression
                 resultId=requestInternalVariable(type);
                 if(castExpression.isDirect)
                 {
-                    codes.add(new ReferenceCode(resultId,castExpression.leftId));
+                    codes.add(new LeaCode(resultId,castExpression.leftId,0));
                 }
                 else
                 {
