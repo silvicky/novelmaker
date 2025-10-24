@@ -27,7 +27,7 @@ public class BoolEntity implements JsonEntity
     @Override
     public Object adapt(Type type)
     {
-        if(type.equals(Boolean.class))return value;
+        if(type.equals(Boolean.class)||type.equals(Boolean.TYPE))return value;
         throw new RuntimeException("not a Boolean");
     }
 }

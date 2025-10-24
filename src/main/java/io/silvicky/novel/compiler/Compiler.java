@@ -233,6 +233,24 @@ public class Compiler
         }
         return root.codes;
     }
+    public static List<Code> unusedVariableRemover(List<Code> codes)
+    {
+        ctx=-1;
+        for(Code code:codes)
+        {
+            if(code instanceof LabelCode labelCode)
+            {
+                if(!labelBackMap.containsKey(labelCode.id()))continue;
+                if(labelBackMap.get(labelCode.id()).charAt(0)=='0')
+                {
+                    ctx=-1;
+                }
+                else if(labelMap.containsKey(labelBackMap.get(labelCode.id())))ctx=labelCode.id();
+            }
+        }
+        //TODO
+        return null;
+    }
     public static int addressTransformer(int bp,int val)
     {
         if(val>=dataSegmentBaseAddress)return val;

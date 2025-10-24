@@ -64,6 +64,7 @@ public class Main
         {
             if(o1.toFile().isFile()&&o2.toFile().isDirectory())return -1;
             if(o1.toFile().isDirectory()&&o2.toFile().isFile())return 1;
+            if(order.isReversed)return o2.getFileName().compareTo(o1.getFileName());
             return o1.getFileName().compareTo(o2.getFileName());
         });
         for(Path i: order.before)if(optional||!order.optional.contains(i))parseGeneral(i,writer);
