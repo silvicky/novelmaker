@@ -310,7 +310,7 @@ public class Compiler
             removedVariable.put(entry.getKey(),new HashSet<>());
             for(Map.Entry<Integer,Integer> entry1:entry.getValue().entrySet())
             {
-                if (entry1.getValue() == 0)
+                if (entry1.getKey()<dataSegmentBaseAddress&&entry1.getValue() == 0)
                 {
                     unused.add(entry1.getKey());
                     removedVariable.get(entry.getKey()).add(entry1.getKey());
@@ -324,7 +324,7 @@ public class Compiler
                 for(int i:dependence.get(entry.getKey()).get(cur))
                 {
                     updateUsage.run(entry.getKey(),i,-1);
-                    if(usage.get(entry.getKey()).get(i)==0)
+                    if(i<dataSegmentBaseAddress&&usage.get(entry.getKey()).get(i)==0)
                     {
                         unused.add(i);
                         removedVariable.get(entry.getKey()).add(i);
