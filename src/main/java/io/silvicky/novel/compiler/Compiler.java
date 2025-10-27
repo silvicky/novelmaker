@@ -2,7 +2,7 @@ package io.silvicky.novel.compiler;
 
 import io.silvicky.novel.compiler.code.*;
 import io.silvicky.novel.compiler.code.primitive.*;
-import io.silvicky.novel.compiler.code.raw.RawCode;
+import io.silvicky.novel.compiler.code.raw.*;
 import io.silvicky.novel.compiler.emulator.VirtualMemory;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.NonTerminal;
@@ -235,21 +235,141 @@ public class Compiler
     }
     public static List<Code> unusedVariableRemover(List<Code> codes)
     {
+        Map<Integer,Set<Integer>> removedVariable=new HashMap<>();
+        Map<Integer,Map<Integer,Integer>> usage=new HashMap<>();
+        interface UpdateUsage{void run(int ctx,int var,int diff);}
+        UpdateUsage updateUsage=(ctx,var,diff)->
+        {
+            if(!usage.containsKey(ctx))usage.put(ctx,new HashMap<>());
+            int ans=usage.get(ctx).getOrDefault(var,0)+diff;
+            usage.get(ctx).put(var,ans);
+        };
+        Map<Integer,Map<Integer,List<Integer>>> dependence=new HashMap<>();
         ctx=-1;
+        dependence.put(-1,new HashMap<>());
         for(Code code:codes)
         {
-            if(code instanceof LabelCode labelCode)
+            switch (code)
             {
-                if(!labelBackMap.containsKey(labelCode.id()))continue;
-                if(labelBackMap.get(labelCode.id()).charAt(0)=='0')
+                case LabelCode labelCode ->
                 {
-                    ctx=-1;
+                    if(!labelBackMap.containsKey(labelCode.id()))continue;
+                    if(labelBackMap.get(labelCode.id()).charAt(0)=='0') ctx=-1;
+                    else if(labelMap.containsKey(labelBackMap.get(labelCode.id())))ctx=labelCode.id();
+                    if(!dependence.containsKey(ctx))dependence.put(ctx,new HashMap<>());
                 }
-                else if(labelMap.containsKey(labelBackMap.get(labelCode.id())))ctx=labelCode.id();
+                case AssignCode assignCode ->
+                {
+                    dependence.get(ctx).put(assignCode.target(),List.of(assignCode.left(),assignCode.right()));
+                    updateUsage.run(ctx,assignCode.target(),0);
+                    updateUsage.run(ctx,assignCode.left(),1);
+                    updateUsage.run(ctx,assignCode.right(),1);
+                }
+                case AssignVariableNumberCode assignVariableNumberCode ->
+                {
+                    dependence.get(ctx).put(assignVariableNumberCode.target(), List.of(assignVariableNumberCode.left()));
+                    updateUsage.run(ctx,assignVariableNumberCode.target(),0);
+                    updateUsage.run(ctx,assignVariableNumberCode.left(),1);
+                }
+                case DereferenceCode dereferenceCode ->
+                {
+                    dependence.get(ctx).put(dereferenceCode.target(), List.of(dereferenceCode.left()));
+                    updateUsage.run(ctx, dereferenceCode.target(), 0);
+                    updateUsage.run(ctx,dereferenceCode.left(),1);
+                }
+                case IndirectAssignCode indirectAssignCode ->
+                {
+                    dependence.get(ctx).put(indirectAssignCode.target(), List.of(indirectAssignCode.left()));
+                    updateUsage.run(ctx,indirectAssignCode.target(),0);
+                    updateUsage.run(ctx,indirectAssignCode.left(),1);
+                }
+                case LeaCode leaCode ->
+                {
+                    dependence.get(ctx).put(leaCode.target(), List.of(leaCode.base()));
+                    updateUsage.run(ctx,leaCode.target(),0);
+                    updateUsage.run(ctx,leaCode.base(),1);
+                }
+                case ReturnCode returnCode -> updateUsage.run(ctx,returnCode.val(),1);
+                case CallCode callCode ->
+                {
+                    updateUsage.run(ctx,callCode.target(),1);
+                    for(int i: callCode.args())updateUsage.run(ctx,i,1);
+                }
+                case GotoCode gotoCode -> updateUsage.run(ctx,gotoCode.left(),1);
+                default -> {}
             }
         }
-        //TODO
-        return null;
+        for(Map.Entry<Integer,Map<Integer,Integer>> entry:usage.entrySet())
+        {
+            if(entry.getKey()==-1)
+            {
+                removedVariable.put(-1,new HashSet<>());
+                continue;
+            }
+            Queue<Integer> unused=new ArrayDeque<>();
+            removedVariable.put(entry.getKey(),new HashSet<>());
+            for(Map.Entry<Integer,Integer> entry1:entry.getValue().entrySet())
+            {
+                if (entry1.getValue() == 0)
+                {
+                    unused.add(entry1.getKey());
+                    removedVariable.get(entry.getKey()).add(entry1.getKey());
+                    localVariableBackMap.get(entry.getKey()).remove(entry1.getKey());
+                }
+            }
+            while(!unused.isEmpty())
+            {
+                int cur=unused.remove();
+                if(!dependence.get(entry.getKey()).containsKey(cur))continue;
+                for(int i:dependence.get(entry.getKey()).get(cur))
+                {
+                    updateUsage.run(entry.getKey(),i,-1);
+                    if(usage.get(entry.getKey()).get(i)==0)
+                    {
+                        unused.add(i);
+                        removedVariable.get(entry.getKey()).add(i);
+                        localVariableBackMap.get(entry.getKey()).remove(i);
+                    }
+                }
+            }
+        }
+        List<Code> ret=new ArrayList<>();
+        for(Code code:codes)
+        {
+            switch (code)
+            {
+                case LabelCode labelCode ->
+                {
+                    ret.add(code);
+                    if(!labelBackMap.containsKey(labelCode.id()))continue;
+                    if(labelBackMap.get(labelCode.id()).charAt(0)=='0') ctx=-1;
+                    else if(labelMap.containsKey(labelBackMap.get(labelCode.id())))ctx=labelCode.id();
+                    if(!dependence.containsKey(ctx))dependence.put(ctx,new HashMap<>());
+                }
+                case AssignCode assignCode ->
+                {
+                    if(!removedVariable.get(ctx).contains(assignCode.target()))ret.add(code);
+                }
+                case AssignVariableNumberCode assignVariableNumberCode ->
+                {
+                    if(!removedVariable.get(ctx).contains(assignVariableNumberCode.target()))ret.add(code);
+                }
+                case DereferenceCode dereferenceCode ->
+                {
+                    if(!removedVariable.get(ctx).contains(dereferenceCode.target()))ret.add(code);
+                }
+                case IndirectAssignCode indirectAssignCode ->
+                {
+                    if(!removedVariable.get(ctx).contains(indirectAssignCode.target()))ret.add(code);
+                }
+                case LeaCode leaCode ->
+                {
+                    if(!removedVariable.get(ctx).contains(leaCode.target()))ret.add(code);
+                }
+                default -> ret.add(code);
+            }
+        }
+        return ret;
     }
     public static int addressTransformer(int bp,int val)
     {
@@ -570,12 +690,12 @@ public class Compiler
     }
     public static void printCodeList(List<Code> codeList)
     {
-        for(int i=0;i<codeList.size();i++)
+        for (Code code : codeList)
         {
-            Code code= codeList.get(i);
-            if(code instanceof LabelCode labelCode&&labelBackMap.containsKey(labelCode.id())&&(labelMap.containsKey(labelBackMap.get(labelCode.id()))))ctx=labelCode.id();
-            if(code instanceof ReturnCode)ctx=-1;
-            System.out.println(i+" "+code);
+            if (code instanceof LabelCode labelCode && labelBackMap.containsKey(labelCode.id()) && (labelMap.containsKey(labelBackMap.get(labelCode.id()))))
+                ctx = labelCode.id();
+            if (code instanceof ReturnCode) ctx = -1;
+            System.out.println(code);
         }
     }
     public static void main(String[] args)
@@ -585,6 +705,7 @@ public class Compiler
         List<AbstractToken> abstractTokenList= Preprocessor.preprocessor(sourceFile);
         Preprocessor.isPreprocessing=false;
         List<Code> codeList=parser(abstractTokenList);
+        codeList=unusedVariableRemover(codeList);
         codeList=typeEraser(codeList);
         printCodeList(codeList);
         codeList=assignAddress(codeList);
