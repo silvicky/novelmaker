@@ -166,7 +166,7 @@ public enum OperatorType
     COLON(":"),
     QUESTION("?"),
     SEMICOLON(";"),
-    COMMA(",", OperatorProperties.BINARY,(a, b, t)->b),
+    COMMA(","),
     DOT("."),
     INDIRECT_ACCESS("->"),
     DOT_DOT(".."),

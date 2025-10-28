@@ -2,10 +2,7 @@ package io.silvicky.novel.compiler.parser.expression;
 
 import io.silvicky.novel.compiler.Preprocessor;
 import io.silvicky.novel.compiler.code.LeaCode;
-import io.silvicky.novel.compiler.code.raw.AssignCode;
-import io.silvicky.novel.compiler.code.raw.AssignVariableNumberCode;
-import io.silvicky.novel.compiler.code.raw.DereferenceCode;
-import io.silvicky.novel.compiler.code.raw.IndirectAssignCode;
+import io.silvicky.novel.compiler.code.raw.*;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.declaration.BaseTypeBuilderRoot;
 import io.silvicky.novel.compiler.parser.declaration.UnaryDeclaration;
@@ -99,7 +96,7 @@ public class UnaryExpression extends AbstractExpression
             sizeofExpression.travel();
             type=Type.ADDRESS_TYPE;
             resultId=requestInternalVariable(type);
-            codes.add(new AssignVariableNumberCode(resultId,0,sizeofExpression.type.getSize(),type,type,type,OperatorType.COMMA));
+            codes.add(new AssignNumberCode(resultId,sizeofExpression.type.getSize(),type,type));
         }
         else if(baseTypeBuilderRoot!=null)
         {
@@ -108,7 +105,7 @@ public class UnaryExpression extends AbstractExpression
             unaryDeclaration.travel();
             type=Type.ADDRESS_TYPE;
             resultId=requestInternalVariable(type);
-            codes.add(new AssignVariableNumberCode(resultId,0,unaryDeclaration.type.getSize(),type,type,type,OperatorType.COMMA));
+            codes.add(new AssignNumberCode(resultId,unaryDeclaration.type.getSize(),type,type));
         }
         else if(child!=null)
         {
@@ -122,7 +119,7 @@ public class UnaryExpression extends AbstractExpression
             if(child.isDirect)
             {
                 codes.add(new AssignVariableNumberCode(child.leftId,child.leftId,1,type,type,PrimitiveType.INT,op.baseType));
-                codes.add(new AssignCode(resultId,child.leftId,0,type,type,type,OperatorType.NOP));
+                codes.add(new AssignUnaryCode(resultId,child.leftId,type,type,OperatorType.NOP));
             }
             else
             {
@@ -143,7 +140,7 @@ public class UnaryExpression extends AbstractExpression
                 isDirect=false;
                 type= abstractPointer.baseType();
                 resultId=requestInternalVariable(type);
-                if(abstractPointer.baseType() instanceof ArrayType) codes.add(new AssignCode(resultId,leftId,leftId,type,type,type,OperatorType.NOP));
+                if(abstractPointer.baseType() instanceof ArrayType) codes.add(new AssignUnaryCode(resultId,leftId,type,type,OperatorType.NOP));
                 else codes.add(new DereferenceCode(resultId,leftId, castExpression.type));
             }
             else if(op==OperatorType.AND)
@@ -157,7 +154,7 @@ public class UnaryExpression extends AbstractExpression
                 }
                 else
                 {
-                    codes.add(new AssignCode(resultId,castExpression.leftId,castExpression.leftId,type,PrimitiveType.INT, PrimitiveType.INT,OperatorType.NOP));
+                    codes.add(new AssignUnaryCode(resultId,castExpression.leftId,type,PrimitiveType.INT, OperatorType.NOP));
                 }
                 leftId=-1;
             }
@@ -166,7 +163,7 @@ public class UnaryExpression extends AbstractExpression
                 leftId=-1;
                 type=getResultType(castExpression.type, castExpression.type, op);
                 resultId=requestInternalVariable(type);
-                codes.add(new AssignCode(resultId,castExpression.resultId,castExpression.resultId,type, castExpression.type, castExpression.type, op));
+                codes.add(new AssignUnaryCode(resultId,castExpression.resultId,type, castExpression.type, op));
             }
         }
     }

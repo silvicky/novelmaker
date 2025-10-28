@@ -1,8 +1,8 @@
 package io.silvicky.novel.compiler.code.raw;
 
 import io.silvicky.novel.compiler.code.Code;
-import io.silvicky.novel.compiler.code.primitive.AssignMMCodeP;
-import io.silvicky.novel.compiler.code.primitive.CastMMCodeP;
+import io.silvicky.novel.compiler.code.primitive.AssignMCodeP;
+import io.silvicky.novel.compiler.code.primitive.CastCodeP;
 import io.silvicky.novel.compiler.code.primitive.GotoCodeP;
 import io.silvicky.novel.compiler.tokens.OperatorType;
 import io.silvicky.novel.compiler.types.PrimitiveType;
@@ -35,11 +35,11 @@ public record GotoCode(int left, Type type, boolean isReversed, int id) implemen
         int t1=requestInternalVariable(PrimitiveType.BOOL);
         if(isReversed)
         {
-            ret.add(new AssignMMCodeP(t1,left,left,primitiveType, OperatorType.NOT));
+            ret.add(new AssignMCodeP(t1,left,primitiveType, OperatorType.NOT));
         }
         else
         {
-            ret.add(new CastMMCodeP(t1,left,PrimitiveType.BOOL,primitiveType));
+            ret.add(new CastCodeP(t1,left,PrimitiveType.BOOL,primitiveType));
         }
         ret.add(new GotoCodeP(t1,id));
         return ret;

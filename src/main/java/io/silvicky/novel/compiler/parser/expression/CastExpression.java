@@ -1,6 +1,6 @@
 package io.silvicky.novel.compiler.parser.expression;
 
-import io.silvicky.novel.compiler.code.raw.AssignCode;
+import io.silvicky.novel.compiler.code.raw.AssignUnaryCode;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.declaration.BaseTypeBuilderRoot;
 import io.silvicky.novel.compiler.parser.declaration.UnaryDeclaration;
@@ -75,7 +75,7 @@ public class CastExpression extends AbstractExpression
         isDirect=false;
         child.travel();
         codes.addAll(child.codes);
-        codes.add(new AssignCode(resultId,child.resultId,0,type,child.type,child.type,OperatorType.NOP));
+        codes.add(new AssignUnaryCode(resultId,child.resultId,type,child.type,OperatorType.NOP));
     }
 
     @Override

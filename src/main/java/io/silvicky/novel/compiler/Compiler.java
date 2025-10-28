@@ -271,6 +271,13 @@ public class Compiler
                     updateUsage.run(ctx,assignVariableNumberCode.target(),0);
                     updateUsage.run(ctx,assignVariableNumberCode.left(),1);
                 }
+                case AssignNumberCode assignNumberCode -> updateUsage.run(ctx,assignNumberCode.target(),0);
+                case AssignUnaryCode assignUnaryCode ->
+                {
+                    dependence.get(ctx).put(assignUnaryCode.target(), List.of(assignUnaryCode.left()));
+                    updateUsage.run(ctx,assignUnaryCode.target(),0);
+                    updateUsage.run(ctx,assignUnaryCode.left(),1);
+                }
                 case DereferenceCode dereferenceCode ->
                 {
                     dependence.get(ctx).put(dereferenceCode.target(), List.of(dereferenceCode.left()));
@@ -280,7 +287,7 @@ public class Compiler
                 case IndirectAssignCode indirectAssignCode ->
                 {
                     dependence.get(ctx).put(indirectAssignCode.target(), List.of(indirectAssignCode.left()));
-                    updateUsage.run(ctx,indirectAssignCode.target(),0);
+                    updateUsage.run(ctx,indirectAssignCode.target(),1);
                     updateUsage.run(ctx,indirectAssignCode.left(),1);
                 }
                 case LeaCode leaCode ->
@@ -295,6 +302,7 @@ public class Compiler
                     updateUsage.run(ctx,callCode.target(),1);
                     for(int i: callCode.args())updateUsage.run(ctx,i,1);
                 }
+                case FetchReturnValueCode fetchReturnValueCode -> updateUsage.run(ctx,fetchReturnValueCode.target(),0);
                 case GotoCode gotoCode -> updateUsage.run(ctx,gotoCode.left(),1);
                 default -> {}
             }
@@ -354,17 +362,25 @@ public class Compiler
                 {
                     if(!removedVariable.get(ctx).contains(assignVariableNumberCode.target()))ret.add(code);
                 }
+                case AssignNumberCode assignNumberCode ->
+                {
+                    if(!removedVariable.get(ctx).contains(assignNumberCode.target()))ret.add(code);
+                }
+                case AssignUnaryCode assignUnaryCode ->
+                {
+                    if(!removedVariable.get(ctx).contains(assignUnaryCode.target()))ret.add(code);
+                }
                 case DereferenceCode dereferenceCode ->
                 {
                     if(!removedVariable.get(ctx).contains(dereferenceCode.target()))ret.add(code);
                 }
-                case IndirectAssignCode indirectAssignCode ->
-                {
-                    if(!removedVariable.get(ctx).contains(indirectAssignCode.target()))ret.add(code);
-                }
                 case LeaCode leaCode ->
                 {
                     if(!removedVariable.get(ctx).contains(leaCode.target()))ret.add(code);
+                }
+                case FetchReturnValueCode fetchReturnValueCode ->
+                {
+                    if(!removedVariable.get(ctx).contains(fetchReturnValueCode.target()))ret.add(code);
                 }
                 default -> ret.add(code);
             }
@@ -497,14 +513,24 @@ public class Compiler
                 ret.add(new AssignMMCodeP(lookupAddress(assignMMCodeP.target()),lookupAddress(assignMMCodeP.left()),lookupAddress(assignMMCodeP.right()),assignMMCodeP.type(),assignMMCodeP.op()));
                 continue;
             }
+            if(code instanceof AssignMCodeP assignMCodeP)
+            {
+                ret.add(new AssignMCodeP(lookupAddress(assignMCodeP.target()),lookupAddress(assignMCodeP.left()),assignMCodeP.type(),assignMCodeP.op()));
+                continue;
+            }
             if(code instanceof AssignMICodeP assignMICodeP)
             {
                 ret.add(new AssignMICodeP(lookupAddress(assignMICodeP.target()),lookupAddress(assignMICodeP.left()),assignMICodeP.right(),assignMICodeP.type(),assignMICodeP.op()));
                 continue;
             }
-            if(code instanceof CastMMCodeP castMMCodeP)
+            if(code instanceof AssignICodeP assignICodeP)
             {
-                ret.add(new CastMMCodeP(lookupAddress(castMMCodeP.target()),lookupAddress(castMMCodeP.source()), castMMCodeP.targetType(),castMMCodeP.sourceType()));
+                ret.add(new AssignICodeP(lookupAddress(assignICodeP.target()),assignICodeP.left()));
+                continue;
+            }
+            if(code instanceof CastCodeP castCodeP)
+            {
+                ret.add(new CastCodeP(lookupAddress(castCodeP.target()),lookupAddress(castCodeP.source()), castCodeP.targetType(), castCodeP.sourceType()));
                 continue;
             }
             if(code instanceof ReturnCode returnCode)
@@ -574,14 +600,24 @@ public class Compiler
                 VirtualMemory.writeToMemory(addressTransformer(bp,assignMMCodeP.target()),assignMMCodeP.op().operation.cal(VirtualMemory.readFromMemory(addressTransformer(bp,assignMMCodeP.left()),assignMMCodeP.type()), VirtualMemory.readFromMemory(addressTransformer(bp,assignMMCodeP.right()),assignMMCodeP.type()),assignMMCodeP.type()));
                 continue;
             }
+            if(code instanceof AssignMCodeP assignMCodeP)
+            {
+                VirtualMemory.writeToMemory(addressTransformer(bp,assignMCodeP.target()),assignMCodeP.op().operation.cal(VirtualMemory.readFromMemory(addressTransformer(bp,assignMCodeP.left()),assignMCodeP.type()), null,assignMCodeP.type()));
+                continue;
+            }
             if(code instanceof AssignMICodeP assignMICodeP)
             {
                 VirtualMemory.writeToMemory(addressTransformer(bp,assignMICodeP.target()),assignMICodeP.op().operation.cal(VirtualMemory.readFromMemory(addressTransformer(bp,assignMICodeP.left()),assignMICodeP.type()), assignMICodeP.right(),assignMICodeP.type()));
                 continue;
             }
-            if(code instanceof CastMMCodeP castMMCodeP)
+            if(code instanceof AssignICodeP assignICodeP)
             {
-                VirtualMemory.writeToMemory(addressTransformer(bp,castMMCodeP.target()),Util.castPrimitiveType(VirtualMemory.readFromMemory(addressTransformer(bp, castMMCodeP.source()), castMMCodeP.sourceType()), castMMCodeP.targetType(), castMMCodeP.sourceType()));
+                VirtualMemory.writeToMemory(addressTransformer(bp,assignICodeP.target()),assignICodeP.left());
+                continue;
+            }
+            if(code instanceof CastCodeP castCodeP)
+            {
+                VirtualMemory.writeToMemory(addressTransformer(bp, castCodeP.target()),Util.castPrimitiveType(VirtualMemory.readFromMemory(addressTransformer(bp, castCodeP.source()), castCodeP.sourceType()), castCodeP.targetType(), castCodeP.sourceType()));
                 continue;
             }
             if(code instanceof ReturnCode returnCode)

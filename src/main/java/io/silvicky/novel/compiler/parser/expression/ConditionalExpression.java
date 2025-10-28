@@ -1,9 +1,9 @@
 package io.silvicky.novel.compiler.parser.expression;
 
-import io.silvicky.novel.compiler.code.raw.AssignCode;
-import io.silvicky.novel.compiler.code.raw.GotoCode;
 import io.silvicky.novel.compiler.code.LabelCode;
 import io.silvicky.novel.compiler.code.UnconditionalGotoCode;
+import io.silvicky.novel.compiler.code.raw.AssignUnaryCode;
+import io.silvicky.novel.compiler.code.raw.GotoCode;
 import io.silvicky.novel.compiler.parser.operation.ResolveOperation;
 import io.silvicky.novel.compiler.tokens.AbstractToken;
 import io.silvicky.novel.compiler.tokens.OperatorType;
@@ -13,8 +13,8 @@ import io.silvicky.novel.util.Pair;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.silvicky.novel.compiler.Compiler.requestLabel;
 import static io.silvicky.novel.compiler.Compiler.requestInternalVariable;
+import static io.silvicky.novel.compiler.Compiler.requestLabel;
 import static io.silvicky.novel.util.Util.*;
 
 public class ConditionalExpression extends AbstractExpression
@@ -53,11 +53,11 @@ public class ConditionalExpression extends AbstractExpression
             type=getResultType(middle.type,right.type,OperatorType.PLUS);
             resultId=requestInternalVariable(type);
             codes.addAll(middle.codes);
-            codes.add(new AssignCode(resultId, middle.resultId, middle.resultId, type,middle.type,middle.type,OperatorType.NOP));
+            codes.add(new AssignUnaryCode(resultId, middle.resultId, type,middle.type,OperatorType.NOP));
             codes.add(new UnconditionalGotoCode(lbEnd));
             codes.add(new LabelCode(lbRight));
             codes.addAll(right.codes);
-            codes.add(new AssignCode(resultId, right.resultId,right.resultId,type,right.type,right.type,OperatorType.NOP));
+            codes.add(new AssignUnaryCode(resultId, right.resultId,type,right.type,OperatorType.NOP));
             codes.add(new LabelCode(lbEnd));
         }
         else

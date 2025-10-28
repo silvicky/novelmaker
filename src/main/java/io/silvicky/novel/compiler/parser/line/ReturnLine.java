@@ -1,7 +1,7 @@
 package io.silvicky.novel.compiler.parser.line;
 
-import io.silvicky.novel.compiler.code.raw.AssignCode;
 import io.silvicky.novel.compiler.code.ReturnCode;
+import io.silvicky.novel.compiler.code.raw.AssignUnaryCode;
 import io.silvicky.novel.compiler.parser.ASTNode;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.NonTerminal;
@@ -12,7 +12,8 @@ import io.silvicky.novel.compiler.types.PrimitiveType;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.silvicky.novel.compiler.Compiler.*;
+import static io.silvicky.novel.compiler.Compiler.requestInternalVariable;
+import static io.silvicky.novel.compiler.Compiler.returnType;
 
 public class ReturnLine extends NonTerminal implements ASTNode
 {
@@ -42,7 +43,7 @@ public class ReturnLine extends NonTerminal implements ASTNode
         if(!returnType.equals(expressionRoot.type))
         {
             int t1 = requestInternalVariable(returnType);
-            codes.add(new AssignCode(t1, expressionRoot.resultId, expressionRoot.resultId, returnType, expressionRoot.type, expressionRoot.type, OperatorType.NOP));
+            codes.add(new AssignUnaryCode(t1, expressionRoot.resultId, returnType, expressionRoot.type, OperatorType.NOP));
             codes.add(new ReturnCode(t1));
         }
         else

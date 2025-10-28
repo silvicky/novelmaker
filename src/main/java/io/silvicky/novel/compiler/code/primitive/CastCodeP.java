@@ -4,7 +4,7 @@ import io.silvicky.novel.compiler.types.PrimitiveType;
 
 import static io.silvicky.novel.compiler.Compiler.lookupVariableName;
 
-public record CastMMCodeP(int target, int source, PrimitiveType targetType, PrimitiveType sourceType) implements PrimitiveTypeCode
+public record CastCodeP(int target, int source, PrimitiveType targetType, PrimitiveType sourceType) implements PrimitiveTypeCode
 {
     @Override
     public String toString()

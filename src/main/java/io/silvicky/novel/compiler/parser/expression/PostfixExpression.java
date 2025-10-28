@@ -50,7 +50,7 @@ public class PostfixExpression extends AbstractExpression
                     nextResult=requestInternalVariable(type);
                     if(isDirect)
                     {
-                        codes.add(new AssignCode(nextResult,leftId,0,type,type,type,OperatorType.NOP));
+                        codes.add(new AssignUnaryCode(nextResult,leftId,type,type,OperatorType.NOP));
                         codes.add(new AssignVariableNumberCode(leftId,leftId,1,type,type,PrimitiveType.INT,postfix.operatorType.baseType));
                     }
                     else
@@ -72,7 +72,7 @@ public class PostfixExpression extends AbstractExpression
                     codes.add(new AssignCode(tmp1,curResult,postfix.nextExpression.resultId,resultType,type,postfix.nextExpression.type, OperatorType.PLUS));
                     type= abstractPointer.baseType();
                     int tmp2=requestInternalVariable(type);
-                    if(abstractPointer.baseType() instanceof ArrayType) codes.add(new AssignCode(tmp2,tmp1,tmp1,type,type,type,OperatorType.NOP));
+                    if(abstractPointer.baseType() instanceof ArrayType) codes.add(new AssignUnaryCode(tmp2,tmp1,type,type,OperatorType.NOP));
                     else codes.add(new DereferenceCode(tmp2,tmp1,resultType));
                     curResult=tmp2;
                     leftId=tmp1;
@@ -109,7 +109,7 @@ public class PostfixExpression extends AbstractExpression
                         }
                         Type pType=functionType.params().get(i);
                         int id=requestInternalVariable(pType);
-                        codes.add(new AssignCode(id,postfix.arguments.get(i).second(),0,pType,aType,aType,OperatorType.NOP));
+                        codes.add(new AssignUnaryCode(id,postfix.arguments.get(i).second(),pType,aType,OperatorType.NOP));
                         castArguments.add(id);
                         castTypes.add(pType);
                     }
@@ -157,7 +157,7 @@ public class PostfixExpression extends AbstractExpression
                 {
                     if(type instanceof ConstType constType)type=constType.baseType();
                     int tmp0=requestInternalVariable(Type.ADDRESS_TYPE);
-                    if(isDirect)codes.add(new AssignCode(tmp0,leftId,0,Type.ADDRESS_TYPE,type,type,OperatorType.NOP));
+                    if(isDirect)codes.add(new AssignUnaryCode(tmp0,leftId,Type.ADDRESS_TYPE,type,OperatorType.NOP));
                     else codes.add(new DereferenceCode(tmp0,leftId,type));
                     type=((AbstractPointer)type).baseType();
                     leftId=tmp0;

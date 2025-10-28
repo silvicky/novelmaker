@@ -3,8 +3,8 @@ package io.silvicky.novel.compiler.parser.declaration;
 import io.silvicky.novel.compiler.code.LabelCode;
 import io.silvicky.novel.compiler.code.ReturnCode;
 import io.silvicky.novel.compiler.code.UnconditionalGotoCode;
-import io.silvicky.novel.compiler.code.raw.AssignCode;
 import io.silvicky.novel.compiler.code.raw.AssignNumberCode;
+import io.silvicky.novel.compiler.code.raw.AssignUnaryCode;
 import io.silvicky.novel.compiler.parser.ASTNode;
 import io.silvicky.novel.compiler.parser.GrammarException;
 import io.silvicky.novel.compiler.parser.NonTerminal;
@@ -146,7 +146,7 @@ public class AssignmentDeclaration extends NonTerminal implements ASTNode
             }
             if(assignmentExpression!=null)
             {
-                codes.add(new AssignCode(nid,assignmentExpression.resultId,assignmentExpression.resultId, unaryDeclaration.type, assignmentExpression.type, assignmentExpression.type, OperatorType.NOP));
+                codes.add(new AssignUnaryCode(nid,assignmentExpression.resultId, unaryDeclaration.type, assignmentExpression.type, OperatorType.NOP));
             }
         }
     }
