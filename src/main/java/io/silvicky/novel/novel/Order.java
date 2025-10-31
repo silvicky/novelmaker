@@ -1,4 +1,4 @@
-package io.silvicky.novel;
+package io.silvicky.novel.novel;
 
 import io.silvicky.novel.json.JsonParser;
 

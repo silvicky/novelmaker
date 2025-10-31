@@ -10,6 +10,12 @@ import io.silvicky.novel.compiler.tokens.*;
 import io.silvicky.novel.compiler.types.*;
 import io.silvicky.novel.json.entities.*;
 
+import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.Stack;
 
@@ -212,5 +218,22 @@ public class Util
         int i=s.indexOf('(');
         if(i==-1)return s;
         return s.substring(0,i);
+    }
+    public static void deleteFolder(Path path) throws IOException
+    {
+        if(!path.toFile().exists())return;
+        Files.walkFileTree(path, new SimpleFileVisitor<>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                Files.delete(file);
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                Files.delete(dir);
+                return FileVisitResult.CONTINUE;
+            }
+        });
     }
 }
