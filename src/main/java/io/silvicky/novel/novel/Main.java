@@ -72,6 +72,7 @@ public class Main
             if(outputPath==null)outputPath=inputPath.resolve("result.txt");
             globalIgnore.add(outputPath.toAbsolutePath());
             deleteFolder(outputPath);
+            outputPath.getParent().toFile().mkdirs();
             outputStream = new FileOutputStream(outputPath.toString());
         }
         Writer writer=new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8));
