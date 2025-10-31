@@ -42,7 +42,7 @@ public class Web
         return cur;
     }
 
-    private static void parseFile(Path inputPath, Path outputPath,boolean isFirst) throws IOException
+    private static void parseFile(Path inputPath, Path outputPath,int depth) throws IOException
     {
         if(!inputPath.toString().endsWith(".txt"))return;
         BufferedReader bufferedReader=new BufferedReader(new FileReader(inputPath.toFile()));
@@ -57,13 +57,11 @@ public class Web
             else content.add(cur);
         }
         String fileName=outputPath.getFileName().toString();
-        int depth=outputPath.getNameCount();
-        if(isFirst)depth--;
         fileName=fileName.substring(0,fileName.length()-4)+".html";
         files.add(new FileEntity(title,content,outputPath.getParent().resolve(fileName),depth));
     }
 
-    private static void parseFolder(Path inputPath, Path outputPath) throws IOException
+    private static void parseFolder(Path inputPath, Path outputPath,int depth) throws IOException
     {
         List<Path> paths=new ArrayList<>();
         Order order=new Order(inputPath);
@@ -80,34 +78,32 @@ public class Web
             if(order.isReversed)return o2.getFileName().compareTo(o1.getFileName());
             return o1.getFileName().compareTo(o2.getFileName());
         });
-        boolean isFirst=true;
-        for(Path i: order.before)if(Main.optional||!order.optional.contains(i))
+        List<Path> validPaths=new ArrayList<>();
+        for(Path i: order.before)if(Main.optional||!order.optional.contains(i))validPaths.add(i);
+        for(Path i: paths)if(Main.optional||!order.optional.contains(i))validPaths.add(i);
+        for(Path i: order.after)if(Main.optional||!order.optional.contains(i))validPaths.add(i);
+        boolean hasInfo=inputPath.resolve("info.txt").toFile().exists();
+        for(Path i:validPaths)
         {
-            parseGeneral(i,outputPath.resolve(inputPath.relativize(i)),isFirst);
-            isFirst=false;
-        }
-        for(Path i: paths)if(Main.optional||!order.optional.contains(i))
-        {
-            parseGeneral(i,outputPath.resolve(inputPath.relativize(i)),isFirst);
-            isFirst=false;
-        }
-        for(Path i: order.after)if(Main.optional||!order.optional.contains(i))
-        {
-            parseGeneral(i,outputPath.resolve(inputPath.relativize(i)),isFirst);
-            isFirst=false;
+            parseGeneral(i,outputPath.resolve(inputPath.relativize(i)),depth);
+            if(hasInfo)
+            {
+                depth++;
+                hasInfo=false;
+            }
         }
     }
 
-    private static void parseGeneral(Path inputPath, Path outputPath,boolean isFirst) throws IOException
+    private static void parseGeneral(Path inputPath, Path outputPath,int depth) throws IOException
     {
         if(!inputPath.toFile().exists())return;
         if (inputPath.toFile().isFile())
         {
-            parseFile(inputPath, outputPath,isFirst);
+            parseFile(inputPath, outputPath,depth);
         }
         else
         {
-            parseFolder(inputPath, outputPath);
+            parseFolder(inputPath, outputPath,depth);
         }
     }
     private static void constructMenu(Path outputPath)
@@ -117,7 +113,7 @@ public class Web
         for(FileEntity fileEntity:files)
         {
             stringBuilder.append(format("%s%s\n",
-                    " ".repeat(4*Math.max(0, fileEntity.depth - outputPath.getNameCount())),
+                    " ".repeat(4*fileEntity.depth),
                     format(linkFormat,outputPath.getParent().relativize(fileEntity.path),fileEntity.title)));
         }
         stringBuilder.append("</pre>\n");
@@ -170,7 +166,7 @@ public class Web
     }
     public static void parseRoot(Path inputPath, Path outputPath) throws IOException
     {
-        parseFolder(inputPath,outputPath.resolve("content"));
+        parseFolder(inputPath,outputPath.resolve("content"),0);
         Path index=outputPath.resolve("index.html");
         constructMenu(index);
         generateChapters(index);
