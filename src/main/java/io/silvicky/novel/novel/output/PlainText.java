@@ -1,6 +1,7 @@
 package io.silvicky.novel.novel.output;
 
 import io.silvicky.novel.novel.CfgLoader;
+import io.silvicky.novel.novel.CharItem;
 import io.silvicky.novel.novel.Main;
 import io.silvicky.novel.novel.Order;
 
@@ -18,10 +19,10 @@ public class PlainText
         String cur=line;
         if(CfgLoader.replaceChars)
         {
-            for(Map.Entry<String,String> entry:CfgLoader.charMap.entrySet())
+            for(Map.Entry<String, CharItem> entry:CfgLoader.charMap.entrySet())
             {
                 String placeholder=CfgLoader.left+entry.getKey()+CfgLoader.right;
-                cur=cur.replaceAll(placeholder, entry.getValue());
+                cur=cur.replaceAll(placeholder, entry.getValue().name);
             }
         }
         writer.write(cur);

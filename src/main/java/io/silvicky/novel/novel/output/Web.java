@@ -1,6 +1,7 @@
 package io.silvicky.novel.novel.output;
 
 import io.silvicky.novel.novel.CfgLoader;
+import io.silvicky.novel.novel.CharItem;
 import io.silvicky.novel.novel.Main;
 import io.silvicky.novel.novel.Order;
 
@@ -28,15 +29,19 @@ public class Web
                 </body>
             </html>""";
     private static final String linkFormat="<a href=\"%s\">%s</a>";
+    private static final String colorFormat="<span style=\"color:%s;\">%s</span>";
     private static String parseString(String line)
     {
         String cur=line;
         if(CfgLoader.replaceChars)
         {
-            for(Map.Entry<String,String> entry:CfgLoader.charMap.entrySet())
+            for(Map.Entry<String, CharItem> entry:CfgLoader.charMap.entrySet())
             {
                 String placeholder=CfgLoader.left+entry.getKey()+CfgLoader.right;
-                cur=cur.replaceAll(placeholder, entry.getValue());
+                String coloredName=(entry.getValue().color==null)
+                        ?entry.getValue().name
+                        :format(colorFormat,entry.getValue().color,entry.getValue().name);
+                cur=cur.replaceAll(placeholder, coloredName);
             }
         }
         return cur;
