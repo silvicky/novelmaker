@@ -22,6 +22,7 @@ public class Web
             <!DOCTYPE html>
             <html>
                 <head>
+                    <meta charset="utf-8">
                     <title>%s</title>
                 </head>
                 <body>
