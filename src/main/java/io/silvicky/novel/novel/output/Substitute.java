@@ -119,7 +119,7 @@ public class Substitute
     }
     public static void parseRoot(Path inputPath, Path outputPath) throws IOException
     {
-        parseFolder(inputPath,outputPath.resolve("content"),0);
+        parseFolder(inputPath,outputPath,0);
         generateChapters();
     }
 }
