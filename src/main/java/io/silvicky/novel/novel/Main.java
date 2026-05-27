@@ -1,6 +1,7 @@
 package io.silvicky.novel.novel;
 
 import io.silvicky.novel.novel.output.PlainText;
+import io.silvicky.novel.novel.output.Substitute;
 import io.silvicky.novel.novel.output.Web;
 
 import java.io.*;
@@ -22,6 +23,7 @@ public class Main
         System.out.println("-h: Open help");
         System.out.println("-w: Output as a website");
         System.out.println("-s: Output onto screen(System.out)");
+        System.out.println("-S: Substitution of names only");
         System.out.println("-t: Output first line only(making a menu)");
         System.out.println("-O: Print also optional parts");
         System.out.println("-i: Specifying input path, a folder(default: .)");
@@ -35,6 +37,7 @@ public class Main
         Path inputPath=Path.of(".").toAbsolutePath(),outputPath=null,configPath=null;
         boolean screenOutput=false;
         boolean webOutput=false;
+        boolean substituteOnly=false;
         while(it.hasNext())
         {
             String s=it.next();
@@ -48,6 +51,7 @@ public class Main
                     help();
                     return;
                 }
+                case "-S" -> substituteOnly = true;
                 case "-s" -> screenOutput = true;
                 case "-w" -> webOutput = true;
                 case "-t" -> title = true;
@@ -63,6 +67,14 @@ public class Main
             globalIgnore.add(outputPath.toAbsolutePath());
             deleteFolder(outputPath);
             Web.parseRoot(inputPath,outputPath);
+            return;
+        }
+        if(substituteOnly)
+        {
+            if(outputPath==null)outputPath=inputPath.resolve("sub");
+            globalIgnore.add(outputPath.toAbsolutePath());
+            deleteFolder(outputPath);
+            Substitute.parseRoot(inputPath,outputPath);
             return;
         }
         OutputStream outputStream;
