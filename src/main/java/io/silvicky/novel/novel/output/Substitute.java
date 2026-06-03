@@ -18,6 +18,7 @@ public class Substitute
 {
     private record FileEntity(String title,List<String> content,Path path,int depth){}
     private static final List<FileEntity> files=new ArrayList<>();
+    private static Path root;//TODO use OOP
     private static String parseString(String line)
     {
         String cur=line;
@@ -47,8 +48,14 @@ public class Substitute
             if(title==null)title=cur;
             else content.add(cur);
         }
-        String fileName=outputPath.getFileName().toString();
-        files.add(new FileEntity(title,content,outputPath.getParent().resolve(fileName),depth));
+        StringBuilder fileNameBuilder=new StringBuilder();
+        Path curPath=root.relativize(outputPath);
+        for(int i=0;i<curPath.getNameCount();i++)
+        {
+            if(i!=0)fileNameBuilder.append('-');
+            fileNameBuilder.append(curPath.getName(i));
+        }
+        files.add(new FileEntity(title,content,outputPath.getParent().resolve(fileNameBuilder.toString()),depth));
     }
 
     private static void parseFolder(Path inputPath, Path outputPath,int depth) throws IOException
@@ -119,6 +126,7 @@ public class Substitute
     }
     public static void parseRoot(Path inputPath, Path outputPath) throws IOException
     {
+        root=outputPath;
         parseFolder(inputPath,outputPath,0);
         generateChapters();
     }
