@@ -23,6 +23,24 @@ public class Web
             <html>
                 <head>
                     <meta charset="utf-8">
+                    <style>
+                        body{
+                            overflow-wrap: break-word;
+                            word-break: break-word;
+                        }
+                        pre, code {
+                            white-space: pre-wrap;
+                            background: #f4f4f4;
+                            padding: 10px;
+                            border-radius: 4px;
+                            display: block;
+                            overflow-x: auto;
+                        }
+                        .hidden
+                        {
+                            color: #f4f4f4;
+                        }
+                    </style>
                     <title>%s</title>
                 </head>
                 <body>
@@ -31,6 +49,7 @@ public class Web
             </html>""";
     private static final String linkFormat="<a href=\"%s\">%s</a>";
     private static final String colorFormat="<span style=\"color:%s;\">%s</span>";
+    private static final String hiddenFormat="<span class=\"hidden\">%s</span>";
     private static String parseString(String line)
     {
         String cur=line;
@@ -39,9 +58,10 @@ public class Web
             for(Map.Entry<String, CharItem> entry:CfgLoader.charMap.entrySet())
             {
                 String placeholder=CfgLoader.left+entry.getKey()+CfgLoader.right;
-                String coloredName=(entry.getValue().color==null)
-                        ?entry.getValue().name
-                        :format(colorFormat,entry.getValue().color,entry.getValue().name);
+                String coloredName;
+                if(entry.getValue().color==null)coloredName=entry.getValue().name;
+                else if(entry.getValue().color.isEmpty())coloredName=format(hiddenFormat,entry.getValue().name);
+                else coloredName=format(colorFormat,entry.getValue().color,entry.getValue().name);
                 cur=cur.replaceAll(placeholder, coloredName);
             }
         }
