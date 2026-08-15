@@ -23,10 +23,13 @@ public class Web
             <html>
                 <head>
                     <meta charset="utf-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0">
                     <style>
                         body{
                             overflow-wrap: break-word;
                             word-break: break-word;
+                            max-width: 100%%;
+                            overflow-x: hidden;
                         }
                         pre, code {
                             white-space: pre-wrap;
@@ -34,7 +37,7 @@ public class Web
                             padding: 10px;
                             border-radius: 4px;
                             display: block;
-                            overflow-x: auto;
+                            overflow-x: hidden;
                         }
                         .hidden
                         {
