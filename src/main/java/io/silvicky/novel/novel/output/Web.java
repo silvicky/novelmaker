@@ -17,7 +17,7 @@ import static java.lang.String.format;
 public class Web
 {
     private record FileEntity(String title,List<String> content,Path path,int depth){}
-    private static final List<FileEntity> files=new ArrayList<>();
+    private static final TreeNode<FileEntity> files=new TreeNode<>(null,null);
     private static final String htmlFormat= """
             <!DOCTYPE html>
             <html>
@@ -71,9 +71,9 @@ public class Web
         return cur;
     }
 
-    private static void parseFile(Path inputPath, Path outputPath,int depth) throws IOException
+    private static FileEntity parseFile(Path inputPath, Path outputPath, int depth) throws IOException
     {
-        if(!inputPath.toString().endsWith(".txt"))return;
+        if(!inputPath.toString().endsWith(".txt"))return null;
         BufferedReader bufferedReader=new BufferedReader(new FileReader(inputPath.toFile()));
         String cur,title=null;
         List<String> content=new ArrayList<>();
@@ -87,10 +87,10 @@ public class Web
         }
         String fileName=outputPath.getFileName().toString();
         fileName=fileName.substring(0,fileName.length()-4)+".html";
-        files.add(new FileEntity(title,content,outputPath.getParent().resolve(fileName),depth));
+        return new FileEntity(title,content,outputPath.getParent().resolve(fileName),depth);
     }
 
-    private static void parseFolder(Path inputPath, Path outputPath,int depth) throws IOException
+    private static void parseFolder(Path inputPath, Path outputPath, int depth, TreeNode<FileEntity> node) throws IOException
     {
         List<Path> paths=new ArrayList<>();
         Order order=new Order(inputPath);
@@ -112,38 +112,51 @@ public class Web
         for(Path i: paths)if(Main.optional||!order.optional.contains(i))validPaths.add(i);
         for(Path i: order.after)if(Main.optional||!order.optional.contains(i))validPaths.add(i);
         boolean hasInfo=inputPath.resolve("info.txt").toFile().exists();
-        for(Path i:validPaths)
+        TreeNode<FileEntity> parent;
+        int newDepth=depth;
+        int startIndex;
+        if(hasInfo) {
+            FileEntity info=parseFile(
+                    inputPath.resolve("info.txt"),
+                    outputPath.resolve("info.txt"),
+                    depth);
+            parent=node.addChild(info);
+            newDepth++;
+            startIndex=1;
+        } else {
+            parent = node;
+            startIndex=0;
+        }
+        for(int i=startIndex;i<validPaths.size();i++)
         {
-            parseGeneral(i,outputPath.resolve(inputPath.relativize(i)),depth);
-            if(hasInfo)
-            {
-                depth++;
-                hasInfo=false;
-            }
+            parseGeneral(validPaths.get(i),outputPath.resolve(inputPath.relativize(validPaths.get(i))),newDepth,parent);
         }
     }
 
-    private static void parseGeneral(Path inputPath, Path outputPath,int depth) throws IOException
+    private static void parseGeneral(Path inputPath, Path outputPath,int depth, TreeNode<FileEntity> node) throws IOException
     {
         if(!inputPath.toFile().exists())return;
         if (inputPath.toFile().isFile())
         {
-            parseFile(inputPath, outputPath,depth);
+            FileEntity file=parseFile(inputPath,outputPath,depth);
+            if(file!=null)node.addChild(file);
         }
         else
         {
-            parseFolder(inputPath, outputPath,depth);
+            parseFolder(inputPath, outputPath,depth,node);
         }
     }
     private static void constructMenu(Path outputPath)
     {
         StringBuilder stringBuilder=new StringBuilder();
         stringBuilder.append("<pre>\n");
-        for(FileEntity fileEntity:files)
+        TreeNode<FileEntity> node=files.getNext();
+        while(node!=null)
         {
             stringBuilder.append(format("%s%s\n",
-                    " ".repeat(4*fileEntity.depth),
-                    format(linkFormat,outputPath.getParent().relativize(fileEntity.path),fileEntity.title)));
+                    " ".repeat(4*node.content().depth),
+                    format(linkFormat,outputPath.getParent().relativize(node.content().path),node.content().title)));
+            node=node.getNext();
         }
         stringBuilder.append("</pre>\n");
         outputPath.getParent().toFile().mkdirs();
@@ -158,19 +171,23 @@ public class Web
     }
     private static void generateChapters(Path index)
     {
-        for(int i=0;i<files.size();i++)
+        TreeNode<FileEntity> cur=files.getNext();
+        TreeNode<FileEntity> last=null;
+        TreeNode<FileEntity> next;
+        while(cur!=null)
         {
-            FileEntity fileEntity=files.get(i);
+            FileEntity fileEntity=cur.content();
             StringBuilder stringBuilder=new StringBuilder();
             StringBuilder linkBuilder=new StringBuilder();
             linkBuilder.append(format(linkFormat,fileEntity.path.getParent().relativize(index),"Menu"));
-            if(i>0)
+            if(last!=null)
             {
-                linkBuilder.append(format(linkFormat,fileEntity.path.getParent().relativize(files.get(i-1).path),"Prev"));
+                linkBuilder.append(format(linkFormat,fileEntity.path.getParent().relativize(last.content().path),"Prev"));
             }
-            if(i<files.size()-1)
+            next=cur.getNext();
+            if(next!=null)
             {
-                linkBuilder.append(format(linkFormat,fileEntity.path.getParent().relativize(files.get(i+1).path),"Next"));
+                linkBuilder.append(format(linkFormat,fileEntity.path.getParent().relativize(next.content().path),"Next"));
             }
             stringBuilder.append(format("<h3>%s</h3>\n",fileEntity.title));
             stringBuilder.append(linkBuilder);
@@ -191,11 +208,13 @@ public class Web
             {
                 throw new RuntimeException(e);
             }
+            last=cur;
+            cur=next;
         }
     }
     public static void parseRoot(Path inputPath, Path outputPath) throws IOException
     {
-        parseFolder(inputPath,outputPath.resolve("content"),0);
+        parseFolder(inputPath,outputPath.resolve("content"),0,files);
         Path index=outputPath.resolve("index.html");
         constructMenu(index);
         generateChapters(index);
