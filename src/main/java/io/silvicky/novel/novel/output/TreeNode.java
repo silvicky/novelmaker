@@ -12,6 +12,8 @@ public class TreeNode<T> {
         this.parent = parent;
     }
 
+    TreeNode<T> parent() {return parent;}
+
     TreeNode<T> addChild(T content) {
         TreeNode<T> child = new TreeNode<>(content, this);
         if(firstChild==null) {

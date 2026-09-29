@@ -180,6 +180,10 @@ public class Web
             StringBuilder stringBuilder=new StringBuilder();
             StringBuilder linkBuilder=new StringBuilder();
             linkBuilder.append(format(linkFormat,fileEntity.path.getParent().relativize(index),"Menu"));
+            if(cur.parent()!=null&&cur.parent().content()!=null)
+            {
+                linkBuilder.append(format(linkFormat,fileEntity.path.getParent().relativize(cur.parent().content().path),"Up"));
+            }
             if(last!=null)
             {
                 linkBuilder.append(format(linkFormat,fileEntity.path.getParent().relativize(last.content().path),"Prev"));
