@@ -6,11 +6,14 @@ import io.silvicky.novel.novel.Main;
 import io.silvicky.novel.novel.Order;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import static io.silvicky.novel.novel.Main.spoiler;
 
 public class PlainText
 {
@@ -31,7 +34,19 @@ public class PlainText
 
     private static void parseFile(Path file, Writer writer) throws IOException
     {
-        if(!file.toString().endsWith(".txt"))return;
+        if((!file.toString().endsWith(".txt"))||file.toString().endsWith(".h.txt"))return;
+        String fileName=file.getFileName().toString();
+        String fileNameWithoutSuffix = fileName.substring(0, fileName.length() - 4);
+        Path spoilerPath=file.getParent().resolve(fileNameWithoutSuffix +".h.txt");
+        if(spoiler&&spoilerPath.toFile().exists())
+        {
+            writer.append("Spoiler\n\n");
+            for(String s:Files.readAllLines(spoilerPath))
+            {
+                parseString(s, writer);
+            }
+        }
+        writer.append('\n');
         BufferedReader bufferedReader=new BufferedReader(new FileReader(file.toFile()));
         String cur;
         while(true)

@@ -36,7 +36,7 @@ public class Substitute
 
     private static void parseFile(Path inputPath, Path outputPath,int depth) throws IOException
     {
-        if(!inputPath.toString().endsWith(".txt"))return;
+        if(!inputPath.toString().endsWith(".txt"))return;//todo add spoiler if possible
         BufferedReader bufferedReader=new BufferedReader(new FileReader(inputPath.toFile()));
         String cur,title=null;
         List<String> content=new ArrayList<>();

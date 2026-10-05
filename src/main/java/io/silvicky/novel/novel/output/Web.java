@@ -6,17 +6,19 @@ import io.silvicky.novel.novel.Main;
 import io.silvicky.novel.novel.Order;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static io.silvicky.novel.novel.Main.spoiler;
 import static java.lang.String.format;
 
 public class Web
 {
-    private record FileEntity(String title,List<String> content,Path path,int depth){}
+    private record FileEntity(String title,List<String> content,List<String> spoilerContent,Path path,int depth){}
     private static final TreeNode<FileEntity> files=new TreeNode<>(null,null);
     private static final String htmlFormat= """
             <!DOCTYPE html>
@@ -53,6 +55,11 @@ public class Web
     private static final String linkFormat="<a href=\"%s\">%s</a>";
     private static final String colorFormat="<span style=\"color:%s;\">%s</span>";
     private static final String hiddenFormat="<span class=\"hidden\">%s</span>";
+    private static final String spoilerFormat= """
+            <details>
+                <summary>Spoiler</summary>
+                <pre>%s</pre>
+            </details>""";
     private static String parseString(String line)
     {
         String cur=line;
@@ -73,7 +80,7 @@ public class Web
 
     private static FileEntity parseFile(Path inputPath, Path outputPath, int depth) throws IOException
     {
-        if(!inputPath.toString().endsWith(".txt"))return null;
+        if((!inputPath.toString().endsWith(".txt"))||inputPath.toString().endsWith(".h.txt"))return null;
         BufferedReader bufferedReader=new BufferedReader(new FileReader(inputPath.toFile()));
         String cur,title=null;
         List<String> content=new ArrayList<>();
@@ -85,9 +92,27 @@ public class Web
             if(title==null)title=cur;
             else content.add(cur);
         }
+
         String fileName=outputPath.getFileName().toString();
-        fileName=fileName.substring(0,fileName.length()-4)+".html";
-        return new FileEntity(title,content,outputPath.getParent().resolve(fileName),depth);
+        String fileNameWithoutSuffix = fileName.substring(0, fileName.length() - 4);
+        List<String> spoilerContent;
+        Path spoilerPath=inputPath.getParent().resolve(fileNameWithoutSuffix +".h.txt");
+        if(spoiler&&spoilerPath.toFile().exists())
+        {
+            spoilerContent= new ArrayList<>();
+            for(String s:Files.readAllLines(spoilerPath))
+            {
+                spoilerContent.add(parseString(s));
+            }
+        } else {
+            spoilerContent = null;
+        }
+        return new FileEntity(
+                title,
+                content,
+                spoilerContent,
+                outputPath.getParent().resolve(fileNameWithoutSuffix +".html"),
+                depth);
     }
 
     private static void parseFolder(Path inputPath, Path outputPath, int depth, TreeNode<FileEntity> node) throws IOException
@@ -179,6 +204,7 @@ public class Web
             FileEntity fileEntity=cur.content();
             StringBuilder stringBuilder=new StringBuilder();
             StringBuilder linkBuilder=new StringBuilder();
+            StringBuilder spoilerBuilder=new StringBuilder();
             linkBuilder.append(format(linkFormat,fileEntity.path.getParent().relativize(index),"Menu"));
             if(cur.parent()!=null&&cur.parent().content()!=null)
             {
@@ -195,6 +221,13 @@ public class Web
             }
             stringBuilder.append(format("<h3>%s</h3>\n",fileEntity.title));
             stringBuilder.append(linkBuilder);
+            if(fileEntity.spoilerContent!=null) {
+                for (String s : fileEntity.spoilerContent) {
+                    spoilerBuilder.append(s);
+                    spoilerBuilder.append('\n');
+                }
+                stringBuilder.append(format(spoilerFormat,spoilerBuilder));
+            }
             stringBuilder.append("<pre>\n");
             for(String s:fileEntity.content)
             {
