@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static io.silvicky.novel.novel.output.Preprocessor.preprocessor;
 import static java.lang.String.format;
 
 public class Substitute
@@ -39,12 +40,11 @@ public class Substitute
         if(!inputPath.toString().endsWith(".txt"))return;//todo add spoiler if possible
         BufferedReader bufferedReader=new BufferedReader(new FileReader(inputPath.toFile()));
         String cur,title=null;
+        List<String> rawContent=preprocessor(bufferedReader.readAllLines());
         List<String> content=new ArrayList<>();
-        while(true)
+        for(String line:rawContent)
         {
-            cur= bufferedReader.readLine();
-            if(cur==null)break;
-            cur=parseString(cur);
+            cur=parseString(line);
             if(title==null)title=cur;
             else content.add(cur);
         }

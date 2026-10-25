@@ -17,6 +17,7 @@ public class Main
     public static boolean title=false;
     public static boolean optional=false;
     public static boolean spoiler=false;
+    public static Set<String> macros=new HashSet<>();
     public static void help()
     {
         System.out.println("Usage: java -jar novelmaker.jar [-h] [-w] [-s] [-S] [-Sp] [-t] [-O] [-i <input_path>] [-o <output_path>] [-c <config_path>]");
@@ -25,7 +26,7 @@ public class Main
         System.out.println("-w: Output as a website");
         System.out.println("-s: Output onto screen(System.out)");
         System.out.println("-S: Substitution of names only");
-        System.out.println("-Sp: Substitution of names only");
+        System.out.println("-Sp: Add spoiler block(Web only)");
         System.out.println("-t: Output first line only(making a menu)");
         System.out.println("-O: Print also optional parts");
         System.out.println("-i: Specifying input path, a folder(default: .)");
@@ -66,6 +67,7 @@ public class Main
         CfgLoader.load(configPath);
         if(webOutput)
         {
+            macros.add("WEB");
             if(outputPath==null)outputPath=inputPath.resolve("web");
             globalIgnore.add(outputPath.toAbsolutePath());
             deleteFolder(outputPath);

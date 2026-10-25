@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static io.silvicky.novel.novel.Main.spoiler;
+import static io.silvicky.novel.novel.output.Preprocessor.preprocessor;
 import static java.lang.String.format;
 
 public class Web
@@ -83,16 +84,14 @@ public class Web
         if((!inputPath.toString().endsWith(".txt"))||inputPath.toString().endsWith(".h.txt"))return null;
         BufferedReader bufferedReader=new BufferedReader(new FileReader(inputPath.toFile()));
         String cur,title=null;
+        List<String> rawContent=preprocessor(bufferedReader.readAllLines());
         List<String> content=new ArrayList<>();
-        while(true)
+        for(String line:rawContent)
         {
-            cur= bufferedReader.readLine();
-            if(cur==null)break;
-            cur=parseString(cur);
+            cur=parseString(line);
             if(title==null)title=cur;
             else content.add(cur);
         }
-
         String fileName=outputPath.getFileName().toString();
         String fileNameWithoutSuffix = fileName.substring(0, fileName.length() - 4);
         List<String> spoilerContent;

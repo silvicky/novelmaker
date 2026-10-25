@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static io.silvicky.novel.novel.Main.spoiler;
+import static io.silvicky.novel.novel.output.Preprocessor.preprocessor;
 
 public class PlainText
 {
@@ -48,12 +49,10 @@ public class PlainText
         }
         writer.append('\n');
         BufferedReader bufferedReader=new BufferedReader(new FileReader(file.toFile()));
-        String cur;
-        while(true)
+        List<String> rawContent=preprocessor(bufferedReader.readAllLines());
+        for(String line:rawContent)
         {
-            cur= bufferedReader.readLine();
-            if(cur==null)break;
-            parseString(cur,writer);
+            parseString(line,writer);
             if(Main.title)return;
         }
         writer.append('\n');
