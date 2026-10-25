@@ -20,13 +20,14 @@ public class Main
     public static Set<String> macros=new HashSet<>();
     public static void help()
     {
-        System.out.println("Usage: java -jar novelmaker.jar [-h] [-w] [-s] [-S] [-Sp] [-t] [-O] [-i <input_path>] [-o <output_path>] [-c <config_path>]");
+        System.out.println("Usage: java -jar novelmaker.jar [-h] [-w] [-s] [-S] [-Sp] [-d <macro>] [-t] [-O] [-i <input_path>] [-o <output_path>] [-c <config_path>]");
         System.out.println("Options:");
         System.out.println("-h: Open help");
         System.out.println("-w: Output as a website");
         System.out.println("-s: Output onto screen(System.out)");
         System.out.println("-S: Substitution of names only");
         System.out.println("-Sp: Add spoiler block(Web only)");
+        System.out.println("-d: Define a macro");
         System.out.println("-t: Output first line only(making a menu)");
         System.out.println("-O: Print also optional parts");
         System.out.println("-i: Specifying input path, a folder(default: .)");
@@ -49,6 +50,7 @@ public class Main
                 case "-i" -> inputPath = Path.of(it.next());
                 case "-o" -> outputPath = Path.of(it.next());
                 case "-c" -> configPath = Path.of(it.next());
+                case "-d" -> macros.add(it.next());
                 case "-h" ->
                 {
                     help();
