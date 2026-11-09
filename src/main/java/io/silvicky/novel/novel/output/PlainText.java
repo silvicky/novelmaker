@@ -42,7 +42,7 @@ public class PlainText
         if(spoiler&&spoilerPath.toFile().exists())
         {
             writer.append("Spoiler\n\n");
-            for(String s:Files.readAllLines(spoilerPath))
+            for(String s:preprocessor(Files.readAllLines(spoilerPath)))
             {
                 parseString(s, writer);
             }

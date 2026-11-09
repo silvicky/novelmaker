@@ -99,7 +99,8 @@ public class Web
         if(spoiler&&spoilerPath.toFile().exists())
         {
             spoilerContent= new ArrayList<>();
-            for(String s:Files.readAllLines(spoilerPath))
+            List<String> spoilerRawContent=preprocessor(Files.readAllLines(spoilerPath));
+            for(String s:spoilerRawContent)
             {
                 spoilerContent.add(parseString(s));
             }
